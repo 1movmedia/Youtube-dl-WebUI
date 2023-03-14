@@ -11,7 +11,8 @@
             "url": "http://localhost:8963",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Build docker image and run container",
-            "postDebugTask": "Stop docker container and remove It"
-        }
+            "postDebugTask": "Stop docker container and remove It",
+            "runtimeExecutable": "/usr/bin/x-www-browser",
+        },
     ]
 }
