@@ -2,6 +2,7 @@ FROM debian:buster
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git python3 python3-pip python3-setuptools build-essential ffmpeg apache2 php curl ca-certificates \
+    python3-certifi python3-brotli python3-websockets python3-mutagen python3-pyxattr python3-secretstorage \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
