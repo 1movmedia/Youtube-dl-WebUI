@@ -8,7 +8,7 @@
             "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome",
-            "url": "http://localhost:8963/youtube-dl/",
+            "url": "http://localhost:8963",
             "webRoot": "${workspaceFolder}",
             // "preLaunchTask": "Run Docker container",
             // "postDebugTask": "Stop Docker container and remove it",
