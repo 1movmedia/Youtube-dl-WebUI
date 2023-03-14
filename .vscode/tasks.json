@@ -10,9 +10,15 @@
             "problemMatcher": []
         },
         {
-            "label": "Build Docker Image & Run Docker Container",
+            "label": "Build Docker Image and Run Container",
             "type": "shell",
-            "command": "docker build . -t ytdlwui && docker run --rm -p 8963:80 ytdlwui",
+            "command": "docker build . -t ytdlwui && docker run --name ytdlwui --rm -p 8963:80 ytdlwui",
+            "problemMatcher": []
+        },
+        {
+            "label": "Stop Docker Container and Remove It",
+            "type": "shell",
+            "command": "docker rm -f ytdlwui",
             "problemMatcher": []
         },
     ]
