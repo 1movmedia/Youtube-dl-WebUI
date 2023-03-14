@@ -4,28 +4,33 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build docker image",
+            "label": "Build Docker image",
             "type": "shell",
             "command": "docker build . -t ytdlwui",
-            "problemMatcher": []
+            "problemMatcher": [],
+            "promptOnClose": false,
         },
         {
-            "label": "Build docker image and run container",
+            "label": "Run Docker container",
             "type": "shell",
-            "command": "docker build . -t ytdlwui && docker run --name ytdlwui --rm -p 8963:80 ytdlwui",
-            "problemMatcher": []
+            "command": "docker run --name ytdlwui --rm -p 8963:80 -v $(pwd):/www/youtube-dl ytdlwui",
+            "problemMatcher": [],
+            "dependsOn": [ "Build Docker image" ],
+            "promptOnClose": false,
         },
         {
-            "label": "Stop docker container and remove it",
+            "label": "Stop Docker container and remove it",
             "type": "shell",
             "command": "docker rm -f ytdlwui",
-            "problemMatcher": []
+            "problemMatcher": [],
+            "promptOnClose": false,
         },
         {
-            "label": "Start shell in docker container",
+            "label": "Start shell in Docker container",
             "type": "shell",
             "command": "docker exec -it ytdlwui /bin/bash",
-            "problemMatcher": []
+            "problemMatcher": [],
+            "promptOnClose": false,
         },
     ]
 }
