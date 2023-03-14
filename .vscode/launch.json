@@ -10,8 +10,8 @@
             "name": "Launch Chrome",
             "url": "http://localhost:8963",
             "webRoot": "${workspaceFolder}",
-            "preLaunchTask": "Build Docker Image and Run Container",
-            "postDebugTask": "Stop Docker Container and Remove It"
+            "preLaunchTask": "Build docker image and run container",
+            "postDebugTask": "Stop docker container and remove It"
         }
     ]
 }

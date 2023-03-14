@@ -4,19 +4,25 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build Docker Image",
+            "label": "Build docker image",
             "type": "shell",
             "command": "docker build . -t ytdlwui",
             "problemMatcher": []
         },
         {
-            "label": "Build Docker Image and Run Container",
+            "label": "Build docker image and run container",
             "type": "shell",
             "command": "docker build . -t ytdlwui && docker run --name ytdlwui --rm -p 8963:80 ytdlwui",
             "problemMatcher": []
         },
         {
-            "label": "Stop Docker Container and Remove It",
+            "label": "Stop docker container and remove it",
+            "type": "shell",
+            "command": "docker rm -f ytdlwui",
+            "problemMatcher": []
+        },
+        {
+            "label": "Start shell in docker container",
             "type": "shell",
             "command": "docker rm -f ytdlwui",
             "problemMatcher": []
