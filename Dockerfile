@@ -1,11 +1,11 @@
 FROM debian:buster
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git python python-pip ffmpeg apache2 php curl ca-certificates \
+    git python3 python3-pip python3-setuptools build-essential ffmpeg apache2 php curl ca-certificates \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade youtube-dl
+RUN pip3 install yt-dlp
 
 COPY --chown=www-data:www-data . /var/www/html/youtube-dl
 # RUN cd /var/www/html \
@@ -30,4 +30,4 @@ ENV LC_ALL=C.UTF-8
 RUN echo ServerName ytdlwui > /etc/apache2/conf-enabled/servername.conf
 RUN echo LogLevel debug > /etc/apache2/conf-enabled/debug.conf
 
-CMD youtube-dl -U && /usr/sbin/apache2ctl -D FOREGROUND
+CMD /usr/sbin/apache2ctl -D FOREGROUND
