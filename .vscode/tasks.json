@@ -10,7 +10,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Run Docker Image",
+            "label": "Build Docker Image & Run Docker Container",
             "type": "shell",
             "command": "docker build . -t ytdlwui && docker run --rm -p 8963:80 ytdlwui",
             "problemMatcher": []
