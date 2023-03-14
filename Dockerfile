@@ -1,20 +1,21 @@
-FROM debian:wheezy
+FROM debian:buster
 
-RUN apt-get update && apt-get install -y --no-install-recommends\
-    git python libav-tools apache2 php5 curl ca-certificates
-RUN rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git python python-pip ffmpeg apache2 php curl ca-certificates \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 #Install youtube-dl
-RUN curl https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl && chmod a+x /usr/local/bin/youtube-dl
+#RUN curl https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl && chmod a+x /usr/local/bin/youtube-dl
+RUN pip install --upgrade youtube-dl
 
 WORKDIR /
 RUN mkdir /www
 
 WORKDIR /www
-RUN git clone https://github.com/p1rox/youtube-dl-webui.git youtube-dl
-
-WORKDIR /www/youtube-dl
-RUN rm -rf .git README.md img .gitignore docker
+RUN git clone https://github.com/azazar/Youtube-dl-WebUI youtube-dl \
+ && cd /www/youtube-dl \
+ && rm -rf .git README.md img .gitignore docker
 
 WORKDIR /
 RUN chmod -R 755 /www && chown -R www-data:www-data /www
