@@ -6,13 +6,13 @@
         {
             "label": "Build Docker Image",
             "type": "shell",
-            "command": "docker build . -t youtube-dl-webui",
+            "command": "docker build . -t ytdlwui",
             "problemMatcher": []
         },
         {
             "label": "Run Docker Image",
             "type": "shell",
-            "command": "docker build . -t youtube-dl-webui && docker run --rm -p 8963:80 youtube-dl-webui",
+            "command": "docker build . -t ytdlwui && docker run --rm -p 8963:80 ytdlwui",
             "problemMatcher": []
         },
     ]
