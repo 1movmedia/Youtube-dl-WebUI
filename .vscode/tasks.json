@@ -24,7 +24,7 @@
         {
             "label": "Start shell in docker container",
             "type": "shell",
-            "command": "docker rm -f ytdlwui",
+            "command": "docker exec -it ytdlwui /bin/bash",
             "problemMatcher": []
         },
     ]
