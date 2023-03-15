@@ -131,3 +131,5 @@ let readyTimer = setInterval(() => {
         clearInterval(readyTimer);
     }
 }, 100);
+
+console.log("ytDlpUrl:", ytDlpUrl);
