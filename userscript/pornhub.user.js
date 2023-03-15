@@ -25,7 +25,7 @@ function isReady() {
     return D.querySelector('v-more-action-menu div.moreActionMenu') != null;
 }
 
-async function download(video) {
+async function download(video, onsuccess) {
     while (!ytDlpUrl) {
         let url = prompt('Provide >_dlp url');
 
@@ -68,7 +68,17 @@ async function download(video) {
         "method": "POST",
     });
 
-    console.log("Response:", await response.body());
+    if (!response.ok) {
+        let responseText = await response.text();
+    
+        console.error("Response:", responseText);
+
+        return;
+    }
+
+    if (onsuccess) {
+        onsuccess(response);
+    }
 }
 
 function attachDownloader() {
@@ -90,15 +100,28 @@ function attachDownloader() {
 
         let vidTitleWrapper = li.querySelector('div.vidTitleWrapper');
 
+        let iconClass = 'ph-icon-cloud-download';
+
+        if (GM_getValue(`downloaded(${video.vkey})`)) {
+            iconClass = 'ph-icon-flip-camera-ios';
+        }
+
         let downloadButton = H(
             `<div class="rightAlign moreActionMenuButton">
-                <span class="ph-icon-cloud-download"></span>
+                <span class="${iconClass}"></span>
             </div>`);
 
         vidTitleWrapper.appendChild(downloadButton);
 
         downloadButton.onclick = e => {
-            download(video);
+            download(video, () => {
+                GM_setValue(`downloaded(${video.vkey})`, true);
+                downloadButton.onclick = null;
+                unsafeWindow.downloadButton = downloadButton;
+                let classes = downloadButton.querySelector('span').classList;
+                classes.remove(iconClass);
+                classes.add('ph-icon-cloud-done');
+            });
         };
     });
 }
