@@ -32,5 +32,12 @@
             "problemMatcher": [],
             "promptOnClose": false,
         },
+        {
+            "label": "Install Pornhub userscript",
+            "type": "shell",
+            "command": "x-www-browser file://${workspaceFolder}/userscript/pornhub.user.js",
+            "problemMatcher": [],
+            "promptOnClose": false,
+        },
     ]
 }
