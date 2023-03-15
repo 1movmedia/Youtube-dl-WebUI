@@ -103,11 +103,11 @@ function attachDownloader() {
         let iconClass = 'ph-icon-cloud-download';
 
         if (GM_getValue(`downloaded(${video.vkey})`)) {
-            iconClass = 'ph-icon-flip-camera-ios';
+            iconClass = 'ph-icon-cloud-done';
         }
 
         let downloadButton = H(
-            `<div class="rightAlign moreActionMenuButton">
+            `<div class="rightAlign">
                 <span class="${iconClass}"></span>
             </div>`);
 
