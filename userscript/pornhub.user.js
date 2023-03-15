@@ -75,34 +75,15 @@ function attachDownloader() {
     document.querySelectorAll('div.container ul.full-row-thumbs.display-grid li.pcVideoListItem').forEach(li => {
         let phImage = li.querySelector('div.phimage');
         let phAnchor = phImage.querySelector('a');
-        // let phImg = phAnchor.querySelector('img.thumb');
-        // let phDuration = phAnchor.querySelector('var.duration');
         let channelAnchor = li.querySelector('.usernameWrap a');
         let channelIcon = li.querySelector('.usernameWrapper span[data-title]');
-        // let viewsSpan = li.querySelector('span.views');
-        // let ratingContainer = li.querySelector('.rating-container .value');
     
         let video = {
-            // id: li.dataset.id,
             vkey: li.dataset.videoVkey,
-            // segment: li.dataset.segment,
-            // entryCode: li.dataset.entrycode,
-            // title: phAnchor.dataset.title,
             url: phAnchor.href,
-            // thumbnail: phImg.src,
-            // alt: phImg.alt,
-            // mediumthumb: phImg.dataset.mediumthumb,
-            // mediabook: phImg.dataset.mediabook,
-            // width: phImg.width,
-            // height: phImg.height,
-            // thumbs: phImg.dataset.thumbs,
-            // thumbsPath: phImg.dataset.path,
-            // duration: phDuration.innerText,
             uploaderUrl: channelAnchor.href,
             uploader: channelAnchor.innerText,
             uploaderType: channelIcon ? channelIcon.dataset.title : null,
-            // views: viewsSpan.innerText,
-            // rating: ratingContainer.innerText,
         };
     
         // console.log(video);
