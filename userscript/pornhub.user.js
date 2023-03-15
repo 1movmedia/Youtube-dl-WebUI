@@ -86,8 +86,6 @@ function attachDownloader() {
             uploaderType: channelIcon ? channelIcon.dataset.title : null,
         };
     
-        // console.log(video);
-
         unsafeWindow.li = li;
 
         let vidTitleWrapper = li.querySelector('div.vidTitleWrapper');
