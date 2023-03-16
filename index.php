@@ -38,8 +38,23 @@
 				$vformat = $_POST['vformat'];
 			}
 
+			$metadata = false;
+
+			if (!empty($_POST['metadata'])) {
+				$metadata = $_POST['metadata'];
+			}
+
 			$downloader = new Downloader($_POST['urls']);
-			$downloader->download($audio_only, $outfilename, $vformat);
+			$downloader->download($audio_only, $outfilename, $vformat, $metadata);
+
+			if ($_SERVER['HTTP_ACCEPT'] === 'application/json') {
+				header('Content-Type: application/json');
+				echo json_encode(array(
+					'success' => empty($_SESSION['errors']),
+					'errors' => $_SESSION['errors']
+				));
+				die;
+			}
 
 			if(!isset($_SESSION['errors']))
 			{

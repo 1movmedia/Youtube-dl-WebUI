@@ -11,6 +11,7 @@ class Downloader
 	private $log_path = "";
 	private $outfilename = "%(title)s-%(id)s.%(ext)s";
 	private $vformat = false;
+	private $metadata_encoded = false;
 
 	public function __construct($post)
 	{
@@ -50,7 +51,7 @@ class Downloader
 		}
 	}
 
-	public function download($audio_only, $outfilename=False, $vformat=False) {
+	public function download($audio_only, $outfilename=False, $vformat=False, $metadata_encoded = false) {
 		if ($audio_only && !$this->check_requirements($audio_only))
 		{
 			return;
@@ -69,6 +70,10 @@ class Downloader
 		if ($vformat)
 		{
 			$this->vformat = $vformat;
+		}
+
+		if (!empty($metadata_encoded)) {
+			$this->metadata_encoded = $metadata_encoded;
 		}
 
 		if($this->config["max_dl"] == 0)
@@ -262,7 +267,7 @@ class Downloader
 				//Exists but can I write ?
 				if(!is_writable($this->log_path))
 				{
-					$this->errors[] = "Log folder isn't writable! (".$this->log_path.")";
+					$this->errors[] = "2: Log folder isn't writable! (".$this->log_path.")";
 				}
 			}
 		}
@@ -302,6 +307,13 @@ class Downloader
 		$cmd .= " & echo $!";
 
 		shell_exec($cmd);
+
+		if (!empty($this->metadata_encoded)) {
+			file_put_contents($this->log_path . "/metadata", $this->outfilename . "\t" . $this->metadata_encoded . "\n", FILE_APPEND | LOCK_EX);
+		}
+		else {
+			file_put_contents($this->log_path . "/metadata", $this->outfilename . "\t\n", FILE_APPEND | LOCK_EX);
+		}
 	}
 
 	private function do_info()

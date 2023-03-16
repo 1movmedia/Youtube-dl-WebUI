@@ -10,11 +10,15 @@
 // @require     https://cdn.jsdelivr.net/npm/js-base64@3.7.5/base64.min.js
 // @grant       GM_getValue
 // @grant       GM_setValue
+// @grant       GM_deleteValue
+// @grant       GM_registerMenuCommand
 // ==/UserScript==
 
 let ytDlpUrl = GM_getValue('ytDlpUrl');
 
 const D = document;
+const S = s => D.querySelector(s);
+const A = s => D.querySelectorAll(s);
 const H = html => {
     let el = D.createElement('span');
     el.innerHTML = html;
@@ -22,7 +26,11 @@ const H = html => {
 };
 
 function isReady() {
-    return D.querySelector('v-more-action-menu div.moreActionMenu') != null;
+    if (S('v-more-action-menu')) {
+        return !!D.querySelector('v-more-action-menu div.moreActionMenu');
+    }
+
+    return !!S('li.pcVideoListItem');
 }
 
 async function download(video, onsuccess) {
@@ -50,7 +58,7 @@ async function download(video, onsuccess) {
     let videoInfo = (await videoInfoResponse.json()).video;
 
     // Copy fields not available via API
-    [ "url", "uploaderUrl", "uploader", "uploaderType" ].forEach(key => videoInfo[key] = video[key]);
+    [ "url", "uploaderUrl", "uploader" ].forEach(key => videoInfo[key] = video[key]);
 
     console.log('videoInfo:', videoInfo);
 
@@ -61,7 +69,7 @@ async function download(video, onsuccess) {
 
     let response = await gmfetch(ytDlpUrl + '/index.php', {
         "headers": {
-            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "accept": "application/json",
             "content-type": "application/x-www-form-urlencoded",
         },
         "body": "urls=" + encodeURIComponent(videoInfo.url) + "&outfilename=&vformat=&metadata=" + Base64.encode(JSON.stringify(metadata)),
@@ -82,47 +90,75 @@ async function download(video, onsuccess) {
 }
 
 function attachDownloader() {
-    document.querySelectorAll('div.container ul.full-row-thumbs.display-grid li.pcVideoListItem').forEach(li => {
-        let phImage = li.querySelector('div.phimage');
-        let phAnchor = phImage.querySelector('a');
+    document.querySelectorAll('li.pcVideoListItem').forEach(li => {
         let channelAnchor = li.querySelector('.usernameWrap a');
-        let channelIcon = li.querySelector('.usernameWrapper span[data-title]');
     
         let video = {
             vkey: li.dataset.videoVkey,
-            url: phAnchor.href,
+            url: 'https://www.pornhub.com/view_video.php?viewkey=' + li.dataset.videoVkey,
             uploaderUrl: channelAnchor.href,
             uploader: channelAnchor.innerText,
-            uploaderType: channelIcon ? channelIcon.dataset.title : null,
         };
+
+        console.log('Video:', video);
     
         unsafeWindow.li = li;
 
-        let vidTitleWrapper = li.querySelector('div.vidTitleWrapper');
-
         let iconClass = 'ph-icon-cloud-download';
+
+        let onDownloaded = span => {
+            span.classList.remove(iconClass);
+            span.classList.add(iconDoneClass);
+            GM_setValue(`downloaded(${video.vkey})`, true);
+        };
 
         if (GM_getValue(`downloaded(${video.vkey})`)) {
             iconClass = 'ph-icon-cloud-done';
         }
 
-        let downloadButton = H(
-            `<div class="rightAlign">
-                <span class="${iconClass}"></span>
-            </div>`);
+        let iconDoneClass = 'ph-icon-cloud-done';
 
-        vidTitleWrapper.appendChild(downloadButton);
+        let vidTitleWrapper = li.querySelector('div.vidTitleWrapper');
 
-        downloadButton.onclick = e => {
-            download(video, () => {
-                GM_setValue(`downloaded(${video.vkey})`, true);
-                downloadButton.onclick = null;
-                unsafeWindow.downloadButton = downloadButton;
-                let classes = downloadButton.querySelector('span').classList;
-                classes.remove(iconClass);
-                classes.add('ph-icon-cloud-done');
-            });
-        };
+        if (vidTitleWrapper) {
+            let downloadButton = H(
+               `<div class="rightAlign">
+                    <span class="${iconClass}"></span>
+                </div>`);
+    
+            vidTitleWrapper.appendChild(downloadButton);
+    
+            downloadButton.onclick = e => {
+                download(video, () => {
+                    downloadButton.onclick = null;
+                    onDownloaded(downloadButton.querySelector('span'))
+                });
+            };
+
+            return;
+        }
+
+        let videoDetailsBlock = li.querySelector('.videoDetailsBlock div');
+
+        if (videoDetailsBlock) {
+            let downloadButton = H(
+               `<div class="rating-container neutral">
+                    <span style="cursor: pointer" class="${iconClass}"></span>
+                </div>`);
+     
+            videoDetailsBlock.appendChild(downloadButton);
+     
+             downloadButton.onclick = e => {
+                 download(video, () => {
+                     downloadButton.onclick = null;
+                     onDownloaded(downloadButton.querySelector('span'))
+                 });
+             };
+ 
+             return;
+         }
+
+         console.error("Can't attach download button to", li);
     });
 }
 
@@ -133,5 +169,11 @@ let readyTimer = setInterval(() => {
         clearInterval(readyTimer);
     }
 }, 100);
+
+GM_registerMenuCommand('Clear >_dlp url', () => {
+    ytDlpUrl = null;
+    GM_setValue('ytDlpUrl', null);
+    GM_deleteValue('ytDlpUrl');
+})
 
 console.log("ytDlpUrl:", ytDlpUrl);
