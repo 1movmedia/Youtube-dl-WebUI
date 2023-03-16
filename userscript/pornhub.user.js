@@ -26,14 +26,6 @@ const H = html => {
     return el.childNodes[0];
 };
 
-function isReady() {
-    if (S('v-more-action-menu')) {
-        return !!D.querySelector('v-more-action-menu div.moreActionMenu');
-    }
-
-    return !!S('li.pcVideoListItem');
-}
-
 async function download(video, onsuccess) {
     while (!ytDlpUrl) {
         let url = prompt('Provide >_dlp url');
