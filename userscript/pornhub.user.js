@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name        Pornhub.com >_dlp UI
 // @namespace   Azazar's Scripts
-// @match       https://rt.pornhub.com/*
+// @match       https://*.pornhub.com/view_video.php*
+// @match       https://pornhub.com/view_video.php*
 // @version     0.1
 // @author      Azazar <https://github.com/azazar/>
 // @require     https://unpkg.com/gmxhr-fetch
@@ -89,86 +90,45 @@ async function download(video, onsuccess) {
     }
 }
 
-function attachDownloader() {
-    document.querySelectorAll('li.pcVideoListItem').forEach(li => {
-        let channelAnchor = li.querySelector('.usernameWrap a');
-    
-        let video = {
-            vkey: li.dataset.videoVkey,
-            url: 'https://www.pornhub.com/view_video.php?viewkey=' + li.dataset.videoVkey,
-            uploaderUrl: channelAnchor.href,
-            uploader: channelAnchor.innerText,
-        };
+if (location.search.startsWith('?viewkey=')) {
+    let viewKey = location.search.substring('?viewkey='.length).split('&')[0];
 
-        console.log('Video:', video);
-    
-        unsafeWindow.li = li;
+    let usernameWrap = S('.video-detailed-info .usernameWrap');
+    let userLink = usernameWrap.querySelector('a[href]');
 
-        let iconClass = 'ph-icon-cloud-download';
+    let video = {
+        vkey: viewKey,
+        url: 'https://www.pornhub.com/view_video.php?viewkey=' + viewKey,
+        userType: usernameWrap.dataset.type,
+        userTitle: userLink.innerText,
+        userUrl: userLink.href,
+    };
 
-        let onDownloaded = span => {
-            span.classList.remove(iconClass);
-            span.classList.add(iconDoneClass);
-            GM_setValue(`downloaded(${video.vkey})`, true);
-        };
+    let downloadKey = `downloaded(${video.vkey})`;
+    let isDownloaded = GM_getValue(downloadKey);
+    let setDownloaded = () => GM_setValue(downloadKey, true);
 
-        if (GM_getValue(`downloaded(${video.vkey})`)) {
-            iconClass = 'ph-icon-cloud-done';
-        }
+    console.log("Video:", video);
 
-        let iconDoneClass = 'ph-icon-cloud-done';
+    let iconDownloadClass = 'ph-icon-cloud-download';
+    let iconDownloadedClass = 'ph-icon-cloud-done';
 
-        let vidTitleWrapper = li.querySelector('div.vidTitleWrapper');
+    let tabMenuWrapperRow = S('.video-actions-menu .tab-menu-wrapper-row');
 
-        if (vidTitleWrapper) {
-            let downloadButton = H(
-               `<div class="rightAlign">
-                    <span class="${iconClass}"></span>
-                </div>`);
-    
-            vidTitleWrapper.appendChild(downloadButton);
-    
-            downloadButton.onclick = e => {
-                download(video, () => {
-                    downloadButton.onclick = null;
-                    onDownloaded(downloadButton.querySelector('span'))
-                });
-            };
+    let btnCell = H(`<div class="tab-menu-wrapper-cell"><div class="tab-menu-item"><i id="downloadUserscriptIcon" style="margin-right: 15px" class="${isDownloaded ? iconDownloadedClass : iconDownloadClass}"></i><span>Download</span></div></div>`);
+    let downloadUserscriptIcon = btnCell.querySelector('#downloadUserscriptIcon');
 
-            return;
-        }
+    tabMenuWrapperRow.appendChild(btnCell);
 
-        let videoDetailsBlock = li.querySelector('.videoDetailsBlock div');
-
-        if (videoDetailsBlock) {
-            let downloadButton = H(
-               `<div class="rating-container neutral">
-                    <span style="cursor: pointer" class="${iconClass}"></span>
-                </div>`);
-     
-            videoDetailsBlock.appendChild(downloadButton);
-     
-             downloadButton.onclick = e => {
-                 download(video, () => {
-                     downloadButton.onclick = null;
-                     onDownloaded(downloadButton.querySelector('span'))
-                 });
-             };
- 
-             return;
-         }
-
-         console.error("Can't attach download button to", li);
-    });
+    btnCell.onclick = e => {
+        download(video, () => {
+            setDownloaded();
+            btnCell.onclick = null;
+            downloadUserscriptIcon.classList.remove(iconDownloadClass);
+            downloadUserscriptIcon.classList.add(iconDownloadedClass);
+        });
+    };
 }
-
-let readyTimer = setInterval(() => {
-    if (isReady()) {
-        attachDownloader();
-
-        clearInterval(readyTimer);
-    }
-}, 100);
 
 GM_registerMenuCommand('Clear >_dlp url', () => {
     ytDlpUrl = null;
