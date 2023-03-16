@@ -10,7 +10,7 @@ return array(
 	"outputFolder" => "downloads",
 	"extracter" => "ffmpeg",
 	"log" => true,
-	"outfilename" => "%(title)s-%(id)s.%(ext)s",
+	"outfilename" => "%(id)s-%(title)s.%(ext)s",
 	"logFolder" => "logs",
 	"max_dl" => 3,
 	"session_lifetime" => 86400);

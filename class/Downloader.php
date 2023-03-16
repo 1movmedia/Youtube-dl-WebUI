@@ -9,7 +9,7 @@ class Downloader
 	private $errors = [];
 	private $download_path = "";
 	private $log_path = "";
-	private $outfilename = "%(title)s-%(id)s.%(ext)s";
+	private $outfilename = "%(id)s-%(title)s-%(id)s.%(ext)s";
 	private $vformat = false;
 	private $metadata_encoded = false;
 
@@ -309,10 +309,7 @@ class Downloader
 		shell_exec($cmd);
 
 		if (!empty($this->metadata_encoded)) {
-			file_put_contents($this->log_path . "/metadata", $this->outfilename . "\t" . $this->metadata_encoded . "\n", FILE_APPEND | LOCK_EX);
-		}
-		else {
-			file_put_contents($this->log_path . "/metadata", $this->outfilename . "\t\n", FILE_APPEND | LOCK_EX);
+			file_put_contents($this->log_path . "/metadata", $this->metadata_encoded . "\n", FILE_APPEND | LOCK_EX);
 		}
 	}
 
