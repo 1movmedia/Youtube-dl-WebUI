@@ -51,7 +51,7 @@ async function download(video, onsuccess) {
 
     console.log('Fetch video details from ', apiUrl);
     
-    let videoInfoResponse = await gmfetch(apiUrl);
+    let videoInfoResponse = await fetch(apiUrl);
 
     let videoInfo = (await videoInfoResponse.json()).video;
 
