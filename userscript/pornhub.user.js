@@ -44,9 +44,14 @@ async function download(video, onsuccess) {
             break;
         }
     }
-    console.log('Downloading', video);
+
+    console.log('Download request for video', video);
+
+    let apiUrl = location.protocol + '//' + location.host + '/webmasters/video_by_id?id=' + video.vkey;
+
+    console.log('Fetch video details from ', apiUrl);
     
-    let videoInfoResponse = await gmfetch('http://www.pornhub.com/webmasters/video_by_id?id=' + video.vkey);
+    let videoInfoResponse = await gmfetch(apiUrl);
 
     let videoInfo = (await videoInfoResponse.json()).video;
 
