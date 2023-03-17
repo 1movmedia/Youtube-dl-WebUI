@@ -141,16 +141,14 @@ if (location.search.startsWith('?viewkey=')) {
             iconClass: 'ph-icon-crop',
             caption: 'Mark Start',
             onclick: e => {
-                let playerVideoElement = document.querySelector('#player video');
-                video['cutFrom'] = playerVideoElement.currentTime;
+                video['cutFrom'] = S('#player video').currentTime;
             },
         },
         {
             iconClass: 'ph-icon-crop',
             caption: 'Mark End',
             onclick: e => {
-                let playerVideoElement = document.querySelector('#player video');
-                video['cutTo'] = playerVideoElement.currentTime;
+                video['cutTo'] = S('#player video').currentTime;
             },
         },
     ];
