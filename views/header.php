@@ -40,6 +40,10 @@
 						unset($filesCount);
 						?>
 						</a></li>
+						<li class="nav-item mx-1"><a class="nav-link" href="./dump.php">
+							<span class="align-text-bottom"></span>
+							TSV Feed
+						</a></li>
 						<?php
 						// Logs
 						if ($file->is_log_enabled()) {
