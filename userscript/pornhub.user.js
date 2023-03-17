@@ -51,7 +51,7 @@ async function download(video, onsuccess) {
     let videoInfo = (await videoInfoResponse.json()).video;
 
     // Copy fields not available via API
-    [ "url", "uploaderUrl", "uploader" ].forEach(key => videoInfo[key] = video[key]);
+    [ "url", "userTitle", "userType", "userUrl" ].forEach(key => videoInfo[key] = video[key]);
 
     console.log('videoInfo:', videoInfo);
 
