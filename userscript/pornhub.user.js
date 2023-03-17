@@ -46,7 +46,7 @@ async function download(video, onsuccess) {
     }
     console.log('Downloading', video);
     
-    let videoInfoResponse = await gmfetch('https://rt.pornhub.com/webmasters/video_by_id?id=' + video.vkey);
+    let videoInfoResponse = await gmfetch('http://www.pornhub.com/webmasters/video_by_id?id=' + video.vkey);
 
     let videoInfo = (await videoInfoResponse.json()).video;
 
