@@ -44,6 +44,10 @@
 							<span class="align-text-bottom"></span>
 							TSV Feed
 						</a></li>
+						<li class="nav-item mx-1"><a class="nav-link" href="userscript/pornhub.user.js">
+							<span class="align-text-bottom"></span>
+							Install Pornhub.com Userscript
+						</a></li>
 						<?php
 						// Logs
 						if ($file->is_log_enabled()) {
