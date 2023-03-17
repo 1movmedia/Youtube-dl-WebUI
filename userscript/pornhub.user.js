@@ -109,7 +109,7 @@ if (location.search.startsWith('?viewkey=')) {
         {
             iconClass: isDownloaded ? iconDownloadedClass : iconDownloadClass,
             caption: 'Download',
-            onclick: e => {
+            onclick: (e, btn) => {
                 if ((video.cutFrom || video.cutTo)) {
                     if (!video.cutFrom) {
                         alert('Begin Mark is not set');
@@ -127,13 +127,14 @@ if (location.search.startsWith('?viewkey=')) {
 
                 console.log("Download:", video);
 
-                let btn = this;
+                // let btn = this;
 
                 download(video, () => {
                     setDownloaded();
+                    console.log('button:', btn);
                     btn.buttonElement.onclick = null;
                     btn.iconElement.classList.remove(iconDownloadClass);
-                    btn.iconElement.add(iconDownloadedClass);
+                    btn.iconElement.classList.add(iconDownloadedClass);
                 });
             },
         },
@@ -163,7 +164,7 @@ if (location.search.startsWith('?viewkey=')) {
     
         tabMenuWrapperRow.appendChild(btnCell);
     
-        btnCell.onclick = e => button.onclick(e);
+        btnCell.onclick = e => button.onclick(e, button);
     });
 
 }
