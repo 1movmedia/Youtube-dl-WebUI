@@ -51,7 +51,7 @@ async function download(video, onsuccess) {
     let videoInfo = (await videoInfoResponse.json()).video;
 
     // Copy fields not available via API
-    [ "url", "userTitle", "userType", "userUrl" ].forEach(key => videoInfo[key] = video[key]);
+    [ "url", "userTitle", "userType", "userUrl", "cutFrom", "cutTo" ].forEach(key => videoInfo[key] = video[key]);
 
     console.log('videoInfo:', videoInfo);
 
@@ -105,21 +105,69 @@ if (location.search.startsWith('?viewkey=')) {
     let iconDownloadClass = 'ph-icon-cloud-download';
     let iconDownloadedClass = 'ph-icon-cloud-done';
 
+    let buttons = [
+        {
+            iconClass: isDownloaded ? iconDownloadedClass : iconDownloadClass,
+            caption: 'Download',
+            onclick: e => {
+                if ((video.cutFrom || video.cutTo)) {
+                    if (!video.cutFrom) {
+                        alert('Begin Mark is not set');
+                        return;
+                    }
+                    if (!video.cutTo) {
+                        alert('End Mark is not set');
+                        return;
+                    }
+                    if (video.cutFrom > video.cutTo) {
+                        alert('Begin mark is set after end mark');
+                        return;
+                    }
+                }
+
+                console.log("Download:", video);
+
+                let btn = this;
+
+                download(video, () => {
+                    setDownloaded();
+                    btn.buttonElement.onclick = null;
+                    btn.iconElement.classList.remove(iconDownloadClass);
+                    btn.iconElement.add(iconDownloadedClass);
+                });
+            },
+        },
+        {
+            iconClass: 'ph-icon-crop',
+            caption: 'Mark Start',
+            onclick: e => {
+                let playerVideoElement = document.querySelector('#player video');
+                video['cutFrom'] = playerVideoElement.currentTime;
+            },
+        },
+        {
+            iconClass: 'ph-icon-crop',
+            caption: 'Mark End',
+            onclick: e => {
+                let playerVideoElement = document.querySelector('#player video');
+                video['cutTo'] = playerVideoElement.currentTime;
+            },
+        },
+    ];
+
     let tabMenuWrapperRow = S('.video-actions-menu .tab-menu-wrapper-row');
 
-    let btnCell = H(`<div class="tab-menu-wrapper-cell"><div class="tab-menu-item"><i id="downloadUserscriptIcon" style="margin-right: 15px" class="${isDownloaded ? iconDownloadedClass : iconDownloadClass}"></i><span>Download</span></div></div>`);
-    let downloadUserscriptIcon = btnCell.querySelector('#downloadUserscriptIcon');
+    buttons.forEach(button => {
+        let btnCell = H(`<div class="tab-menu-wrapper-cell"><div class="tab-menu-item"><i style="margin-right: 15px" class="${button.iconClass}"></i><span>${button.caption}</span></div></div>`);
+        
+        button.buttonElement = btnCell;
+        button.iconElement = btnCell.querySelector('i');
+    
+        tabMenuWrapperRow.appendChild(btnCell);
+    
+        btnCell.onclick = e => button.onclick(e);
+    });
 
-    tabMenuWrapperRow.appendChild(btnCell);
-
-    btnCell.onclick = e => {
-        download(video, () => {
-            setDownloaded();
-            btnCell.onclick = null;
-            downloadUserscriptIcon.classList.remove(iconDownloadClass);
-            downloadUserscriptIcon.classList.add(iconDownloadedClass);
-        });
-    };
 }
 
 GM_registerMenuCommand('Clear >_dlp url', () => {
