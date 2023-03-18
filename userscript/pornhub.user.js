@@ -27,28 +27,6 @@ const H = html => {
 };
 
 async function download(video, onsuccess) {
-    while (!ytDlpUrl) {
-        let url = prompt('Provide >_dlp url');
-
-        if (url === null) {
-            console.log('No >_dlp url provided');
-
-            return;
-        }
-
-        while(url.endsWith('/')) {
-            url = url.substring(0, url.length - 1);
-        }
-
-        if (/^https?:\/\//.test(url)) {
-            ytDlpUrl = url;
-
-            GM_setValue('ytDlpUrl', ytDlpUrl);
-
-            break;
-        }
-    }
-
     console.log('Download request for video', video);
 
     // Get video details
@@ -206,11 +184,5 @@ if (location.search.startsWith('?viewkey=')) {
     });
 
 }
-
-GM_registerMenuCommand('Clear >_dlp url', () => {
-    ytDlpUrl = null;
-    GM_setValue('ytDlpUrl', null);
-    GM_deleteValue('ytDlpUrl');
-})
 
 console.log("ytDlpUrl:", ytDlpUrl);
