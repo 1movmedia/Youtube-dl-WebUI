@@ -12,7 +12,7 @@ return array(
 	"log" => true,
 	"outfilename" => "%(id)s-%(title)s.%(ext)s",
 	"logFolder" => "logs",
-	"max_dl" => 3,
+	"max_dl" => 6,
 	"session_lifetime" => 86400);
 
 ?>
