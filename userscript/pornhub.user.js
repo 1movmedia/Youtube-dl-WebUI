@@ -120,11 +120,11 @@ if (location.search.startsWith('?viewkey=')) {
             caption: 'Download',
             onclick: (e, btn) => {
                 if ((video.cutFrom !== undefined || video.cutEnd !== undefined)) {
-                    if (video.cutFrom !== undefined) {
+                    if (video.cutFrom === undefined) {
                         alert('Begin Mark is not set');
                         return;
                     }
-                    if (video.cutEnd !== undefined) {
+                    if (video.cutEnd === undefined) {
                         alert('End Mark is not set');
                         return;
                     }
