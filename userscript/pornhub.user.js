@@ -86,8 +86,15 @@ async function download(video, onsuccess) {
         return;
     }
 
-    if (onsuccess) {
-        onsuccess(response);
+    let responseObj = await response.json();
+
+    if (responseObj.success) {
+        if (onsuccess) {
+            onsuccess(responseObj);
+        }
+    }
+    else {
+        alert(responseObj.errors.join("\n"));
     }
 }
 
