@@ -306,14 +306,14 @@ class Downloader
 
 		foreach($this->urls as $url)
 		{
-			$dup = false;
+			$added = false;
 
 			if (isset($metadata[$url])) {
 				$data = $metadata[$url];
-				$dup = !$urls->addURL($data['video_id'], $url, json_encode($data));
+				$added = $urls->addURL($data['video_id'], $url, json_encode($data));
 			}
 
-			if (!$dup) {
+			if ($added) {
 				$cmd .= " ".escapeshellarg($url);
 
 				$added_urls++;

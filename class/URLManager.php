@@ -37,6 +37,8 @@ class URLManager {
         if (!$stmt->execute()) {
             throw new Exception("Error: Could not insert the new row with ID '$id', URL '$url', and details JSON '$details_json'.");
         }
+
+        return true;
     }
 
     public function removeMissingIds($ids) {
