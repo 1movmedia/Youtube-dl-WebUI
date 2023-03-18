@@ -75,7 +75,7 @@ async function download(video, onsuccess) {
     };
 
     // Copy fields not available via API
-    [ "url", "userTitle", "userType", "userUrl", "cutFrom", "cutTo" ].forEach(key => videoInfo[key] = video[key]);
+    [ "url", "userTitle", "userType", "userUrl", "cutFrom", "cutEnd" ].forEach(key => videoInfo[key] = video[key]);
 
     console.log('videoInfo:', videoInfo);
 
@@ -134,16 +134,16 @@ if (location.search.startsWith('?viewkey=')) {
             iconClass: isDownloaded ? iconDownloadedClass : iconDownloadClass,
             caption: 'Download',
             onclick: (e, btn) => {
-                if ((video.cutFrom || video.cutTo)) {
+                if ((video.cutFrom || video.cutEnd)) {
                     if (!video.cutFrom) {
                         alert('Begin Mark is not set');
                         return;
                     }
-                    if (!video.cutTo) {
+                    if (!video.cutEnd) {
                         alert('End Mark is not set');
                         return;
                     }
-                    if (video.cutFrom > video.cutTo) {
+                    if (video.cutFrom + video.cutEnd > video.duration) {
                         alert('Begin mark is set after end mark');
                         return;
                     }
@@ -166,8 +166,11 @@ if (location.search.startsWith('?viewkey=')) {
             iconClass: 'ph-icon-crop',
             caption: 'Mark Start',
             onclick: (e, btn) => {
-                let time = S('#player video').currentTime;
+                let videoElement = S('#player video');
+                let time = videoElement.currentTime;
+                let duration = videoElement.duration;
                 video['cutFrom'] = time;
+                video['duration'] = duration;
                 btn.captionElement.innerText = `Mark Start (${time})`;
             },
         },
@@ -175,8 +178,11 @@ if (location.search.startsWith('?viewkey=')) {
             iconClass: 'ph-icon-crop',
             caption: 'Mark End',
             onclick: (e, btn) => {
-                let time = S('#player video').currentTime;
-                video['cutTo'] = time;
+                let videoElement = S('#player video');
+                let time = videoElement.currentTime;
+                let duration = videoElement.duration;
+                video['cutEnd'] = duration - time;
+                video['duration'] = duration;
                 btn.captionElement.innerText = `Mark End (${time})`;
             },
         },
