@@ -44,7 +44,7 @@
 							<span class="align-text-bottom"></span>
 							TSV Feed
 						</a></li>
-						<li class="nav-item mx-1"><a class="nav-link" href="userscript/pornhub.user.js">
+						<li class="nav-item mx-1"><a class="nav-link" href="userscript/pornhub.user.js?v=0.2">
 							<span class="align-text-bottom"></span>
 							Install Pornhub.com Userscript
 						</a></li>

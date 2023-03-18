@@ -3,7 +3,7 @@
 // @namespace   Azazar's Scripts
 // @match       https://*.pornhub.com/view_video.php*
 // @match       https://pornhub.com/view_video.php*
-// @version     0.1
+// @version     0.2
 // @author      Azazar <https://github.com/azazar/>
 // @require     https://unpkg.com/gmxhr-fetch
 // @grant       GM_xmlhttpRequest
@@ -66,7 +66,6 @@ async function download(video, onsuccess) {
 
     videoInfo = {
         "video_id": video_id,
-        "url": video_url,
         "title": document.querySelector('meta[property="og:title"]').content,
        
         "tags": Array.from(document.querySelectorAll('.tagsWrapper a[data-label="Tag"]')).map(a => ({'tag_name': a.innerText})),
