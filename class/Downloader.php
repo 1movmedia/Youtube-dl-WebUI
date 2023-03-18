@@ -302,6 +302,8 @@ class Downloader
 		}
 		$cmd .= " --restrict-filenames"; // --restrict-filenames is for specials chars
 
+		$added_urls = 0;
+
 		foreach($this->urls as $url)
 		{
 			$dup = false;
@@ -313,7 +315,15 @@ class Downloader
 
 			if (!$dup) {
 				$cmd .= " ".escapeshellarg($url);
+
+				$added_urls++;
 			}
+		}
+
+		if ($added_urls == 0) {
+			$this->errors[] = 'No non-duplicate URLs added to download queue';
+
+			return;
 		}
 
 		if($this->config["log"])
