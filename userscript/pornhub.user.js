@@ -47,14 +47,32 @@ async function download(video, onsuccess) {
 
     console.log('Download request for video', video);
 
-    // Fetch video details using HubTraffic API
-    let apiUrl = location.protocol + '//' + location.host + '/webmasters/video_by_id?id=' + video.vkey;
+    // Get video details
+    let videoInfo;
 
-    console.log('Fetch video details from ', apiUrl);
-    
-    let videoInfoResponse = await fetch(apiUrl);
+    let video_url = document.querySelector('meta[property="og:url"]').content;
 
-    let videoInfo = (await videoInfoResponse.json()).video;
+    let video_id;
+
+    let match;
+
+    if (!(match = /viewkey=([^&]+)/.exec(video_url))) {
+        throw new Error(`Failed to extract ID from URL ${video_url}`);
+    }
+
+    video_id = match[1];
+
+    console.log(match);
+
+    videoInfo = {
+        "video_id": video_id,
+        "url": video_url,
+        "title": document.querySelector('meta[property="og:title"]').content,
+       
+        "tags": Array.from(document.querySelectorAll('.tagsWrapper a[data-label="Tag"]')).map(a => ({'tag_name': a.innerText})),
+        "pornstars": Array.from(document.querySelectorAll('a[data-mxptype="Pornstar"][data-mxptext]')).map(a => ({'pornstar_name': a.dataset.mxptext})),
+        "categories": dataLayer[0].videodata.categories_in_video.split(',').map(c => ({ category: c })),
+    };
 
     // Copy fields not available via API
     [ "url", "userTitle", "userType", "userUrl", "cutFrom", "cutTo" ].forEach(key => videoInfo[key] = video[key]);
