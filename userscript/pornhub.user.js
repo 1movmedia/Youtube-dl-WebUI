@@ -55,6 +55,10 @@ async function download(video, onsuccess) {
         "categories": dataLayer[0].videodata.categories_in_video.split(',').map(c => ({ category: c })),
     };
 
+    if (videoInfo.pornstars.length === 0 && (/\/model\/[^/]+$/.exec(videoInfo.userUrl))) {
+        videoInfo.pornstars = [{'pornstar_name': videoInfo.userTitle}];
+    }
+
     // Copy fields not available via API
     [ "url", "userTitle", "userType", "userUrl", "cutFrom", "cutEnd" ].forEach(key => videoInfo[key] = video[key]);
 
