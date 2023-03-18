@@ -1,7 +1,12 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 	require_once 'class/Session.php';
 	require_once 'class/Downloader.php';
 	require_once 'class/FileHandler.php';
+	require_once 'class/URLManager.php';
 
 	$session = Session::getInstance();
 	$file = new FileHandler;
@@ -51,7 +56,7 @@
 				header('Content-Type: application/json');
 				echo json_encode(array(
 					'success' => empty($_SESSION['errors']),
-					'errors' => $_SESSION['errors']
+					'errors' => @$_SESSION['errors']
 				));
 				die;
 			}

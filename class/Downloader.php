@@ -276,6 +276,17 @@ class Downloader
 
 	private function do_download($audio_only)
 	{
+		$urls = new URLManager($this->config['db']);
+
+		$metadata = [];
+
+		foreach(json_decode(self::base64url_decode($this->metadata_encoded), true) as $url => $data) {
+			if (preg_match('/viewkey=([^&]+)/', $url, $matches)) {
+				$data['video_id'] = $matches[1];
+				$metadata[$url] = $data;
+			}
+		}
+
 		$cmd = $this->config["bin"];
 		$cmd .= " --ignore-error -o ".$this->download_path."/";
 		$cmd .= escapeshellarg($this->outfilename);
@@ -290,10 +301,21 @@ class Downloader
 			$cmd .= " -x ";
 		}
 		$cmd .= " --restrict-filenames"; // --restrict-filenames is for specials chars
+
 		foreach($this->urls as $url)
 		{
-			$cmd .= " ".escapeshellarg($url);
+			$dup = false;
+
+			if (isset($metadata[$url])) {
+				$data = $metadata[$url];
+				$dup = !$urls->addURL($data['video_id'], $url, json_encode($data));
+			}
+
+			if (!$dup) {
+				$cmd .= " ".escapeshellarg($url);
+			}
 		}
+
 		if($this->config["log"])
 		{
 			$cmd = "{ echo Command: ".escapeshellarg($cmd)."; ".$cmd." ; }";
@@ -307,10 +329,6 @@ class Downloader
 		$cmd .= " & echo $!";
 
 		shell_exec($cmd);
-
-		if (!empty($this->metadata_encoded)) {
-			file_put_contents($this->log_path . "/metadata", $this->metadata_encoded . "\n", FILE_APPEND | LOCK_EX);
-		}
 	}
 
 	private function do_info()
@@ -335,6 +353,14 @@ class Downloader
 		return $soutput;
 
 	}
+	
+	private static function base64url_decode($base64url)
+	{
+		$base64 = strtr($base64url, '-_', '+/');
+
+		return base64_decode($base64, true);
+	}
+
 }
 
 ?>

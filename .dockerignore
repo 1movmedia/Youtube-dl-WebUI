@@ -4,3 +4,6 @@ README.md
 img
 .gitignore
 logs
+data/*.sqlite3
+config/config.php
+tmp

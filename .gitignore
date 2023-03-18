@@ -2,3 +2,5 @@
 downloads
 logs
 config/config.php
+data/*.sqlite3
+tmp

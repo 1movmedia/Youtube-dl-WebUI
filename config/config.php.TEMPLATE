@@ -8,6 +8,7 @@ return array(
 	"security" => true,
 	"password" => "63a9f0ea7bb98050796b649e85481845",
 	"outputFolder" => "downloads",
+	"db" => "data/db.sqlite3",
 	"extracter" => "ffmpeg",
 	"log" => true,
 	"outfilename" => "%(id)s-%(title)s.%(ext)s",
