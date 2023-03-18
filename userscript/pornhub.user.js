@@ -95,7 +95,7 @@ async function download(video, onsuccess) {
     if (!response.ok) {
         let responseText = await response.text();
     
-        console.error("Response:", responseText);
+        console.error("Invalid response received from", ytDlpUrl + '/index.php', "Response:", responseText);
 
         return;
     }
