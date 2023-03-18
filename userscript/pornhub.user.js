@@ -47,6 +47,7 @@ async function download(video, onsuccess) {
 
     console.log('Download request for video', video);
 
+    // Fetch video details using HubTraffic API
     let apiUrl = location.protocol + '//' + location.host + '/webmasters/video_by_id?id=' + video.vkey;
 
     console.log('Fetch video details from ', apiUrl);
@@ -146,15 +147,19 @@ if (location.search.startsWith('?viewkey=')) {
         {
             iconClass: 'ph-icon-crop',
             caption: 'Mark Start',
-            onclick: e => {
-                video['cutFrom'] = S('#player video').currentTime;
+            onclick: (e, btn) => {
+                let time = S('#player video').currentTime;
+                video['cutFrom'] = time;
+                btn.captionElement.innerText = `Mark Start (${time})`;
             },
         },
         {
             iconClass: 'ph-icon-crop',
             caption: 'Mark End',
-            onclick: e => {
-                video['cutTo'] = S('#player video').currentTime;
+            onclick: (e, btn) => {
+                let time = S('#player video').currentTime;
+                video['cutTo'] = time;
+                btn.captionElement.innerText = `Mark End (${time})`;
             },
         },
     ];
@@ -166,6 +171,7 @@ if (location.search.startsWith('?viewkey=')) {
         
         button.buttonElement = btnCell;
         button.iconElement = btnCell.querySelector('i');
+        button.captionElement = btnCell.querySelector('span');
     
         tabMenuWrapperRow.appendChild(btnCell);
     
