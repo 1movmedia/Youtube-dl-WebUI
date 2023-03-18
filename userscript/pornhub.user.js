@@ -36,6 +36,10 @@ async function download(video, onsuccess) {
             return;
         }
 
+        while(url.endsWith('/')) {
+            url = url.substring(0, url.length - 1);
+        }
+
         if (/^https?:\/\//.test(url)) {
             ytDlpUrl = url;
 
