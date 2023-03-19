@@ -14,6 +14,8 @@ return array(
 	"outfilename" => "%(id)s-%(title)s.%(ext)s",
 	"logFolder" => "logs",
 	"max_dl" => 6,
-	"session_lifetime" => 86400);
+	"session_lifetime" => 86400,
+	"targets" => [ "site1", "site2", "site3" ]
+);
 
 ?>

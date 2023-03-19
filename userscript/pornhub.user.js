@@ -61,7 +61,7 @@ async function download(video, onsuccess) {
     }
 
     // Copy fields not available via API
-    [ "url", "userTitle", "userType", "userUrl", "cutFrom", "cutEnd" ].forEach(key => videoInfo[key] = video[key]);
+    [ "url", "userTitle", "userType", "userUrl", "cutFrom", "cutEnd", "target" ].forEach(key => videoInfo[key] = video[key]);
 
     console.log('videoInfo:', videoInfo);
 
@@ -75,7 +75,7 @@ async function download(video, onsuccess) {
             "accept": "application/json",
             "content-type": "application/x-www-form-urlencoded",
         },
-        "body": "urls=" + encodeURIComponent(videoInfo.url) + "&outfilename=&vformat=&metadata=" + Base64.encode(JSON.stringify(metadata)),
+        "body": "urls=" + encodeURIComponent(videoInfo.url) + "&outfilename=&vformat=&metadata=" + Base64.encodeURI(JSON.stringify(metadata)),
         "method": "POST",
     });
 
@@ -183,6 +183,36 @@ if (location.search.startsWith('?viewkey=')) {
 
     let titleContainer = S('.title-container');
     let controlEl = H(`<div class="userscript-ui-container"></div>`);
+
+    gmfetch(ytDlpUrl + "/targets.php", {
+        "headers": {
+            "accept": "application/json",
+        },
+    }).then(async targetsResp => {
+        let targets = await targetsResp.json();
+
+        if (targets !== null && targets.length > 0) {
+            let selectedTarget = GM_getValue('selectedTarget');
+            let targetSelect = H(
+                '<select class="userscript-ui-input">' +
+                targets.map(s => `<option${selectedTarget == s ? ' selected' : ''} value="${s}">${s}</option>`).join('') +
+                '</select>');
+
+            targetSelect.onchange = e => {
+                let newTarget = targetSelect.options[targetSelect.selectedIndex].value;
+                video.target = newTarget;
+                GM_setValue('selectedTarget', newTarget);
+            };
+            
+            video.target = targetSelect.options[targetSelect.selectedIndex].value;
+
+            controlEl.insertBefore(targetSelect, controlEl.childNodes[0]);
+        }
+        else {
+            controlEl.parentElement.removeChild(controlEl);
+        }
+    });
+
     titleContainer.parentElement.insertBefore(controlEl, titleContainer);
     
     buttons.forEach(button => {
@@ -196,7 +226,6 @@ if (location.search.startsWith('?viewkey=')) {
     
         btnCell.onclick = e => button.onclick(e, button);
     });
-
 }
 
 console.log("ytDlpUrl:", ytDlpUrl);
@@ -204,14 +233,26 @@ console.log("ytDlpUrl:", ytDlpUrl);
 GM_addStyle(`
    .userscript-ui-container {
         padding: 10px 10px 12px;
-        text-align: right;  
+        text-align: right;
+        display: flex;
+    }
+
+    .userscript-ui-input {
+        padding-left: 10px;
+        font-size: 14px;
+        border: 1px solid #aaa;
+        border-radius: 4px;
+        background: #fff;
+        color: #333;
+        margin-right: auto;
     }
     
     .userscript-ui-menuitem {
         padding-left: 10px;
         color: #c6c6c6;
-        cursor: pointer
+        cursor: pointer;
     }
+
     .userscript-ui-menuitem:hover {
         color: #fff;
     }

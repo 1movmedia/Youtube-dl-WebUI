@@ -306,14 +306,20 @@ class Downloader
 
 		foreach($this->urls as $url)
 		{
-			$added = false;
+			$skip = false;
 
+			// URLs with available metadata needs special treatment
 			if (isset($metadata[$url])) {
 				$data = $metadata[$url];
 				$added = $urls->addURL($data['video_id'], $url, json_encode($data));
+
+				if (!$added) {
+					$this->errors[] = "Failed to add $data[video_id]";
+					$skip = true;
+				}
 			}
 
-			if ($added) {
+			if (!$skip) {
 				$cmd .= " ".escapeshellarg($url);
 
 				$added_urls++;
@@ -368,7 +374,7 @@ class Downloader
 	{
 		$base64 = strtr($base64url, '-_', '+/');
 
-		return base64_decode($base64, true);
+		return base64_decode($base64, false);
 	}
 
 }

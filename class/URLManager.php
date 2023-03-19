@@ -8,7 +8,8 @@ class URLManager {
         $this->db->exec("CREATE TABLE IF NOT EXISTS urls (
             id TEXT PRIMARY KEY,
             url TEXT UNIQUE,
-            details_json TEXT
+            details_json TEXT,
+            target TEXT
         )");
     }
 
@@ -29,13 +30,17 @@ class URLManager {
             return false;
         }
 
-        $stmt = $this->db->prepare("INSERT INTO urls (id, url, details_json) VALUES (:id, :url, :details_json)");
+        $details_array = json_decode($details_json, true);
+        $target = $details_array['target'] ?? null;
+
+        $stmt = $this->db->prepare("INSERT INTO urls (id, url, details_json, target) VALUES (:id, :url, :details_json, :target)");
         $stmt->bindValue(':id', $id, SQLITE3_TEXT);
         $stmt->bindValue(':url', $url, SQLITE3_TEXT);
         $stmt->bindValue(':details_json', $details_json, SQLITE3_TEXT);
+        $stmt->bindValue(':target', $target, SQLITE3_TEXT);
 
         if (!$stmt->execute()) {
-            throw new Exception("Error: Could not insert the new row with ID '$id', URL '$url', and details JSON '$details_json'.");
+            throw new Exception("Error: Could not insert the new row with ID '$id', URL '$url' for target '$target'. SQLite error: " . $this->db->lastErrorMsg());
         }
 
         return true;
@@ -77,9 +82,20 @@ class URLManager {
         return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
-    public function getById($id) {
-        $stmt = $this->db->prepare("SELECT * FROM urls WHERE id = :id");
+    public function getById($id, $target = null) {
+        $query = "SELECT * FROM urls WHERE id = :id";
+
+        if ($target) {
+            $query .= " AND target = :target";
+        }
+
+        $stmt = $this->db->prepare($query);
         $stmt->bindValue(':id', $id, SQLITE3_TEXT);
+
+        if ($target) {
+            $stmt->bindValue(':target', $target, SQLITE3_TEXT);
+        }
+
         $result = $stmt->execute();
 
         $row = $result->fetchArray(SQLITE3_ASSOC);
