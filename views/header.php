@@ -40,10 +40,22 @@
 						unset($filesCount);
 						?>
 						</a></li>
-						<li class="nav-item mx-1"><a class="nav-link" href="./dump.php">
-							<span class="align-text-bottom"></span>
-							TSV Feed
-						</a></li>
+						<?php $config = require __DIR__ . '/../config/config.php'; ?>
+						<?php if(empty($config['targets'])): ?>
+							<li class="nav-item mx-1">
+								<a class="nav-link" href="./dump.php"><span class="align-text-bottom"></span>TSV Feed</a>
+							</li>
+						<?php else: ?>
+							<li class="nav-item mx-1 dropdown">
+								<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">TSV Feed<span class="caret"></span></a>
+								<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+
+									<?php foreach($config['targets'] as $target):?>
+										<li><a class="dropdown-item" href="/dump.php?target=<?= $target ?>"><?= $target ?></a></li>
+									<?php endforeach; ?>
+								</ul>
+							</li>
+						<?php endif; ?>
 						<li class="nav-item mx-1"><a class="nav-link" href="pornhub.user.js?v=0.2">
 							<span class="align-text-bottom"></span>
 							Install Pornhub.com Userscript

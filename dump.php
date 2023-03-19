@@ -15,6 +15,8 @@ if (!empty($_REQUEST['as_json'])) {
     die;
 }
 
+$target = $_REQUEST['target'] ?? null;
+
 //header('Content-Type: text/tab-separated-values');
 header('Content-Type: text/plain');
 
@@ -27,6 +29,12 @@ foreach($file->listFiles() as $file) {
         $video_id = $match[0];
 
         $data = $urls->getById($video_id);
+
+        if (!empty($target)) {
+            if ($data['target'] != $target) {
+                continue;
+            }
+        }
 
         $uri = $dl_uri_prefix . $file['name'];
 
