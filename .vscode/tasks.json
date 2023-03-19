@@ -35,7 +35,7 @@
         {
             "label": "Install Pornhub userscript",
             "type": "shell",
-            "command": "x-www-browser file://${workspaceFolder}/userscript/pornhub.user.js",
+            "command": "x-www-browser http://localhost:8963/pornhub.user.js",
             "problemMatcher": [],
             "promptOnClose": false,
         },

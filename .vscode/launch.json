@@ -13,7 +13,7 @@
             // "preLaunchTask": "Run Docker container",
             // "postDebugTask": "Stop Docker container and remove it",
             "runtimeExecutable": "/usr/bin/x-www-browser",
-            "runtimeArgs": [ "--incognito" ]
+            "runtimeArgs": [ "https://rt.pornhub.com/pornstars" ],
         },
     ]
 }
