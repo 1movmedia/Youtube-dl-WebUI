@@ -123,6 +123,30 @@ if (location.search.startsWith('?viewkey=')) {
 
     let buttons = [
         {
+            iconClass: 'ph-icon-crop',
+            caption: 'Mark Start',
+            onclick: (e, btn) => {
+                let videoElement = S('#player video');
+                let time = videoElement.currentTime;
+                let duration = videoElement.duration;
+                video['cutFrom'] = time;
+                video['duration'] = duration;
+                btn.captionElement.innerText = `Mark Start (${Math.round(time)})`;
+            },
+        },
+        {
+            iconClass: 'ph-icon-crop',
+            caption: 'Mark End',
+            onclick: (e, btn) => {
+                let videoElement = S('#player video');
+                let time = videoElement.currentTime;
+                let duration = videoElement.duration;
+                video['cutEnd'] = duration - time;
+                video['duration'] = duration;
+                btn.captionElement.innerText = `Mark End (${Math.round(video['cutEnd'])})`;
+            },
+        },
+        {
             iconClass: isDownloaded ? iconDownloadedClass : iconDownloadClass,
             caption: 'Download',
             onclick: (e, btn) => {
@@ -154,42 +178,20 @@ if (location.search.startsWith('?viewkey=')) {
                 });
             },
         },
-        {
-            iconClass: 'ph-icon-crop',
-            caption: 'Mark Start',
-            onclick: (e, btn) => {
-                let videoElement = S('#player video');
-                let time = videoElement.currentTime;
-                let duration = videoElement.duration;
-                video['cutFrom'] = time;
-                video['duration'] = duration;
-                btn.captionElement.innerText = `Mark Start (${time})`;
-            },
-        },
-        {
-            iconClass: 'ph-icon-crop',
-            caption: 'Mark End',
-            onclick: (e, btn) => {
-                let videoElement = S('#player video');
-                let time = videoElement.currentTime;
-                let duration = videoElement.duration;
-                video['cutEnd'] = duration - time;
-                video['duration'] = duration;
-                btn.captionElement.innerText = `Mark End (${time})`;
-            },
-        },
     ];
 
-    let tabMenuWrapperRow = S('.video-actions-menu .tab-menu-wrapper-row');
-
+    let titleContainer = S('.title-container');
+    let controlEl = H(`<div style="padding: 10px 10px 12px; text-align: right"></div>`);
+    titleContainer.parentElement.insertBefore(controlEl, titleContainer);
+    
     buttons.forEach(button => {
-        let btnCell = H(`<div class="tab-menu-wrapper-cell"><div class="tab-menu-item"><i style="margin-right: 15px" class="${button.iconClass}"></i><span>${button.caption}</span></div></div>`);
+        let btnCell = H(`<span style="padding-left: 10px; color: #c6c6c6; cursor: pointer"><i class="${button.iconClass}"></i><span style="padding-left: 10px" class="us-caption">${button.caption}</span></span>`);
         
         button.buttonElement = btnCell;
         button.iconElement = btnCell.querySelector('i');
-        button.captionElement = btnCell.querySelector('span');
+        button.captionElement = btnCell.querySelector('span.us-caption');
     
-        tabMenuWrapperRow.appendChild(btnCell);
+        controlEl.appendChild(btnCell);
     
         btnCell.onclick = e => button.onclick(e, button);
     });
