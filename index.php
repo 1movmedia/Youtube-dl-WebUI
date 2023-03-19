@@ -22,6 +22,8 @@
 
 		if(isset($_POST['urls']) && !empty($_POST['urls']))
 		{
+			unset($_SESSION['errors']);
+
 			$audio_only = false;
 			if(isset($_POST['audio']) && !empty($_POST['audio']))
 			{
@@ -47,6 +49,7 @@
 			}
 
 			$downloader = new Downloader($_POST['urls']);
+
 			$downloader->download($audio_only, $outfilename, $vformat, $metadata);
 
 			if ($_SERVER['HTTP_ACCEPT'] === 'application/json') {
@@ -55,6 +58,9 @@
 					'success' => empty($_SESSION['errors']),
 					'errors' => @$_SESSION['errors']
 				));
+				
+				unset($_SESSION['errors']);
+				
 				die;
 			}
 
