@@ -22,7 +22,7 @@ RUN a2dissite 000-default \
 RUN a2enmod rewrite
 
 RUN ln -sf /dev/stdout /var/log/apache2/youtube-dl_access.log \
- && ln -sf /dev/stderr /var/log/apache2/youtube-dl_error.log
+ && ln -sf /dev/stdout /var/log/apache2/youtube-dl_error.log
 
 EXPOSE 80
 
