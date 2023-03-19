@@ -13,6 +13,7 @@
 // @grant       GM_setValue
 // @grant       GM_deleteValue
 // @grant       GM_registerMenuCommand
+// @grant       GM_addStyle
 // ==/UserScript==
 
 let ytDlpUrl = GM_getValue('ytDlpUrl');
@@ -181,15 +182,15 @@ if (location.search.startsWith('?viewkey=')) {
     ];
 
     let titleContainer = S('.title-container');
-    let controlEl = H(`<div style="padding: 10px 10px 12px; text-align: right"></div>`);
+    let controlEl = H(`<div class="userscript-ui-container"></div>`);
     titleContainer.parentElement.insertBefore(controlEl, titleContainer);
     
     buttons.forEach(button => {
-        let btnCell = H(`<span style="padding-left: 10px; color: #c6c6c6; cursor: pointer"><i class="${button.iconClass}"></i><span style="padding-left: 10px" class="us-caption">${button.caption}</span></span>`);
+        let btnCell = H(`<span class="userscript-ui-menuitem"><i class="${button.iconClass}"></i><span class="userscript-ui-caption">${button.caption}</span></span>`);
         
         button.buttonElement = btnCell;
         button.iconElement = btnCell.querySelector('i');
-        button.captionElement = btnCell.querySelector('span.us-caption');
+        button.captionElement = btnCell.querySelector('span.userscript-ui-caption');
     
         controlEl.appendChild(btnCell);
     
@@ -199,3 +200,23 @@ if (location.search.startsWith('?viewkey=')) {
 }
 
 console.log("ytDlpUrl:", ytDlpUrl);
+
+GM_addStyle(`
+   .userscript-ui-container {
+        padding: 10px 10px 12px;
+        text-align: right;  
+    }
+    
+    .userscript-ui-menuitem {
+        padding-left: 10px;
+        color: #c6c6c6;
+        cursor: pointer
+    }
+    .userscript-ui-menuitem:hover {
+        color: #fff;
+    }
+
+    .userscript-ui-caption {
+        padding-left: 10px;
+    }
+`);
