@@ -9,7 +9,7 @@ class Session
 	public function __construct()
 	{
 		if (!file_exists(dirname(__DIR__).'/config/config.php')) {
-			copy(dirname(__DIR__).'/config/config.php.TEMPLATE', dirname(__DIR__).'/config/config.php');
+			die('Configuration file missing');
 		}
 
 		$this->config = require dirname(__DIR__).'/config/config.php';

@@ -5,14 +5,6 @@ class URLManager {
 
     public function __construct($filename = 'data/urls.db') {
         $this->db = new SQLite3($filename);
-        $this->db->exec("CREATE TABLE IF NOT EXISTS urls (
-            id TEXT PRIMARY KEY,
-            username TEXT,
-            url TEXT UNIQUE,
-            details_json TEXT,
-            last_export UNSIGNED BIG INT,
-            target TEXT
-        )");
     }
 
     public function __destruct() {

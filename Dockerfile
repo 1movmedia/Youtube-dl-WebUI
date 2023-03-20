@@ -3,7 +3,7 @@ FROM debian:buster
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git python3 python3-pip python3-setuptools build-essential ffmpeg apache2 php curl ca-certificates \
     python3-certifi python3-brotli python3-websockets python3-mutagen python3-pyxattr python3-secretstorage \
-    php-sqlite3 \
+    php-sqlite3 sqlite3 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
@@ -12,6 +12,10 @@ RUN pip3 install yt-dlp
 COPY --chown=www-data:www-data . /var/www/html/youtube-dl
 
 COPY docker/vhost.conf /etc/apache2/sites-available/ytdlwui.conf
+
+COPY docker/start.sh /start.sh
+COPY config/config.php.TEMPLATE /config.php.TEMPLATE
+
 RUN a2dissite 000-default \
  && a2ensite ytdlwui \
  && rm -f /var/www/html/index.html
@@ -31,6 +35,4 @@ ENV LC_ALL=C.UTF-8
 
 RUN echo ServerName ytdlwui > /etc/apache2/conf-enabled/servername.conf
 
-CMD touch /var/www/html/youtube-dl/data/db.sqlite3 \
- && chown www-data:www-data /var/www/html/youtube-dl/data/db.sqlite3 \
- && /usr/sbin/apache2ctl -D FOREGROUND
+CMD /start.sh
