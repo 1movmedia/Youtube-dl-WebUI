@@ -9,8 +9,21 @@ $config = require __DIR__.'/config/config.php';
 $file = new FileHandler;
 $urls = new URLManager($config['db']);
 
-if (!empty($_REQUEST['as_json'])) {
-    echo $urls->dumpAllToJson();
+if ('y' == @$_REQUEST['as_json']) {
+    $dataset = $_REQUEST['ds'] ?? 'all';
+    if ($dataset === 'all') {
+        header('Content-Type: application/json');
+        echo $urls->dumpAllToJson();
+    }
+    elseif ($dataset === 'ids') {
+        header('Content-Type: application/json');
+        echo json_encode($urls->getAllIds(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
+    else {
+        header('HTTP/1.0 404 Invalid dataset');
+        header('Content-Type: text/plain');
+        echo 'Invalid dataset specified';
+    }
 
     die;
 }
