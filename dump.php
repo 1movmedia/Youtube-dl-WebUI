@@ -35,7 +35,7 @@ $remove_exported = @$_REQUEST['remove_exported'] === 'y';
 //header('Content-Type: text/tab-separated-values');
 header('Content-Type: text/plain');
 
-$dl_uri_prefix = ($_SERVER['HTTPS'] !== 'off' ? 'http' : 'https') . "://" . $_SERVER['HTTP_HOST'] . preg_replace('/[^\\/]+$/', '', $_SERVER['REQUEST_URI']) . $config['outputFolder'] . '/';
+$dl_uri_prefix = (@$_SERVER['HTTPS'] !== 'off' ? 'http' : 'https') . "://" . $_SERVER['HTTP_HOST'] . preg_replace('/[^\\/]+$/', '', $_SERVER['REQUEST_URI']) . $config['outputFolder'] . '/';
 
 $out = fopen('php://output', 'w');
 
@@ -67,10 +67,10 @@ foreach($file->listFiles() as $file) {
         $tags = array_map(function($c) { return $c['tag_name']; }, $v['tags']);
         $categories = array_map(function($c) { return $c['category']; }, $v['categories']);
         $pornstars = array_map(function($c) { return $c['pornstar_name']; }, $v['pornstars']);
-        
+
         $row = [
             // 1. mp4 ссылка для скачивания
-            $files[$v['video_id']],
+            $uri,
             // 2. сколько обрезать сначала
             round(@$v['cutFrom'] ?? 0),
             // 3. сколько обрезать в конце
@@ -88,8 +88,6 @@ foreach($file->listFiles() as $file) {
             // 6. пользователь инициировавший скачивание
             $data['username'] ?? '',
         ];
-
-        array_unshift($row, $uri);
 
         fputcsv($out, $row, "\t");
 
