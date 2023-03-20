@@ -111,7 +111,7 @@
 							<p><b>How can I download the video on my computer?</b></p>
 							<p>Go to <a href="./list.php">List of files</a> -> choose one -> right click on the link -> "Save target as ..." </p>
 							<p><b>What's Filename or Format field?</b></p>
-							<p>They are optional, see the official documentation about <a href="https://github.com/yt-dlp/yt-dlp/blob/master/README.md#format-selection">Format selection</a> or <a href="https://github.com/yt-dlp/yt-dlp/blob/master/README.md#output-template">Output template</a>. At the moment there is a requirement. Filenames must starts with remove ID. </p>
+							<p>They are optional, see the official documentation about <a href="https://github.com/yt-dlp/yt-dlp/blob/master/README.md#format-selection">Format selection</a> or <a href="https://github.com/yt-dlp/yt-dlp/blob/master/README.md#output-template">Output template</a>. At the moment there is a requirement. Filenames must starts with remote ID. </p>
 						</div>
 					</div>
 				</div>
