@@ -5,16 +5,16 @@
 	$session = Session::getInstance();
 	$loginError = "";
 
-	if(isset($_POST["password"]))
+	if(isset($_POST["username"]) && isset($_POST["password"]))
 	{
-		if($session->login($_POST["password"]))
+		if($session->login($_POST["username"], $_POST["password"]))
 		{
 			header("Location: index.php");
 			exit;
 		}
 		else
 		{
-			$loginError = "Wrong password !";
+			$loginError = "Wrong username or password !";
 		}
 	}
 ?>
@@ -33,6 +33,13 @@
 		<div class="row my-3 justify-content-md-center">
 			<div class="col col-md-4">
 				<h2>Login</h2>
+			</div>
+		</div>
+		<div class="row my-3 justify-content-md-center">
+			<div class="col col-lg-4 ">
+				<div class="input-group">
+					<input class="form-control" id="username" name="username" placeholder="Username" type="text">
+				</div>
 			</div>
 		</div>
 		<div class="row my-3 justify-content-md-center">

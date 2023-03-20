@@ -50,13 +50,20 @@ class Session
 		return self::$_instance;
 	}
 
-	public function login($password)
-	{
-		if($this->config["password"] === md5($password))
-		{
-			$_SESSION["logged_in"] = true;
-			return true;
+    public function login($username, $password)
+    {
+		$users = @$this->config["users"];
+
+		if (empty($users)) {
+			$users = [ $username => $this->config["password"] ];
 		}
+
+        if (isset($users[$username]) && $users[$username] === md5($password))
+        {
+            $_SESSION["logged_in"] = true;
+            $_SESSION["username"] = $username;
+            return true;
+        }
 		else
 		{
 			$_SESSION["logged_in"] = false;
