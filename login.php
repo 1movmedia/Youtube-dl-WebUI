@@ -5,6 +5,17 @@
 	$session = Session::getInstance();
 	$loginError = "";
 
+	if ($_SERVER['HTTP_ACCEPT'] === 'application/json') {
+		header('Content-Type: application/json');
+
+		echo json_encode([
+			'logged_in' => @$_SESSION["logged_in"],
+            'username' => @$_SESSION["username"],
+
+		]);
+		exit;
+	}
+
 	if(isset($_POST["username"]) && isset($_POST["password"]))
 	{
 		if($session->login($_POST["username"], $_POST["password"]))

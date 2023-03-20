@@ -14,6 +14,7 @@
 // @grant       GM_deleteValue
 // @grant       GM_registerMenuCommand
 // @grant       GM_addStyle
+// @grant       GM_openInTab
 // ==/UserScript==
 
 let ytDlpUrl = GM_getValue('ytDlpUrl');
@@ -148,6 +149,15 @@ if (location.search.startsWith('?viewkey=')) {
     
         let buttons = [
             {
+                auth: 'onlynot',
+                iconClass: 'ph-icon-login',
+                caption: 'Log In',
+                onclick: (e, btn) => {
+                    GM_openInTab(ytDlpUrl + '/login.php');
+                }
+            },
+            {
+                auth: 'only',
                 iconClass: 'ph-icon-crop',
                 caption: 'Mark Start',
                 onclick: (e, btn) => {
@@ -160,6 +170,7 @@ if (location.search.startsWith('?viewkey=')) {
                 },
             },
             {
+                auth: 'only',
                 iconClass: 'ph-icon-crop',
                 caption: 'Mark End',
                 onclick: (e, btn) => {
@@ -172,6 +183,7 @@ if (location.search.startsWith('?viewkey=')) {
                 },
             },
             {
+                auth: 'only',
                 iconClass: isDownloaded ? iconDownloadedClass : iconDownloadClass,
                 caption: 'Download',
                 onclick: (e, btn) => {
@@ -207,38 +219,58 @@ if (location.search.startsWith('?viewkey=')) {
         let titleContainer = S('.title-container');
         let controlEl = H(`<div class="userscript-ui-container"></div>`);
     
-        gmfetch(ytDlpUrl + "/targets.php", {
+        titleContainer.parentElement.insertBefore(controlEl, titleContainer);
+        
+        resp = await gmfetch(ytDlpUrl + "/login.php", {
             "headers": {
                 "accept": "application/json",
             },
-        }).then(async targetsResp => {
-            let targets = await targetsResp.json();
-    
-            if (targets !== null && targets.length > 0) {
-                let selectedTarget = GM_getValue('selectedTarget');
-                let targetSelect = H(
-                    '<select class="userscript-ui-input">' +
-                    targets.map(s => `<option${selectedTarget == s ? ' selected' : ''} value="${s}">${s}</option>`).join('') +
-                    '</select>');
-    
-                targetSelect.onchange = e => {
-                    let newTarget = targetSelect.options[targetSelect.selectedIndex].value;
-                    video.target = newTarget;
-                    GM_setValue('selectedTarget', newTarget);
-                };
-                
-                video.target = targetSelect.options[targetSelect.selectedIndex].value;
-    
-                controlEl.insertBefore(targetSelect, controlEl.childNodes[0]);
-            }
-            else {
-                controlEl.parentElement.removeChild(controlEl);
-            }
+            "method": "GET",
         });
-    
-        titleContainer.parentElement.insertBefore(controlEl, titleContainer);
         
+        let loginState = await resp.json();
+
+        let loggedIn = loginState['logged_in'];
+
+        console.log("Download User:", loginState, loggedIn);
+
+        if (loggedIn) {
+            gmfetch(ytDlpUrl + "/targets.php", {
+                "headers": {
+                    "accept": "application/json",
+                },
+            }).then(async targetsResp => {
+                let targets = await targetsResp.json();
+        
+                if (targets !== null && targets.length > 0) {
+                    let selectedTarget = GM_getValue('selectedTarget');
+                    let targetSelect = H(
+                        '<select class="userscript-ui-input">' +
+                        targets.map(s => `<option${selectedTarget == s ? ' selected' : ''} value="${s}">${s}</option>`).join('') +
+                        '</select>');
+        
+                    targetSelect.onchange = e => {
+                        let newTarget = targetSelect.options[targetSelect.selectedIndex].value;
+                        video.target = newTarget;
+                        GM_setValue('selectedTarget', newTarget);
+                    };
+                    
+                    video.target = targetSelect.options[targetSelect.selectedIndex].value;
+        
+                    controlEl.insertBefore(targetSelect, controlEl.childNodes[0]);
+                }
+            });
+        }
+
         buttons.forEach(button => {
+            if (button.auth === 'only' && !loggedIn) {
+                return;
+            }
+
+            if (button.auth === 'onlynot' && loggedIn) {
+                return;
+            }
+
             let btnCell = H(`<span class="userscript-ui-menuitem"><i class="${button.iconClass}"></i><span class="userscript-ui-caption">${button.caption}</span></span>`);
             
             button.buttonElement = btnCell;
@@ -248,6 +280,8 @@ if (location.search.startsWith('?viewkey=')) {
             controlEl.appendChild(btnCell);
         
             btnCell.onclick = e => button.onclick(e, button);
+            
+            console.log('Added Button:', btnCell);
         });
     })();
 }
