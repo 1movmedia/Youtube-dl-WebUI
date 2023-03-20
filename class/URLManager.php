@@ -10,6 +10,7 @@ class URLManager {
             username TEXT,
             url TEXT UNIQUE,
             details_json TEXT,
+            last_export UNSIGNED BIG INT,
             target TEXT
         )");
     }
@@ -46,6 +47,15 @@ class URLManager {
         }
 
         return true;
+    }
+
+    public function updateLastExport($id) {
+        $current_ctime = time();
+        $query = $this->db->prepare("UPDATE urls SET last_export = :last_export WHERE id = :id");
+        $query->bindValue(':last_export', $current_ctime, SQLITE3_INTEGER);
+        $query->bindValue(':id', $id, SQLITE3_TEXT);
+
+        return $query->execute() !== false;
     }
 
     public function removeMissingIds($ids) {

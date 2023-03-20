@@ -77,11 +77,15 @@ foreach($file->listFiles() as $file) {
                 $v['userTitle'],
                 // 6. пользователь инициировавший скачивание
                 $data['username'] ?? '',
+                // 7. Dump Date
+                $data['last_export'] ?? '',
             ];
     
             array_unshift($row, $uri);
 
             fputcsv($out, $row, "\t");
+
+            $urls->updateLastExport($video_id);
         }
     }
 }
