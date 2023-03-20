@@ -11,6 +11,7 @@ fi
 db_path=$(cd $prefix && echo '<?php $config = require("config/config.php"); echo __DIR__ . "/" . $config["db"];' | php)
 
 echo 'Fixing downloads, data and logs directory permissions'
+mkdir -p "${prefix}/downloads" "${prefix}/data" "${prefix}/logs"
 chown -R www-data:www-data "${prefix}/downloads" "${prefix}/data" "${prefix}/logs"
 chmod 0775 "${prefix}/downloads" "${prefix}/data" "${prefix}/logs"
 
