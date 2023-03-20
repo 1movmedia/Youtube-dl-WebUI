@@ -75,7 +75,6 @@
 	require 'views/header.php';
 ?>
 		<div class="container my-4">
-			<h1>Download</h1>
 			<?php
 
 				if(isset($_SESSION['errors']) && $_SESSION['errors'] > 0)
