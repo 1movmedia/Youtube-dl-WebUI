@@ -22,6 +22,11 @@ if [ ! -e "$db_path" ];then
     chown www-data:www-data "$db_path"
 fi
 
+echo 'Fixing /var/lib/php/sessions permissions'
+mkdir -p /var/lib/php/sessions
+chown www-data:www-data /var/lib/php/sessions
+chmod 0775 /var/lib/php/sessions
+
 echo 'Starting web server...'
 
 exec /usr/sbin/apache2ctl -D FOREGROUND
