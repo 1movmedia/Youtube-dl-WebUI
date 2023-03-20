@@ -31,4 +31,6 @@ ENV LC_ALL=C.UTF-8
 
 RUN echo ServerName ytdlwui > /etc/apache2/conf-enabled/servername.conf
 
-CMD /usr/sbin/apache2ctl -D FOREGROUND
+CMD touch /var/www/html/youtube-dl/data/db.sqlite3 \
+ && chown www-data:www-data /var/www/html/youtube-dl/data/db.sqlite3 \
+ && /usr/sbin/apache2ctl -D FOREGROUND
