@@ -33,6 +33,5 @@ ENV LANG=en_US.UTF-8
 ENV LC_ALL=C.UTF-8
 
 RUN echo ServerName ytdlwui > /etc/apache2/conf-enabled/servername.conf
-RUN echo LogLevel debug > /etc/apache2/conf-enabled/debug.conf
 
 CMD /usr/sbin/apache2ctl -D FOREGROUND
