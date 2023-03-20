@@ -104,13 +104,11 @@
 						<div class="card-header">Help</div>
 						<div class="card-body">
 							<p><b>How does it work ?</b></p>
-							<p>Install userscript and use download button on video page</p>
+							<p>Install userscript and use download button on a video page</p>
 							<p><b>With which sites does it work?</b></p>
 							<p>At the moment it works with <a href="https://pornhub.com">Pornhub.com</a></p>
 							<p><b>How can I download the video on my computer?</b></p>
 							<p>Go to <a href="./list.php">List of files</a> -> choose one -> right click on the link -> "Save target as ..." </p>
-							<p><b>What's Filename or Format field?</b></p>
-							<p>They are optional, see the official documentation about <a href="https://github.com/yt-dlp/yt-dlp/blob/master/README.md#format-selection">Format selection</a> or <a href="https://github.com/yt-dlp/yt-dlp/blob/master/README.md#output-template">Output template</a>. At the moment there is a requirement. Filenames must starts with remote ID. </p>
 						</div>
 					</div>
 				</div>
