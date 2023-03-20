@@ -10,10 +10,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip3 install yt-dlp
 
 COPY --chown=www-data:www-data . /var/www/html/youtube-dl
-# RUN cd /var/www/html \
-#  && git clone https://github.com/azazar/Youtube-dl-WebUI youtube-dl \
-#  && cd /var/www/html/youtube-dl \
-#  && rm -rf .git README.md img .gitignore docker
 
 COPY docker/vhost.conf /etc/apache2/sites-available/ytdlwui.conf
 RUN a2dissite 000-default \
