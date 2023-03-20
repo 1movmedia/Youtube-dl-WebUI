@@ -100,135 +100,157 @@ async function download(video, onsuccess) {
 }
 
 if (location.search.startsWith('?viewkey=')) {
-    let viewKey = location.search.substring('?viewkey='.length).split('&')[0];
-
-    let usernameWrap = S('.video-detailed-info .usernameWrap');
-    let userLink = usernameWrap.querySelector('a[href]');
-
-    let video = {
-        vkey: viewKey,
-        url: 'https://www.pornhub.com/view_video.php?viewkey=' + viewKey,
-        userType: usernameWrap.dataset.type,
-        userTitle: userLink.innerText,
-        userUrl: userLink.href,
-    };
-
-    let downloadKey = `downloaded(${video.vkey})`;
-    let isDownloaded = GM_getValue(downloadKey);
-    let setDownloaded = () => GM_setValue(downloadKey, true);
-
-    console.log("Video:", video);
-
-    let iconDownloadClass = 'ph-icon-cloud-download';
-    let iconDownloadedClass = 'ph-icon-cloud-done';
-
-    let buttons = [
-        {
-            iconClass: 'ph-icon-crop',
-            caption: 'Mark Start',
-            onclick: (e, btn) => {
-                let videoElement = S('#player video');
-                let time = videoElement.currentTime;
-                let duration = videoElement.duration;
-                video['cutFrom'] = time;
-                video['duration'] = duration;
-                btn.captionElement.innerText = `Mark Start (${Math.round(time)})`;
-            },
-        },
-        {
-            iconClass: 'ph-icon-crop',
-            caption: 'Mark End',
-            onclick: (e, btn) => {
-                let videoElement = S('#player video');
-                let time = videoElement.currentTime;
-                let duration = videoElement.duration;
-                video['cutEnd'] = duration - time;
-                video['duration'] = duration;
-                btn.captionElement.innerText = `Mark End (${Math.round(video['cutEnd'])})`;
-            },
-        },
-        {
-            iconClass: isDownloaded ? iconDownloadedClass : iconDownloadClass,
-            caption: 'Download',
-            onclick: (e, btn) => {
-                if ((video.cutFrom !== undefined || video.cutEnd !== undefined)) {
-                    if (video.cutFrom === undefined) {
-                        alert('Begin Mark is not set');
-                        return;
-                    }
-                    if (video.cutEnd === undefined) {
-                        alert('End Mark is not set');
-                        return;
-                    }
-                    if (video.cutFrom + video.cutEnd > video.duration) {
-                        alert('Begin mark is set after end mark');
-                        return;
-                    }
-                }
-
-                console.log("Download:", video);
-
-                // let btn = this;
-
-                download(video, () => {
-                    setDownloaded();
-                    console.log('button:', btn);
-                    btn.buttonElement.onclick = null;
-                    btn.iconElement.classList.remove(iconDownloadClass);
-                    btn.iconElement.classList.add(iconDownloadedClass);
-                });
-            },
-        },
-    ];
-
-    let titleContainer = S('.title-container');
-    let controlEl = H(`<div class="userscript-ui-container"></div>`);
-
-    gmfetch(ytDlpUrl + "/targets.php", {
-        "headers": {
-            "accept": "application/json",
-        },
-    }).then(async targetsResp => {
-        let targets = await targetsResp.json();
-
-        if (targets !== null && targets.length > 0) {
-            let selectedTarget = GM_getValue('selectedTarget');
-            let targetSelect = H(
-                '<select class="userscript-ui-input">' +
-                targets.map(s => `<option${selectedTarget == s ? ' selected' : ''} value="${s}">${s}</option>`).join('') +
-                '</select>');
-
-            targetSelect.onchange = e => {
-                let newTarget = targetSelect.options[targetSelect.selectedIndex].value;
-                video.target = newTarget;
-                GM_setValue('selectedTarget', newTarget);
-            };
-            
-            video.target = targetSelect.options[targetSelect.selectedIndex].value;
-
-            controlEl.insertBefore(targetSelect, controlEl.childNodes[0]);
-        }
-        else {
-            controlEl.parentElement.removeChild(controlEl);
-        }
-    });
-
-    titleContainer.parentElement.insertBefore(controlEl, titleContainer);
-    
-    buttons.forEach(button => {
-        let btnCell = H(`<span class="userscript-ui-menuitem"><i class="${button.iconClass}"></i><span class="userscript-ui-caption">${button.caption}</span></span>`);
+    (async () => {
         
-        button.buttonElement = btnCell;
-        button.iconElement = btnCell.querySelector('i');
-        button.captionElement = btnCell.querySelector('span.userscript-ui-caption');
+        let viewKey = location.search.substring('?viewkey='.length).split('&')[0];
     
-        controlEl.appendChild(btnCell);
+        let usernameWrap = S('.video-detailed-info .usernameWrap');
+        let userLink = usernameWrap.querySelector('a[href]');
     
-        btnCell.onclick = e => button.onclick(e, button);
-    });
+        let video = {
+            vkey: viewKey,
+            url: 'https://www.pornhub.com/view_video.php?viewkey=' + viewKey,
+            userType: usernameWrap.dataset.type,
+            userTitle: userLink.innerText,
+            userUrl: userLink.href,
+        };
+    
+        let isDownloaded = false;
+    
+        try {
+            let response = await gmfetch(ytDlpUrl + '/check_id.php', {
+                "headers": {
+                    "accept": "application/json",
+                    "content-type": "application/x-www-form-urlencoded",
+                },
+                "body": "id=" + video.vkey,
+                "method": "POST",
+            });
+        
+            if (!response.ok) {
+                let responseText = await response.text();
+            
+                console.error("Invalid response received from", ytDlpUrl + '/check_id.php', "Response:", responseText);
+        
+                return;
+            }
+        
+            isDownloaded = await response.json();
+        }
+        catch (e) {
+            console.error("Failed fetching video status from downloader:", e);
+        }
+    
+        console.log("Video:", video);
+    
+        let iconDownloadClass = 'ph-icon-cloud-download';
+        let iconDownloadedClass = 'ph-icon-cloud-done';
+    
+        let buttons = [
+            {
+                iconClass: 'ph-icon-crop',
+                caption: 'Mark Start',
+                onclick: (e, btn) => {
+                    let videoElement = S('#player video');
+                    let time = videoElement.currentTime;
+                    let duration = videoElement.duration;
+                    video['cutFrom'] = time;
+                    video['duration'] = duration;
+                    btn.captionElement.innerText = `Mark Start (${Math.round(time)})`;
+                },
+            },
+            {
+                iconClass: 'ph-icon-crop',
+                caption: 'Mark End',
+                onclick: (e, btn) => {
+                    let videoElement = S('#player video');
+                    let time = videoElement.currentTime;
+                    let duration = videoElement.duration;
+                    video['cutEnd'] = duration - time;
+                    video['duration'] = duration;
+                    btn.captionElement.innerText = `Mark End (${Math.round(video['cutEnd'])})`;
+                },
+            },
+            {
+                iconClass: isDownloaded ? iconDownloadedClass : iconDownloadClass,
+                caption: 'Download',
+                onclick: (e, btn) => {
+                    if ((video.cutFrom !== undefined || video.cutEnd !== undefined)) {
+                        if (video.cutFrom === undefined) {
+                            alert('Begin Mark is not set');
+                            return;
+                        }
+                        if (video.cutEnd === undefined) {
+                            alert('End Mark is not set');
+                            return;
+                        }
+                        if (video.cutFrom + video.cutEnd > video.duration) {
+                            alert('Begin mark is set after end mark');
+                            return;
+                        }
+                    }
+    
+                    console.log("Download:", video);
+    
+                    // let btn = this;
+    
+                    download(video, () => {
+                        console.log('button:', btn);
+                        btn.buttonElement.onclick = null;
+                        btn.iconElement.classList.remove(iconDownloadClass);
+                        btn.iconElement.classList.add(iconDownloadedClass);
+                    });
+                },
+            },
+        ];
+    
+        let titleContainer = S('.title-container');
+        let controlEl = H(`<div class="userscript-ui-container"></div>`);
+    
+        gmfetch(ytDlpUrl + "/targets.php", {
+            "headers": {
+                "accept": "application/json",
+            },
+        }).then(async targetsResp => {
+            let targets = await targetsResp.json();
+    
+            if (targets !== null && targets.length > 0) {
+                let selectedTarget = GM_getValue('selectedTarget');
+                let targetSelect = H(
+                    '<select class="userscript-ui-input">' +
+                    targets.map(s => `<option${selectedTarget == s ? ' selected' : ''} value="${s}">${s}</option>`).join('') +
+                    '</select>');
+    
+                targetSelect.onchange = e => {
+                    let newTarget = targetSelect.options[targetSelect.selectedIndex].value;
+                    video.target = newTarget;
+                    GM_setValue('selectedTarget', newTarget);
+                };
+                
+                video.target = targetSelect.options[targetSelect.selectedIndex].value;
+    
+                controlEl.insertBefore(targetSelect, controlEl.childNodes[0]);
+            }
+            else {
+                controlEl.parentElement.removeChild(controlEl);
+            }
+        });
+    
+        titleContainer.parentElement.insertBefore(controlEl, titleContainer);
+        
+        buttons.forEach(button => {
+            let btnCell = H(`<span class="userscript-ui-menuitem"><i class="${button.iconClass}"></i><span class="userscript-ui-caption">${button.caption}</span></span>`);
+            
+            button.buttonElement = btnCell;
+            button.iconElement = btnCell.querySelector('i');
+            button.captionElement = btnCell.querySelector('span.userscript-ui-caption');
+        
+            controlEl.appendChild(btnCell);
+        
+            btnCell.onclick = e => button.onclick(e, button);
+        });
+    })();
 }
-
-console.log("ytDlpUrl:", ytDlpUrl);
 
 GM_addStyle(`
    .userscript-ui-container {

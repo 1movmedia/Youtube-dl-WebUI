@@ -17,7 +17,7 @@ class URLManager {
         $this->db->close();
     }
 
-    public function checkDuplicateId($id) {
+    public function isIdPresent($id) {
         $stmt = $this->db->prepare("SELECT id FROM urls WHERE id = :id");
         $stmt->bindValue(':id', $id, SQLITE3_TEXT);
         $result = $stmt->execute();
@@ -26,7 +26,7 @@ class URLManager {
     }
 
     public function addURL($id, $url, $details_json) {
-        if ($this->checkDuplicateId($id)) {
+        if ($this->isIdPresent($id)) {
             return false;
         }
 
