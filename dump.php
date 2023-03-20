@@ -68,6 +68,8 @@ foreach($file->listFiles() as $file) {
         $categories = array_map(function($c) { return $c['category']; }, $v['categories']);
         $pornstars = array_map(function($c) { return $c['pornstar_name']; }, $v['pornstars']);
 
+        $pornstars_str = implode(',', $pornstars);
+
         $row = [
             //  1. mp4 ссылка для скачивания
             $uri,
@@ -82,9 +84,9 @@ foreach($file->listFiles() as $file) {
             //  7. теги
             implode(',', $tags),
             //  8. модели
-            implode(',', $pornstars),
+            $pornstars_str,
             //  9. владелец контента
-            $v['userTitle'],
+            mb_strtolower($pornstars_str) === mb_strtolower($v['userTitle']) ? '' : $v['userTitle'],
             // 10. пользователь инициировавший скачивание
             $data['username'] ?? '',
         ];
