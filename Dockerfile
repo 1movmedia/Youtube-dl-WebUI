@@ -13,7 +13,8 @@ COPY --chown=www-data:www-data . /var/www/html/youtube-dl
 
 COPY docker/vhost.conf /etc/apache2/sites-available/ytdlwui.conf
 RUN a2dissite 000-default \
- && a2ensite ytdlwui
+ && a2ensite ytdlwui \
+ && rm -f /var/www/html/index.html
 
 RUN a2enmod rewrite
 
