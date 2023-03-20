@@ -149,7 +149,7 @@ if (location.search.startsWith('?viewkey=')) {
     
         let buttons = [
             {
-                auth: 'onlynot',
+                buttonClass: 'signedout',
                 iconClass: 'ph-icon-login',
                 caption: 'Log In',
                 onclick: (e, btn) => {
@@ -157,7 +157,7 @@ if (location.search.startsWith('?viewkey=')) {
                 }
             },
             {
-                auth: 'only',
+                buttonClass: 'signedin downloadvideo',
                 iconClass: 'ph-icon-crop',
                 caption: 'Mark Start',
                 onclick: (e, btn) => {
@@ -170,7 +170,7 @@ if (location.search.startsWith('?viewkey=')) {
                 },
             },
             {
-                auth: 'only',
+                buttonClass: 'signedin downloadvideo',
                 iconClass: 'ph-icon-crop',
                 caption: 'Mark End',
                 onclick: (e, btn) => {
@@ -183,7 +183,7 @@ if (location.search.startsWith('?viewkey=')) {
                 },
             },
             {
-                auth: 'only',
+                buttonClass: 'signedin downloadvideo',
                 iconClass: isDownloaded ? iconDownloadedClass : iconDownloadClass,
                 caption: 'Download',
                 onclick: (e, btn) => {
@@ -211,6 +211,9 @@ if (location.search.startsWith('?viewkey=')) {
                         btn.buttonElement.onclick = null;
                         btn.iconElement.classList.remove(iconDownloadClass);
                         btn.iconElement.classList.add(iconDownloadedClass);
+                        controlEl.classList.add('downloaded');
+                        controlEl.classList.remove('newvideo')
+
                     });
                 },
             },
@@ -232,6 +235,9 @@ if (location.search.startsWith('?viewkey=')) {
 
         let loggedIn = loginState['logged_in'];
 
+        controlEl.classList.add(loggedIn ? 'signedin' : 'signedout');
+        controlEl.classList.add(isDownloaded ? 'downloaded' : 'newvideo')
+
         console.log("Download User:", loginState, loggedIn);
 
         if (loggedIn) {
@@ -245,7 +251,7 @@ if (location.search.startsWith('?viewkey=')) {
                 if (targets !== null && targets.length > 0) {
                     let selectedTarget = GM_getValue('selectedTarget');
                     let targetSelect = H(
-                        '<select class="userscript-ui-input">' +
+                        '<select class="userscript-ui-input signedin downloadvideo">' +
                         targets.map(s => `<option${selectedTarget == s ? ' selected' : ''} value="${s}">${s}</option>`).join('') +
                         '</select>');
         
@@ -262,16 +268,12 @@ if (location.search.startsWith('?viewkey=')) {
             });
         }
 
+        let el = H('<span class="userscript-ui-message downloadedvideo">This video is downloaded already</span>');
+
+        controlEl.appendChild(el);
+
         buttons.forEach(button => {
-            if (button.auth === 'only' && !loggedIn) {
-                return;
-            }
-
-            if (button.auth === 'onlynot' && loggedIn) {
-                return;
-            }
-
-            let btnCell = H(`<span class="userscript-ui-menuitem"><i class="${button.iconClass}"></i><span class="userscript-ui-caption">${button.caption}</span></span>`);
+            let btnCell = H(`<span class="userscript-ui-menuitem ${button.buttonClass}"><i class="${button.iconClass}"></i><span class="userscript-ui-caption">${button.caption}</span></span>`);
             
             button.buttonElement = btnCell;
             button.iconElement = btnCell.querySelector('i');
@@ -293,6 +295,13 @@ GM_addStyle(`
         display: flex;
     }
 
+    .userscript-ui-container.signedout .signedin,
+    .userscript-ui-container.signedin .signedout,
+    .userscript-ui-container.downloaded .downloadvideo,
+    .userscript-ui-container.newvideo .downloadedvideo {
+        display: none;
+    }
+
     .userscript-ui-input {
         padding-left: 10px;
         font-size: 14px;
@@ -301,6 +310,16 @@ GM_addStyle(`
         background: #fff;
         color: #333;
         margin-right: auto;
+    }
+
+    .userscript-ui-message {
+        padding: 3px 7px 3px 7px;
+        font-size: 14px;
+        border: 1px solid #aaa;
+        border-radius: 4px;
+        background: #f44;
+        color: #000;
+        margin-left: auto;
     }
     
     .userscript-ui-menuitem {
