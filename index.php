@@ -87,40 +87,6 @@
 				}
 
 			?>
-			<form id="download-form" action="index.php" method="post">
-				<div class="row my-3">
-					<div class="input-group">
-						<div class="input-group-text" id="urls-addon">URLs:</div>
-						<input class="form-control" id="url" name="urls" placeholder="Link(s) separated by a space" type="text" aria-describedby="urls-addon" required/>
-					</div>
-				</div>
-				<div class="row mt-3 align-items-center">
-					<div class="col-auto my-1">
-						<button type="submit" class="btn btn-primary">Download</button>
-					</div>
-					<div class="col-auto my-1">
-						<div class="input-group">
-							<div class="form-check">
-								<input class="form-check-input" type="checkbox" id="audioCheck" name="audio"/>
-								<label class="form-check-label" for="audioCheck">Audio Only</label>
-							</div>
-						</div>
-					</div>
-					<div class="col-auto my-1">
-						<div class="input-group">
-							<span class="input-group-text" id="outfilename-addon">Filename:</span>
-							<input class="form-control" id="outfilename" name="outfilename" placeholder="Output filename template" type="text" aria-describedby="outfilename-addon">
-						</div>
-					</div>
-					<div class="col-auto my-1">
-						<div class="input-group">
-							<span class="input-group-text" id="vformat-addon">Format:</span>
-							<input class="form-control" id="vformat" name="vformat" placeholder="Video format code" type="text" aria-describedby="vformat-addon" />
-						</div>
-					</div>
-				</div>
-
-			</form>
 			<br>
 			<div class="row">
 				<div class="col-lg-6 mb-2">
@@ -139,13 +105,13 @@
 						<div class="card-header">Help</div>
 						<div class="card-body">
 							<p><b>How does it work ?</b></p>
-							<p>Simply paste your video link in the field and click "Download"</p>
+							<p>Install userscript and use download button on video page</p>
 							<p><b>With which sites does it work?</b></p>
-							<p><a href="https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md">Here's</a> a list of the supported sites</p>
+							<p>At the moment it works with <a href="https://pornhub.com">Pornhub.com</a></p>
 							<p><b>How can I download the video on my computer?</b></p>
 							<p>Go to <a href="./list.php">List of files</a> -> choose one -> right click on the link -> "Save target as ..." </p>
 							<p><b>What's Filename or Format field?</b></p>
-							<p>They are optional, see the official documentation about <a href="https://github.com/yt-dlp/yt-dlp/blob/master/README.md#format-selection">Format selection</a> or <a href="https://github.com/yt-dlp/yt-dlp/blob/master/README.md#output-template">Output template</a> </p>
+							<p>They are optional, see the official documentation about <a href="https://github.com/yt-dlp/yt-dlp/blob/master/README.md#format-selection">Format selection</a> or <a href="https://github.com/yt-dlp/yt-dlp/blob/master/README.md#output-template">Output template</a>. At the moment there is a requirement. Filenames must starts with remove ID. </p>
 						</div>
 					</div>
 				</div>
