@@ -29,6 +29,7 @@ if ('y' == @$_REQUEST['as_json']) {
 }
 
 $target = $_REQUEST['target'] ?? null;
+$remove_exported = @$_REQUEST['remove_exported'] === 'y';
 
 //header('Content-Type: text/tab-separated-values');
 header('Content-Type: text/plain');
@@ -51,6 +52,11 @@ foreach($file->listFiles() as $file) {
             if ($data['target'] != $target) {
                 continue;
             }
+        }
+
+        if ($remove_exported && !!$data['last_export']) {
+            $filename = __DIR__ . '/' . $config['outputFolder'] . '/' . $file['name'];
+            @unlink($filename);
         }
 
         $uri = $dl_uri_prefix . $file['name'];

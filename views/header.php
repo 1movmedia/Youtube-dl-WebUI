@@ -51,7 +51,7 @@
 								<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
 
 									<?php foreach($config['targets'] as $target):?>
-										<li><a class="dropdown-item" href="/dump.php?target=<?= $target ?>"><?= $target ?></a></li>
+										<li><a class="dropdown-item" href="/dump.php?target=<?= $target ?>&remove_exported=n"><?= $target ?></a></li>
 									<?php endforeach; ?>
 								</ul>
 							</li>
