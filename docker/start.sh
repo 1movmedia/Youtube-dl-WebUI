@@ -10,6 +10,10 @@ fi
 
 db_path=$(cd $prefix && echo '<?php $config = require("config/config.php"); echo __DIR__ . "/" . $config["db"];' | php)
 
+echo 'Fixing downloads, data and logs directory permissions'
+chown -R www-data:www-data "${prefix}/downloads" "${prefix}/data" "${prefix}/logs"
+chmod 0775 "${prefix}/downloads" "${prefix}/data" "${prefix}/logs"
+
 if [ ! -e "$db_path" ];then
     echo 'Initializing database'
 
@@ -17,7 +21,6 @@ if [ ! -e "$db_path" ];then
     chown www-data:www-data "$db_path"
 fi
 
-echo 'Fixing downloads file permissions'
-chown -R www-data:www-data "${prefix}/downloads"
+echo 'Starting web server...'
 
 exec /usr/sbin/apache2ctl -D FOREGROUND
