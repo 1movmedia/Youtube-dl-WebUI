@@ -6,7 +6,7 @@ header('Content-Type: application/javascript');
 $uri = preg_replace('/[^\\/]+$/', '', $_SERVER['REQUEST_URI']);
 $uri = preg_replace('/\\/+$/', '', $uri);
 
-$uri_prefix = ($_SERVER['HTTPS'] !== 'off' ? 'http' : 'https') . "://" . $_SERVER['HTTP_HOST'] . $uri;
+$uri_prefix = (@$_SERVER['HTTPS'] !== 'off' ? 'http' : 'https') . "://" . $_SERVER['HTTP_HOST'] . $uri;
 
 $replace = [
     '// @name        Pornhub.com >_dlp UI'    => "// @name        Pornhub.com >_dlp UI ($_SERVER[HTTP_HOST])",
