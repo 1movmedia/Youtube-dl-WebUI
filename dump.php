@@ -29,6 +29,7 @@ if ('y' == @$_REQUEST['as_json']) {
 }
 
 $target = $_REQUEST['target'] ?? null;
+$mark_exported = @$_REQUEST['mark_exported'] === 'y';
 $remove_exported = @$_REQUEST['remove_exported'] === 'y';
 
 //header('Content-Type: text/tab-separated-values');
@@ -92,7 +93,9 @@ foreach($file->listFiles() as $file) {
 
         fputcsv($out, $row, "\t");
 
-        $urls->updateLastExport($video_id);
+        if ($mark_exported) {
+            $urls->updateLastExport($video_id);
+        }
     }
 }
 
