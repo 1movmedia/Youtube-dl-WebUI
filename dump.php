@@ -86,7 +86,7 @@ foreach($file->listFiles() as $file) {
             //  8. модели
             $pornstars_str,
             //  9. владелец контента
-            mb_strtolower($pornstars_str) === mb_strtolower($v['userTitle']) ? '' : $v['userTitle'],
+            strtolower($pornstars_str) === strtolower($v['userTitle']) ? '' : $v['userTitle'],
             // 10. пользователь инициировавший скачивание
             $data['username'] ?? '',
         ];
