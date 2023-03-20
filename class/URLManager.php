@@ -7,6 +7,7 @@ class URLManager {
         $this->db = new SQLite3($filename);
         $this->db->exec("CREATE TABLE IF NOT EXISTS urls (
             id TEXT PRIMARY KEY,
+            username TEXT,
             url TEXT UNIQUE,
             details_json TEXT,
             target TEXT
@@ -33,8 +34,9 @@ class URLManager {
         $details_array = json_decode($details_json, true);
         $target = $details_array['target'] ?? null;
 
-        $stmt = $this->db->prepare("INSERT INTO urls (id, url, details_json, target) VALUES (:id, :url, :details_json, :target)");
+        $stmt = $this->db->prepare("INSERT INTO urls (id, username, url, details_json, target) VALUES (:id, :username, :url, :details_json, :target)");
         $stmt->bindValue(':id', $id, SQLITE3_TEXT);
+        $stmt->bindValue(':username', $_SESSION["username"] ?? null, SQLITE3_TEXT);
         $stmt->bindValue(':url', $url, SQLITE3_TEXT);
         $stmt->bindValue(':details_json', $details_json, SQLITE3_TEXT);
         $stmt->bindValue(':target', $target, SQLITE3_TEXT);

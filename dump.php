@@ -74,7 +74,9 @@ foreach($file->listFiles() as $file) {
                 // 5. модели
                 implode(',', $pornstars),
                 // 5. владелец контента
-                $v['userTitle']
+                $v['userTitle'],
+                // 6. пользователь инициировавший скачивание
+                $data['username'] ?? '',
             ];
     
             array_unshift($row, $uri);
