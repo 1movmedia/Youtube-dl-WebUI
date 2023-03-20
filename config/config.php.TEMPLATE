@@ -14,6 +14,7 @@ return array(
 	"db" => "data/db.sqlite3",
 	"extracter" => "ffmpeg",
 	"log" => true,
+	// must start with "%(id)s-"
 	"outfilename" => "%(id)s-%(title)s.%(ext)s",
 	"logFolder" => "logs",
 	"max_dl" => 6,
