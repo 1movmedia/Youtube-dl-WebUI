@@ -43,6 +43,10 @@ foreach($file->listFiles() as $file) {
 
         $data = $urls->getById($video_id);
 
+        if (empty($data)) {
+            continue;
+        }
+
         if (!empty($target)) {
             if ($data['target'] != $target) {
                 continue;
@@ -51,42 +55,38 @@ foreach($file->listFiles() as $file) {
 
         $uri = $dl_uri_prefix . $file['name'];
 
-        if ($data !== null) {
-            $v = $data['details_json'];
+        $v = $data['details_json'];
 
-            $tags = array_map(function($c) { return $c['tag_name']; }, $v['tags']);
-            $categories = array_map(function($c) { return $c['category']; }, $v['categories']);
-            $pornstars = array_map(function($c) { return $c['pornstar_name']; }, $v['pornstars']);
-            
-            $row = [
-                // 1. mp4 ссылка для скачивания
-                $files[$v['video_id']],
-                // 2. сколько обрезать сначала
-                round(@$v['cutFrom'] ?? 0),
-                // 3. сколько обрезать в конце
-                round(@$v['cutEnd'] ?? 0),
-                // 4. название ролика
-                $v['title'],
-                // 5. категории
-                implode(',', $categories),
-                // 5. теги
-                implode(',', $tags),
-                // 5. модели
-                implode(',', $pornstars),
-                // 5. владелец контента
-                $v['userTitle'],
-                // 6. пользователь инициировавший скачивание
-                $data['username'] ?? '',
-                // 7. Dump Date
-                $data['last_export'] ?? '',
-            ];
-    
-            array_unshift($row, $uri);
+        $tags = array_map(function($c) { return $c['tag_name']; }, $v['tags']);
+        $categories = array_map(function($c) { return $c['category']; }, $v['categories']);
+        $pornstars = array_map(function($c) { return $c['pornstar_name']; }, $v['pornstars']);
+        
+        $row = [
+            // 1. mp4 ссылка для скачивания
+            $files[$v['video_id']],
+            // 2. сколько обрезать сначала
+            round(@$v['cutFrom'] ?? 0),
+            // 3. сколько обрезать в конце
+            round(@$v['cutEnd'] ?? 0),
+            // 4. название ролика
+            $v['title'],
+            // 5. категории
+            implode(',', $categories),
+            // 5. теги
+            implode(',', $tags),
+            // 5. модели
+            implode(',', $pornstars),
+            // 5. владелец контента
+            $v['userTitle'],
+            // 6. пользователь инициировавший скачивание
+            $data['username'] ?? '',
+        ];
 
-            fputcsv($out, $row, "\t");
+        array_unshift($row, $uri);
 
-            $urls->updateLastExport($video_id);
-        }
+        fputcsv($out, $row, "\t");
+
+        $urls->updateLastExport($video_id);
     }
 }
 
