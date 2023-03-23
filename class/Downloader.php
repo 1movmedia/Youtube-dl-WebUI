@@ -278,19 +278,26 @@ class Downloader
 
 		$cmd .= " ".escapeshellarg($this->url);
 
+		$logfile = '/dev/null';
+
 		if($this->config["log"])
 		{
-			$cmd = "{ echo Command: ".escapeshellarg($cmd)."; ".$cmd." ; }";
-			$cmd .= " > ".$this->log_path."/$(date  +\"%Y-%m-%d_%H-%M-%S-%N\").txt";
+			$logfile = $this->log_path . "/" . date("Y-m-d_H-i-s") . "_" . floor(fmod(microtime(true), 1) * 1000000) . ".txt";
 		}
-		else
-		{
-			$cmd .= " > /dev/null ";
-		}
+
+		$cmd .= " >> " . $logfile;
 
 		$cmd .= " & echo $!";
 
-		shell_exec($cmd);
+		if ($logfile !== '/dev/null') {
+			file_put_contents($logfile, "Command:\n\n$cmd\n\n");
+		}
+
+		$output = shell_exec($cmd);
+		
+		if ($logfile !== '/dev/null') {
+			file_put_contents($logfile, "Output:\n\n$output", FILE_APPEND);
+		}
 	}
 
 	private function do_info()
