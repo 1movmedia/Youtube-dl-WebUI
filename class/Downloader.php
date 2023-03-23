@@ -283,7 +283,7 @@ class Downloader
 		}
 
 		if ($from != 0 || $to != 0) {
-			$cmd .= " --download-sections " . escapeshellarg("*" . $from . "-" . $to);
+			$cmd .= " --download-sections " . escapeshellarg("*$from-$to");
 		}
 
 		$cmd .= " ".escapeshellarg($this->url);
