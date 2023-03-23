@@ -28,9 +28,9 @@
 			<h1>JSON Info</h1>
 			<?php
 
-				if(isset($_SESSION['errors']) && $_SESSION['errors'] > 0)
+				if(isset($GLOBALS['_ERRORS']) && $GLOBALS['_ERRORS'] > 0)
 				{
-					foreach ($_SESSION['errors'] as $e)
+					foreach ($GLOBALS['_ERRORS'] as $e)
 					{
 						echo "<div class=\"alert alert-warning\" role=\"alert\">$e</div>";
 					}
@@ -69,6 +69,5 @@
 			</div>
 		</div>
 <?php
-	unset($_SESSION['errors']);
 	require 'views/footer.php';
 ?>

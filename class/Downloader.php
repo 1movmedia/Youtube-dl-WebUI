@@ -3,15 +3,16 @@ include_once('FileHandler.php');
 
 class Downloader
 {
-	private $urls = [];
+	private $video_info = null;
+	private $id = null;
+	private $url = null;
 	private $config = [];
 	private $errors = [];
 	private $download_path = "";
 	private $log_path = "";
 	private $vformat = false;
-	private $metadata_encoded = false;
 
-	public function __construct($post)
+	public function __construct($video_info)
 	{
 		$this->config = require dirname(__DIR__).'/config/config.php';
 		$fh = new FileHandler();
@@ -22,42 +23,37 @@ class Downloader
 			$this->log_path = $fh->get_logs_folder();
 		}
 
-		$this->urls = preg_split("/[\s,]+/", trim($post));
+		$this->video_info = $video_info;
+		$this->id = $video_info['id'];
+		$this->url = $video_info['url'];
 
 		if(!$this->check_requirements())
 		{
 			return;
 		}	
 
-		foreach ($this->urls as $url)
+		if(!$this->is_valid_url($this->url))
 		{
-			if(!$this->is_valid_url($url))
-			{
-				$this->errors[] = "\"".$url."\" is not a valid url !";
-			}
+			$this->errors[] = "\"$this->url\" is not a valid url !";
 		}
 
 		if(isset($this->errors) && count($this->errors) > 0)
 		{
-			$_SESSION['errors'] = $this->errors;
+			$GLOBALS['_ERRORS'] = $this->errors;
 			return;
 		}
 	}
 
-	public function download($vformat=False, $metadata_encoded = false) {
+	public function download($vformat=False) {
 		if(isset($this->errors) && count($this->errors) > 0)
 		{
-			$_SESSION['errors'] = $this->errors;
+			$GLOBALS['_ERRORS'] = $this->errors;
 			return;
 		}
 
 		if ($vformat)
 		{
 			$this->vformat = $vformat;
-		}
-
-		if (!empty($metadata_encoded)) {
-			$this->metadata_encoded = $metadata_encoded;
 		}
 
 		if($this->config["max_dl"] == 0)
@@ -78,7 +74,7 @@ class Downloader
 
 		if(isset($this->errors) && count($this->errors) > 0)
 		{
-			$_SESSION['errors'] = $this->errors;
+			$GLOBALS['_ERRORS'] = $this->errors;
 			return;
 		}
 
@@ -90,7 +86,7 @@ class Downloader
 
 		if(isset($this->errors) && count($this->errors) > 0)
 		{
-			$_SESSION['errors'] = $this->errors;
+			$GLOBALS['_ERRORS'] = $this->errors;
 		}
 
 		return $info;
@@ -171,7 +167,7 @@ class Downloader
 
 		if(isset($this->errors) && count($this->errors) > 0)
 		{
-			$_SESSION['errors'] = $this->errors;
+			$GLOBALS['_ERRORS'] = $this->errors;
 			return false;
 		}
 
@@ -254,18 +250,9 @@ class Downloader
 	{
 		$urls = new URLManager($this->config['db']);
 
-		$metadata = [];
-
-		foreach(json_decode(self::base64url_decode($this->metadata_encoded), true) as $url => $data) {
-			if (preg_match('/viewkey=([^&]+)/', $url, $matches)) {
-				$data['video_id'] = $matches[1];
-				$metadata[$url] = $data;
-			}
-		}
-
 		$cmd = $this->config["bin"];
 		$cmd .= " --ignore-error -o ".$this->download_path."/";
-		$cmd .= escapeshellarg('%(id)s-%(title)s.%(ext)s');
+		$cmd .= escapeshellarg($this->id . '.%(ext)s');
 		
 		if ($this->vformat) 
 		{
@@ -274,41 +261,22 @@ class Downloader
 		}
 		$cmd .= " --restrict-filenames"; // --restrict-filenames is for specials chars
 
-		$added_urls = 0;
+		$json_info = $this->video_info;
 
-		foreach($this->urls as $url)
-		{
-			$skip = false;
+		unset($json_info['id']);
+		unset($json_info['url']);
 
-			// URLs with available metadata needs special treatment
-			if (isset($metadata[$url])) {
-				$data = $metadata[$url];
-				$added = $urls->addURL($data['video_id'], $url, json_encode($data));
-
-				if ($added) {
-					if (is_numeric(@$data['cutTo']) && $data['cutTo'] > 0) {
-						$from = 0;
-						$cmd .= " --download-sections " . escapeshellarg("*$from-$data[cutTo]");
-					}
-				}
-				else {
-					$this->errors[] = "Failed to add $data[video_id]";
-					$skip = true;
-				}
-			}
-
-			if (!$skip) {
-				$cmd .= " ".escapeshellarg($url);
-
-				$added_urls++;
-			}
-		}
-
-		if ($added_urls == 0) {
-			$this->errors[] = 'No non-duplicate URLs added to download queue';
-
+		if (!$urls->addURL($this->id, $this->url, json_encode($json_info))) {
+			$this->errors[] = "Failed to add $this->id";
 			return;
 		}
+
+		if (is_numeric(@$this->video_info['cutTo']) && $this->video_info['cutTo'] > 0) {
+			$from = 0;
+			$cmd .= " --download-sections " . escapeshellarg("*$from-$this->video_info[cutTo]");
+		}
+
+		$cmd .= " ".escapeshellarg($this->url);
 
 		if($this->config["log"])
 		{
@@ -329,10 +297,7 @@ class Downloader
 	{
 		$cmd = $this->config["bin"]." -J ";
 
-		foreach($this->urls as $url)
-		{
-			$cmd .= " ".escapeshellarg($url);
-		}
+		$cmd .= " ".escapeshellarg($this->url);
 
 		if ($this->is_python_installed() == 0)
 		{

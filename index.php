@@ -19,45 +19,6 @@
 		{
 			Downloader::kill_them_all();
 		}
-
-		if(isset($_POST['urls']) && !empty($_POST['urls']))
-		{
-			unset($_SESSION['errors']);
-
-			$vformat = False;
-			if(isset($_POST['vformat']) && !empty($_POST['vformat']))
-			{
-				$vformat = $_POST['vformat'];
-			}
-
-			$metadata = false;
-
-			if (!empty($_POST['metadata'])) {
-				$metadata = $_POST['metadata'];
-			}
-
-			$downloader = new Downloader($_POST['urls']);
-
-			$downloader->download($vformat, $metadata);
-
-			if ($_SERVER['HTTP_ACCEPT'] === 'application/json') {
-				header('Content-Type: application/json');
-				echo json_encode(array(
-					'success' => empty($_SESSION['errors']),
-					'errors' => @$_SESSION['errors']
-				));
-				
-				unset($_SESSION['errors']);
-				
-				die;
-			}
-
-			if(!isset($_SESSION['errors']))
-			{
-				header("Location: index.php");
-				exit;
-			}
-		}
 	}
 
 	require 'views/header.php';
@@ -65,9 +26,9 @@
 		<div class="container my-4">
 			<?php
 
-				if(isset($_SESSION['errors']) && $_SESSION['errors'] > 0)
+				if(isset($GLOBALS['_ERRORS']) && $GLOBALS['_ERRORS'] > 0)
 				{
-					foreach ($_SESSION['errors'] as $e)
+					foreach ($GLOBALS['_ERRORS'] as $e)
 					{
 						echo "<div class=\"alert alert-warning\" role=\"alert\">$e</div>";
 					}
@@ -103,6 +64,5 @@
 			</div>
 		</div>
 <?php
-	unset($_SESSION['errors']);
 	require 'views/footer.php';
 ?>

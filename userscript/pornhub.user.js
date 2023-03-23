@@ -49,6 +49,7 @@ async function download(video, onsuccess) {
     console.log(match);
 
     videoInfo = {
+        "id": "ph-" + video_id,
         "video_id": video_id,
         "title": document.querySelector('meta[property="og:title"]').content,
        
@@ -68,22 +69,19 @@ async function download(video, onsuccess) {
 
     // Submit download request
 
-    let metadata = {};
-    metadata[videoInfo.url] = videoInfo;
-
-    let response = await gmfetch(ytDlpUrl + '/index.php', {
+    let response = await gmfetch(ytDlpUrl + '/download.php', {
         "headers": {
             "accept": "application/json",
-            "content-type": "application/x-www-form-urlencoded",
+            "content-type": "application/json",
         },
-        "body": "urls=" + encodeURIComponent(videoInfo.url) + "&metadata=" + Base64.encodeURI(JSON.stringify(metadata)),
+        "body": JSON.stringify(videoInfo),
         "method": "POST",
     });
 
     if (!response.ok) {
         let responseText = await response.text();
     
-        console.error("Invalid response received from", ytDlpUrl + '/index.php', "Response:", responseText);
+        console.error("Invalid response received from", ytDlpUrl + '/download.php', "Response:", responseText);
 
         return;
     }

@@ -40,9 +40,9 @@ $dl_uri_prefix = (@$_SERVER['HTTPS'] !== 'off' ? 'http' : 'https') . "://" . $_S
 $out = fopen('php://output', 'w');
 
 foreach($file->listFiles() as $file) {
-    if (preg_match('/(?:ph)?[\\da-f]{4,}/', $file['name'], $match)) {
+    if (preg_match('/^[^\\.]+/', $file['name'], $match)) {
         $video_id = $match[0];
-
+        
         $data = $urls->getById($video_id);
 
         if (empty($data)) {
