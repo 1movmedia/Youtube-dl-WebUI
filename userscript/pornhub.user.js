@@ -76,7 +76,7 @@ async function download(video, onsuccess) {
             "accept": "application/json",
             "content-type": "application/x-www-form-urlencoded",
         },
-        "body": "urls=" + encodeURIComponent(videoInfo.url) + "&outfilename=&vformat=&metadata=" + Base64.encodeURI(JSON.stringify(metadata)),
+        "body": "urls=" + encodeURIComponent(videoInfo.url) + "&metadata=" + Base64.encodeURI(JSON.stringify(metadata)),
         "method": "POST",
     });
 

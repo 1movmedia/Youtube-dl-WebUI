@@ -8,7 +8,6 @@ class Downloader
 	private $errors = [];
 	private $download_path = "";
 	private $log_path = "";
-	private $outfilename = "%(id)s-%(title)s-%(id)s.%(ext)s";
 	private $vformat = false;
 	private $metadata_encoded = false;
 
@@ -21,11 +20,6 @@ class Downloader
 		if($this->config["log"])
 		{
 			$this->log_path = $fh->get_logs_folder();
-		}
-
-		if($this->config["outfilename"])
-		{
-			$this->outfilename = $this->config["outfilename"];
 		}
 
 		$this->urls = preg_split("/[\s,]+/", trim($post));
@@ -50,17 +44,13 @@ class Downloader
 		}
 	}
 
-	public function download($outfilename=False, $vformat=False, $metadata_encoded = false) {
+	public function download($vformat=False, $metadata_encoded = false) {
 		if(isset($this->errors) && count($this->errors) > 0)
 		{
 			$_SESSION['errors'] = $this->errors;
 			return;
 		}
 
-		if ($outfilename)
-		{
-			$this->outfilename = $outfilename;
-		}
 		if ($vformat)
 		{
 			$this->vformat = $vformat;
@@ -275,7 +265,7 @@ class Downloader
 
 		$cmd = $this->config["bin"];
 		$cmd .= " --ignore-error -o ".$this->download_path."/";
-		$cmd .= escapeshellarg($this->outfilename);
+		$cmd .= escapeshellarg('%(id)s-%(title)s.%(ext)s');
 		
 		if ($this->vformat) 
 		{

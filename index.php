@@ -24,12 +24,6 @@
 		{
 			unset($_SESSION['errors']);
 
-			$outfilename = False;
-			if(isset($_POST['outfilename']) && !empty($_POST['outfilename']))
-			{
-				$outfilename = $_POST['outfilename'];
-			}
-
 			$vformat = False;
 			if(isset($_POST['vformat']) && !empty($_POST['vformat']))
 			{
@@ -44,7 +38,7 @@
 
 			$downloader = new Downloader($_POST['urls']);
 
-			$downloader->download($outfilename, $vformat, $metadata);
+			$downloader->download($vformat, $metadata);
 
 			if ($_SERVER['HTTP_ACCEPT'] === 'application/json') {
 				header('Content-Type: application/json');
