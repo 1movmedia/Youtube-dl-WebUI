@@ -14,8 +14,8 @@
 			<form id="info-form" action="info.php" method="post">
 				<div class="row my-3">
 					<div class="input-group">
-						<div class="input-group-text" id="urls-addon">URLs:</div>
-						<input class="form-control" id="url" name="urls" placeholder="Link(s) separated by a space" type="text" aria-describedby="urls-addon" required/>
+						<div class="input-group-text" id="urls-addon">URL:</div>
+						<input class="form-control" id="url" name="url" placeholder="Link(s) separated by a space" type="text" aria-describedby="urls-addon" required/>
 					</div>
 				</div>
 				<div class="row mt-3 align-items-center">

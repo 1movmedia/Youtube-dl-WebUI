@@ -15,9 +15,9 @@
 	{
 		$json = False;
 
-		if(isset($_POST['urls']) && !empty($_POST['urls']))
+		if(isset($_POST['url']) && !empty($_POST['url']))
 		{
-			$downloader = new Downloader($_POST['urls']);
+			$downloader = new Downloader($_POST['url']);
 			$json = $downloader->info();
 		}
 	}
