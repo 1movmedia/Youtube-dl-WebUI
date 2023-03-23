@@ -3,7 +3,7 @@
 class URLManager {
     private $db;
 
-    public function __construct($filename = 'data/urls.db') {
+    public function __construct($filename) {
         $this->db = new SQLite3($filename);
     }
 
