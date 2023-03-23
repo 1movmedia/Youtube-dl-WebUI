@@ -313,7 +313,13 @@ class Downloader
 				$data = $metadata[$url];
 				$added = $urls->addURL($data['video_id'], $url, json_encode($data));
 
-				if (!$added) {
+				if ($added) {
+					if (is_numeric(@$data['cutTo']) && $data['cutTo'] > 0) {
+						$from = 0;
+						$cmd .= " --download-sections " . escapeshellarg("*$from-$data[cutTo]");
+					}
+				}
+				else {
 					$this->errors[] = "Failed to add $data[video_id]";
 					$skip = true;
 				}
