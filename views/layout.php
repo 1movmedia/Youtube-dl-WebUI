@@ -143,4 +143,4 @@
 		<?php
 		register_shutdown_function(function($footer) {
 			echo $footer;
-		}, ob_get_contents());
+		}, ob_get_clean());
