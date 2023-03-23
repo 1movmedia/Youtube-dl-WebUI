@@ -24,12 +24,6 @@
 		{
 			unset($_SESSION['errors']);
 
-			$audio_only = false;
-			if(isset($_POST['audio']) && !empty($_POST['audio']))
-			{
-				$audio_only = true;
-			}
-
 			$outfilename = False;
 			if(isset($_POST['outfilename']) && !empty($_POST['outfilename']))
 			{
@@ -50,7 +44,7 @@
 
 			$downloader = new Downloader($_POST['urls']);
 
-			$downloader->download($audio_only, $outfilename, $vformat, $metadata);
+			$downloader->download($outfilename, $vformat, $metadata);
 
 			if ($_SERVER['HTTP_ACCEPT'] === 'application/json') {
 				header('Content-Type: application/json');

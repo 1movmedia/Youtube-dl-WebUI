@@ -15,15 +15,11 @@ It supports:
 * logging
 * fetch info without download
 
-### You can now extract the audio of a video and download multiple videos at the same time !
-
 ## Requirements
 - A web server (Apache or nginx) on Unix system.
 - PHP >= 7 version should be fine.
 - Python >= 2.7 for Youtube-dl.
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp) or [Youtube-dl](https://github.com/rg3/youtube-dl).
-- ffmpeg (or avconv) is required for audio extraction, from youtube-dl doc :
-`-x, --extract-audio convert video files to audio-only files (requires ffmpeg or avconv and ffprobe or avprobe)`
 
 ## How to install ?
 1. Clone this repo in your web folder (ex: `/var/www`).

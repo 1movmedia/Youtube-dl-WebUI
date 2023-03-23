@@ -5,7 +5,6 @@ class Downloader
 {
 	private $urls = [];
 	private $config = [];
-	private $audio_only = false;
 	private $errors = [];
 	private $download_path = "";
 	private $log_path = "";
@@ -51,12 +50,7 @@ class Downloader
 		}
 	}
 
-	public function download($audio_only, $outfilename=False, $vformat=False, $metadata_encoded = false) {
-		if ($audio_only && !$this->check_requirements($audio_only))
-		{
-			return;
-		}
-
+	public function download($outfilename=False, $vformat=False, $metadata_encoded = false) {
 		if(isset($this->errors) && count($this->errors) > 0)
 		{
 			$_SESSION['errors'] = $this->errors;
@@ -78,13 +72,13 @@ class Downloader
 
 		if($this->config["max_dl"] == 0)
 		{
-			$this->do_download($audio_only);
+			$this->do_download();
 		}
 		elseif($this->config["max_dl"] > 0)
 		{
 			if($this->background_jobs() >= 0 && $this->background_jobs() < $this->config["max_dl"])
 			{
-				$this->do_download($audio_only);
+				$this->do_download();
 			}
 			else
 			{
@@ -176,7 +170,7 @@ class Downloader
 		}
 	}
 
-	private function check_requirements($audio_only=False)
+	private function check_requirements()
 	{
 		if($this->is_youtubedl_installed() != 0)
 		{
@@ -184,14 +178,6 @@ class Downloader
 		}
 
 		$this->check_outuput_folder();
-
-		if($audio_only)
-		{
-			if($this->is_extracter_installed() != 0)
-			{
-				$this->errors[] = "Install an audio extracter (ex: ffmpeg) !";
-			}
-		}
 
 		if(isset($this->errors) && count($this->errors) > 0)
 		{
@@ -274,7 +260,7 @@ class Downloader
 		
 	}
 
-	private function do_download($audio_only)
+	private function do_download()
 	{
 		$urls = new URLManager($this->config['db']);
 
@@ -295,10 +281,6 @@ class Downloader
 		{
 			$cmd .= " --format ";
 			$cmd .= escapeshellarg($this->vformat);
-		}
-		if($audio_only)
-		{
-			$cmd .= " -x ";
 		}
 		$cmd .= " --restrict-filenames"; // --restrict-filenames is for specials chars
 
