@@ -36,6 +36,11 @@ class FileHandler
 		{
 			$content = [];
 			$content["name"] = str_replace($folder, "", $file);
+
+			if (preg_match($this->re_partial, $content["name"]) !== 0) {
+				continue;
+			}
+
 			$content["size"] = $this->to_human_filesize(filesize($file));
 
 			if (preg_match('/^[^\\.]+/', $content['name'], $match)) {
@@ -46,9 +51,11 @@ class FileHandler
 				}
 			}
 
-			if (preg_match($this->re_partial, $content["name"]) === 0) {
-				$files[] = $content;
+			if (empty($content['id'])) {
+				$content['id'] = $content['name'];
 			}
+
+			$files[$content['id']] = $content;
 			
 		}
 
