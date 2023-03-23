@@ -2,22 +2,24 @@
 
 require_once 'class/Session.php';
 require_once 'class/FileHandler.php';
-require_once 'class/URLManager.php';
 
 $config = require __DIR__.'/config/config.php';
 
-$file = new FileHandler;
-$urls = new URLManager($config['db']);
+$file = new FileHandler($config['db']);
 
 if ('y' == @$_REQUEST['as_json']) {
     $dataset = $_REQUEST['ds'] ?? 'all';
     if ($dataset === 'all') {
         header('Content-Type: application/json');
-        echo $urls->dumpAllToJson();
+        echo $file->dumpAllToJson();
+    }
+    elseif ($dataset === 'files') {
+        header('Content-Type: application/json');
+        echo json_encode($file->listFiles(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
     elseif ($dataset === 'ids') {
         header('Content-Type: application/json');
-        echo json_encode($urls->getAllIds(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        echo json_encode($file->getAllIds(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
     else {
         header('HTTP/1.0 404 Invalid dataset');
@@ -30,7 +32,7 @@ if ('y' == @$_REQUEST['as_json']) {
 
 $target = $_REQUEST['target'] ?? null;
 $mark_exported = @$_REQUEST['mark_exported'] === 'y';
-$remove_exported = @$_REQUEST['remove_exported'] === 'y';
+$remove_marked = @$_REQUEST['remove_marked'] === 'y';
 
 //header('Content-Type: text/tab-separated-values');
 header('Content-Type: text/plain');
@@ -40,10 +42,10 @@ $dl_uri_prefix = (@$_SERVER['HTTPS'] !== 'off' ? 'http' : 'https') . "://" . $_S
 $out = fopen('php://output', 'w');
 
 foreach($file->listFiles() as $file) {
-    if (preg_match('/^[^\\.]+/', $file['name'], $match)) {
-        $video_id = $match[0];
+    if (!empty($file['info'])) {
+        $video_id = $file['id'];
         
-        $data = $urls->getById($video_id);
+        $data = $file['info'];
 
         if (empty($data)) {
             continue;
@@ -55,7 +57,7 @@ foreach($file->listFiles() as $file) {
             }
         }
 
-        if ($remove_exported && !!$data['last_export']) {
+        if ($remove_marked && !!$data['last_export']) {
             $filename = __DIR__ . '/' . $config['outputFolder'] . '/' . $file['name'];
             @unlink($filename);
         }
@@ -94,7 +96,7 @@ foreach($file->listFiles() as $file) {
         fputcsv($out, $row, "\t");
 
         if ($mark_exported) {
-            $urls->updateLastExport($video_id);
+            $file->updateLastExport($video_id);
         }
     }
 }

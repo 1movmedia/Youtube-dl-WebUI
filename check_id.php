@@ -2,11 +2,10 @@
 
 require_once 'class/Session.php';
 require_once 'class/FileHandler.php';
-require_once 'class/URLManager.php';
 
 $config = require __DIR__.'/config/config.php';
 
-$urls = new URLManager($config['db']);
+$files = new FileHandler($config['db']);
 
 $id = $_REQUEST['id'];
 
@@ -17,4 +16,4 @@ if (empty($id)) {
 }
 
 header('Content-Type: application/json');
-echo json_encode($urls->isIdPresent($id));
+echo json_encode($files->isIdPresent($id));

@@ -248,7 +248,7 @@ class Downloader
 
 	private function do_download()
 	{
-		$urls = new URLManager($this->config['db']);
+		$fh = new FileHandler($this->config['db']);
 
 		$cmd = $this->config["bin"];
 		$cmd .= " --ignore-error -o ".$this->download_path."/";
@@ -266,7 +266,7 @@ class Downloader
 		unset($json_info['id']);
 		unset($json_info['url']);
 
-		if (!$urls->addURL($this->id, $this->url, json_encode($json_info))) {
+		if (!$fh->addURL($this->id, $this->url, json_encode($json_info))) {
 			$this->errors[] = "Failed to add $this->id";
 			return;
 		}
