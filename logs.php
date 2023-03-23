@@ -20,7 +20,7 @@
 		header("Location: logs.php");
 	}
 
-	require 'views/header.php';
+	require 'views/layout.php';
 ?>
 		<div class="container my-4">
 		<?php
@@ -72,7 +72,3 @@
 		?>
 			<br/>
 		</div>
-<?php
-	require 'views/footer.php';
-?>
-

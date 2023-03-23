@@ -6,7 +6,7 @@
 	$session = Session::getInstance();
 	$file = new FileHandler;
 
-	require 'views/header.php';
+	require 'views/layout.php';
 
 	if(!$session->is_logged_in())
 	{
@@ -68,6 +68,3 @@
 			?>
 			</div>
 		</div>
-<?php
-	require 'views/footer.php';
-?>

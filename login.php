@@ -30,7 +30,7 @@
 	}
 ?>
 
-<?php require 'views/header.php'; ?>
+<?php require 'views/layout.php'; ?>
 <div class="container my-4">
 	<?php
 		if($loginError !== "")
@@ -69,4 +69,3 @@
 		</div>
 	</form>
 </div>
-<?php require 'views/footer.php'; ?>

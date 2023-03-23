@@ -22,7 +22,7 @@
 	$files = $file->listFiles();
 	$parts = $file->listParts();
 
-	require 'views/header.php';
+	require 'views/layout.php';
 ?>
 		<div class="container my-4">
 		<?php
@@ -106,6 +106,3 @@
 		?>
 			<br/>
 		</div><!-- End container -->
-<?php
-	require 'views/footer.php';
-?>

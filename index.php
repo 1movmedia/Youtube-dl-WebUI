@@ -20,7 +20,7 @@
 		}
 	}
 
-	require 'views/header.php';
+	require 'views/layout.php';
 ?>
 		<div class="container my-4">
 			<?php
@@ -62,6 +62,3 @@
 				</div>
 			</div>
 		</div>
-<?php
-	require 'views/footer.php';
-?>
