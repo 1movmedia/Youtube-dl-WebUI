@@ -62,7 +62,7 @@ async function download(video, onsuccess) {
     }
 
     // Copy fields not available via API
-    [ "url", "userTitle", "userType", "userUrl", "cutFrom", "cutEnd", "target" ].forEach(key => videoInfo[key] = video[key]);
+    [ "url", "userTitle", "userType", "userUrl", "cutFrom", "cutTo", "duration", "cutEnd", "target" ].forEach(key => videoInfo[key] = video[key]);
 
     console.log('videoInfo:', videoInfo);
 
@@ -178,6 +178,7 @@ if (location.search.startsWith('?viewkey=')) {
                     let time = videoElement.currentTime;
                     let duration = videoElement.duration;
                     video['cutEnd'] = duration - time;
+                    video['cutTo'] = time;
                     video['duration'] = duration;
                     btn.captionElement.innerText = `Mark End (${Math.round(video['cutEnd'])})`;
                 },
