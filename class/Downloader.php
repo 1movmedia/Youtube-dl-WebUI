@@ -273,7 +273,7 @@ class Downloader
 
 		if (is_numeric(@$this->video_info['cutTo']) && $this->video_info['cutTo'] > 0) {
 			$from = 0;
-			$cmd .= " --download-sections " . escapeshellarg("*$from-$this->video_info[cutTo]");
+			$cmd .= " --download-sections " . escapeshellarg("*" . $from . "-" . $this->video_info['cutTo']);
 		}
 
 		$cmd .= " ".escapeshellarg($this->url);
