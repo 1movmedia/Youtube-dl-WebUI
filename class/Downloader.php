@@ -313,13 +313,6 @@ class Downloader
 
 	}
 	
-	private static function base64url_decode($base64url)
-	{
-		$base64 = strtr($base64url, '-_', '+/');
-
-		return base64_decode($base64, false);
-	}
-
 }
 
 ?>
