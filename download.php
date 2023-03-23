@@ -24,7 +24,7 @@ $video_info = json_decode($json, true);
 
 $downloader = new Downloader($video_info);
 
-$downloader->download($vformat);
+$downloader->download();
 
 header('Content-Type: application/json');
 
