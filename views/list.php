@@ -9,24 +9,30 @@
 					<tr>
 						<th>Title</th>
 						<th>Size</th>
+						<th>User</th>
+						<th>Cut</th>
 					</tr>
 				</thead>
 				<tbody>
 					<?php foreach($files as $f): ?>
-						<tr title="<?= htmlspecialchars(var_export($f, true)) ?>">
+						<tr id="video_<?= $f['id'] ?>">
 							<td>
 								<?php if($file->get_relative_downloads_folder()): ?>
 									<a href="<?= rawurlencode($file->get_relative_downloads_folder()).'/'.rawurlencode($f["name"]) ?>" download><?= $f["name"] ?></a>
 								<?php else: ?>
 									<?= $f["name"] ?>
-								<?php endif; ?>
+								<?php endif; ?><br>
+								<br>
+								<a target="_blank" href="<?= $f['info']['url'] ?>"><?= htmlspecialchars(@$f["info"]["details_json"]["title"]) ?></a>
 							</td>
-						<td><?= $f["size"] ?></td>
-						<td>
-							<a href="<?= $f['info']['url'] ?>" class="btn btn-success btn-sm pull-right">Source</a>
-							<a href="<?= "info.php?url=" . urlencode($f['info']['url']) ?>" class="btn btn-info btn-sm pull-right">Info</a>
-							<a href="<?= "list.php?delete=".sha1($f['name']) ?>" class="btn btn-danger btn-sm pull-right">Delete</a></td>
-						</tr>;
+							<td><?= $f["size"] ?></td>
+							<td><?= @$f["info"]["username"] ?></td>
+							<td><?= @$f["info"]["details_json"]["cutFrom"] . '-' . @$f["info"]["details_json"]["cutTo"] ?></td>
+							<td>
+								<a href="<?= "info.php?url=" . urlencode($f['info']['url']) ?>" class="btn btn-info btn-sm pull-right">Info</a>
+								<a href="<?= "list.php?delete=".sha1($f['name']) ?>" class="btn btn-danger btn-sm pull-right">Delete</a>
+							</td>
+						</tr>
 					<?php endforeach; ?>
 				</tbody>
 			</table>
