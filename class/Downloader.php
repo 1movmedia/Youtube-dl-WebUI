@@ -175,12 +175,6 @@ class Downloader
 		return trim($soutput);
 	}
 
-	private function is_extracter_installed()
-	{
-		exec("which ".$this->config["extracter"], $out, $r);
-		return $r;
-	}
-
 	private function is_valid_url($url)
 	{
 		return filter_var($url, FILTER_VALIDATE_URL);

@@ -12,7 +12,6 @@ return array(
 	),
 	"outputFolder" => "downloads",
 	"db" => "data/db.sqlite3",
-	"extracter" => "ffmpeg",
 	"log" => true,
 	"logFolder" => "logs",
 	"max_dl" => 6,
