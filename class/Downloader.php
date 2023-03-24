@@ -227,8 +227,7 @@ class Downloader
 		$fh = new FileHandler($this->config['db']);
 
 		$cmd = $this->config["bin"];
-		$cmd .= " --ignore-error -o ".$this->download_path."/";
-		$cmd .= escapeshellarg($this->id . '.%(ext)s');
+		$cmd .= " --ignore-error";
 		
 		if ($this->vformat) 
 		{
@@ -247,28 +246,35 @@ class Downloader
 			return;
 		}
 		
-		$from = 0;
-		$to = 0;
+		$from = $this->video_info['cutFrom'] ?? 0;
+		$from_end = $this->video_info['cutEnd'] ?? 0;
+		$to = $this->video_info['cutTo'] ?? 0;
 
-		if (is_numeric(@$this->video_info['cutTo']) && $this->video_info['cutTo'] > 0) {
-			$to = $this->video_info['cutTo'];
-		}
+		$convert_cmd = '';
+		$download_file = $this->download_path."/".$this->id . '.%(ext)s';
+		$output_file = $download_file;
 
-		if (is_numeric(@$this->video_info['cutFrom']) && $this->video_info['cutFrom'] > 0) {
-			$from = $this->video_info['cutFrom'];
-		}
-
-		if ($from != 0 || $to != 0) {
+		if ($from != 0 || $from_end != 0) {
 			$from = self::timediff_to_hmsm($from);
 			$to = self::timediff_to_hmsm($to);
+			$from_end = self::timediff_to_hmsm($from_end);
+
 			// $cmd .= " --download-sections " . escapeshellarg("*$from-$to");
 
-			// $cmd .= " --download-sections " . escapeshellarg("*0-" . $to);
-
-			$cmd .= " --postprocessor-args " . escapeshellarg("-ss $from -to $to");
+			$cmd .= " --remux-video mp4";
+			$download_file = $this->download_path."/".$this->id . '.uncut.mp4';
+			$output_file = $this->download_path."/".$this->id . '.mp4';
+			$convert_cmd = "ffmpeg -i " . escapeshellarg($download_file) . " -ss $from -to $to -c:v copy -c:a copy " . escapeshellarg($output_file);
+			$convert_cmd .= " && rm " . escapeshellarg($download_file);
 		}
+		
+		$cmd .= " -o ".escapeshellarg($download_file);
 
 		$cmd .= " ".escapeshellarg($this->url);
+
+		if ($convert_cmd != '') {
+			$cmd = "( $cmd && $convert_cmd )";
+		}
 
 		$logfile = '/dev/null';
 
