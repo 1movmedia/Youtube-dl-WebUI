@@ -252,7 +252,6 @@ class Downloader
 
 		$convert_cmd = '';
 		$download_file = $this->download_path."/".$this->id . '.%(ext)s';
-		$output_file = $download_file;
 
 		if ($from != 0 || $from_end != 0) {
 			$from = self::timediff_to_hmsm($from);
@@ -262,8 +261,8 @@ class Downloader
 			// $cmd .= " --download-sections " . escapeshellarg("*$from-$to");
 
 			$cmd .= " --remux-video mp4";
+			$output_file = $download_file;
 			$download_file = $this->download_path."/".$this->id . '.uncut.mp4';
-			$output_file = $this->download_path."/".$this->id . '.mp4';
 			$convert_cmd = "ffmpeg -i " . escapeshellarg($download_file) . " -ss $from -to $to -c:v copy -c:a copy " . escapeshellarg($output_file);
 			$convert_cmd .= " && rm " . escapeshellarg($download_file);
 		}
