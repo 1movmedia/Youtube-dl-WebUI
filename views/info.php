@@ -15,7 +15,7 @@
 				<div class="row my-3">
 					<div class="input-group">
 						<div class="input-group-text" id="urls-addon">URL:</div>
-						<input class="form-control" id="url" name="url" placeholder="Link(s) separated by a space" type="text" aria-describedby="urls-addon" required/>
+						<input class="form-control" id="url" name="url" value="<?= htmlspecialchars($_REQUEST['url']) ?>" placeholder="Link(s) separated by a space" type="text" aria-describedby="urls-addon" required/>
 					</div>
 				</div>
 				<div class="row mt-3 align-items-center">
@@ -32,9 +32,15 @@
 				{
 				?>
 				<div class="panel panel-info">
+					<div class="panel-heading"><h3 class="panel-title">Player</h3></div>
+					<div class="panel-body">
+						<video controls style="width: 100%" src="<?= $config['outputFolder'] . '/' . $json['file']['name'] ?>"></video>
+					</div>
+				</div>
+				<div class="panel panel-info">
 					<div class="panel-heading"><h3 class="panel-title">Info</h3></div>
 					<div class="panel-body">
-						<textarea rows="50" class="form-control"><?php echo $json ?></textarea>
+						<pre><?= htmlspecialchars(json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) ?></pre>
 					</div>
 				</div>
 				<?php

@@ -262,6 +262,43 @@ class FileHandler
 		return true;
 	}
 
+	public function info($url)
+	{
+		$cmd = $this->config["bin"]." -J ";
+
+		$cmd .= " ".escapeshellarg($url);
+
+		if (self::is_python_installed() == 0)
+		{
+			$cmd .= " | python -m json.tool";
+		}
+
+		$soutput = shell_exec($cmd);
+
+		if (!$soutput)
+		{
+			$GLOBALS['_ERRORS'] = "No video found";
+		}
+
+		$info = json_decode($soutput, true);
+
+		if ($this->db) {
+			$files = $this->listFiles();
+
+			$info['db_info'] = $this->getByUrl($url);
+			$info['file'] = $files[$info['db_info']['id']];
+		}
+
+		return $info;
+
+	}
+
+	private static function is_python_installed()
+	{
+		exec("which python", $out, $r);
+		return $r;
+	}
+
 	public function isIdPresent($id) {
         $stmt = $this->db->prepare("SELECT id FROM urls WHERE id = :id");
         $stmt->bindValue(':id', $id, SQLITE3_TEXT);
@@ -338,14 +375,22 @@ class FileHandler
     }
 
     public function getById($id, $target = null) {
-        $query = "SELECT * FROM urls WHERE id = :id";
+		return $this->getRow('id', $id, $target);
+	}
+
+    public function getByUrl($url, $target = null) {
+		return $this->getRow('url', $url, $target);
+	}
+
+	public function getRow($column, $value, $target = null) {
+			$query = "SELECT * FROM urls WHERE $column = :value";
 
         if ($target) {
             $query .= " AND target = :target";
         }
 
         $stmt = $this->db->prepare($query);
-        $stmt->bindValue(':id', $id, SQLITE3_TEXT);
+        $stmt->bindValue(':value', $value, SQLITE3_TEXT);
 
         if ($target) {
             $stmt->bindValue(':target', $target, SQLITE3_TEXT);

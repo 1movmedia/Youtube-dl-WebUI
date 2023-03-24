@@ -80,18 +80,6 @@ class Downloader
 
 	}
 
-	public function info()
-	{
-		$info = $this->do_info();
-
-		if(isset($this->errors) && count($this->errors) > 0)
-		{
-			$GLOBALS['_ERRORS'] = $this->errors;
-		}
-
-		return $info;
-	}
-
 	public static function background_jobs()
 	{
 		$config = require dirname(__DIR__).'/config/config.php';
@@ -193,12 +181,6 @@ class Downloader
 		return $r;
 	}
 
-	private function is_python_installed()
-	{
-		exec("which python", $out, $r);
-		return $r;
-	}
-
 	private function is_valid_url($url)
 	{
 		return filter_var($url, FILTER_VALIDATE_URL);
@@ -283,7 +265,13 @@ class Downloader
 		}
 
 		if ($from != 0 || $to != 0) {
+			$from = self::timediff_to_hmsm($from);
+			$to = self::timediff_to_hmsm($to);
 			$cmd .= " --download-sections " . escapeshellarg("*$from-$to");
+
+			// $cmd .= " --download-sections " . escapeshellarg("*0-" . $to);
+
+			// $cmd .= " --postprocessor-args " . escapeshellarg("-ss $from -to $to");
 		}
 
 		$cmd .= " ".escapeshellarg($this->url);
@@ -310,26 +298,29 @@ class Downloader
 		}
 	}
 
-	private function do_info()
-	{
-		$cmd = $this->config["bin"]." -J ";
-
-		$cmd .= " ".escapeshellarg($this->url);
-
-		if ($this->is_python_installed() == 0)
-		{
-			$cmd .= " | python -m json.tool";
-		}
-
-		$soutput = shell_exec($cmd);
-		if (!$soutput)
-		{
-			$this->errors[] = "No video found";
-		}
-		return $soutput;
-
-	}
+	static function timediff_to_hmsm($timediff) {
+		$s = '';
 	
+		if ($timediff < 0) {
+			$timediff = -$timediff;
+			$s = '-';
+		}
+	
+		$seconds = fmod($timediff, 60);
+		
+		$timediff = round($timediff - $seconds);
+	
+		$minutes = round($timediff / 60);
+		$timediff = $timediff - ($minutes * 60);
+	
+		$hours = round($minutes / 60);
+		$minutes = round($minutes - $hours * 60);
+	
+		$s .= str_pad($hours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($minutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($seconds, 2, '0', STR_PAD_LEFT);
+	
+		return $s;
+	}
+
 }
 
 ?>

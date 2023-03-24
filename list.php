@@ -4,7 +4,8 @@
 	require_once 'class/FileHandler.php';
 
 	$session = Session::getInstance();
-	$file = new FileHandler;
+	$config = require __DIR__.'/config/config.php';
+	$file = new FileHandler($config['db']);
 
 	if(!$session->is_logged_in())
 	{

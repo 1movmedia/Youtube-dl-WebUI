@@ -4,7 +4,8 @@
 	require_once 'class/FileHandler.php';
 
 	$session = Session::getInstance();
-	$file = new FileHandler;
+	$config = require __DIR__.'/config/config.php';
+	$file = new FileHandler($config['db']);
 
 	if(!$session->is_logged_in())
 	{
@@ -15,10 +16,9 @@
 	{
 		$json = False;
 
-		if(isset($_POST['url']) && !empty($_POST['url']))
+		if(isset($_REQUEST['url']) && !empty($_REQUEST['url']))
 		{
-			$downloader = new Downloader($_POST['url']);
-			$json = $downloader->info();
+			$json = $file->info($_REQUEST['url']);
 		}
 	}
 
