@@ -261,11 +261,11 @@ class Downloader
 		if ($from != 0 || $to != 0) {
 			$from = self::timediff_to_hmsm($from);
 			$to = self::timediff_to_hmsm($to);
-			$cmd .= " --download-sections " . escapeshellarg("*$from-$to");
+			// $cmd .= " --download-sections " . escapeshellarg("*$from-$to");
 
 			// $cmd .= " --download-sections " . escapeshellarg("*0-" . $to);
 
-			// $cmd .= " --postprocessor-args " . escapeshellarg("-ss $from -to $to");
+			$cmd .= " --postprocessor-args " . escapeshellarg("-ss $from -to $to");
 		}
 
 		$cmd .= " ".escapeshellarg($this->url);
