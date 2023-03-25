@@ -254,16 +254,15 @@ class Downloader
 		$download_file = $this->download_path."/".$this->id . '.%(ext)s';
 
 		if ($from != 0 || $from_end != 0) {
-			$from = self::timediff_to_hmsm($from);
-			$to = self::timediff_to_hmsm($to);
-			$from_end = self::timediff_to_hmsm($from_end);
+			$cut_duration = $to - $from;
 
 			// $cmd .= " --download-sections " . escapeshellarg("*$from-$to");
 
 			$cmd .= " --remux-video mp4";
-			$output_file = $download_file;
+			$output_file = $this->download_path."/".$this->id . '.mp4';;
 			$download_file = $this->download_path."/".$this->id . '.uncut.mp4';
-			$convert_cmd = "ffmpeg -i " . escapeshellarg($download_file) . " -ss $from -to $to -c:v copy -c:a copy " . escapeshellarg($output_file);
+			$convert_from = max(0, $from - 1);
+			$convert_cmd = "ffmpeg -ss \$(php ".escapeshellarg(__DIR__.'/../util/first_key_frame.php')." ".escapeshellarg($download_file)." $convert_from) -i " . escapeshellarg($download_file) . " -t $cut_duration -c:v copy -c:a copy " . escapeshellarg($output_file);
 			$convert_cmd .= " && rm " . escapeshellarg($download_file);
 		}
 		
@@ -295,29 +294,6 @@ class Downloader
 		if ($logfile !== '/dev/null') {
 			file_put_contents($logfile, "Output:\n\n$output", FILE_APPEND);
 		}
-	}
-
-	static function timediff_to_hmsm($timediff) {
-		$s = '';
-	
-		if ($timediff < 0) {
-			$timediff = -$timediff;
-			$s = '-';
-		}
-	
-		$seconds = fmod($timediff, 60);
-		
-		$timediff = round($timediff - $seconds);
-	
-		$minutes = round($timediff / 60);
-		$timediff = $timediff - ($minutes * 60);
-	
-		$hours = round($minutes / 60);
-		$minutes = round($minutes - $hours * 60);
-	
-		$s .= str_pad($hours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($minutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($seconds, 2, '0', STR_PAD_LEFT);
-	
-		return $s;
 	}
 
 }
