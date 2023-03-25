@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM debian:bullseye
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git python3 python3-pip python3-setuptools build-essential ffmpeg apache2 php curl ca-certificates \
