@@ -254,16 +254,16 @@ class Downloader
 		$download_file = $this->download_path."/".$this->id . '.%(ext)s';
 
 		if ($from != 0 || $from_end != 0) {
-			// $cut_duration = $to - $from;
+			$cut_duration = $to - $from;
 
-			$cmd .= " --download-sections " . escapeshellarg("*$from-$to");
+			$cmd .= " --download-sections " . escapeshellarg("*0-$to");
+			$cmd .= " --postprocessor-args " . escapeshellarg("-max_muxing_queue_size 9999 -async 1 -muxpreload 0 -muxdelay 0 -copyts -start_at_zero");
 
-			// $cmd .= " --remux-video mp4";
-			// $output_file = $this->download_path."/".$this->id . '.mp4';;
-			// $download_file = $this->download_path."/".$this->id . '.uncut.mp4';
-			// $convert_from = max(0, $from - 1);
-			// $convert_cmd = "ffmpeg -ss \$(php ".escapeshellarg(__DIR__.'/../util/first_key_frame.php')." ".escapeshellarg($download_file)." $convert_from) -i " . escapeshellarg($download_file) . " -muxpreload 0 -muxdelay 0 -copyts -start_at_zero -t $cut_duration -c:v copy -c:a copy " . escapeshellarg($output_file);
-			// $convert_cmd .= " && rm " . escapeshellarg($download_file);
+			$output_file = $this->download_path."/".$this->id . '.mp4';;
+			$download_file = $this->download_path."/".$this->id . '.uncut.mp4';
+			$convert_from = max(0, $from - 1);
+			$convert_cmd = "ffmpeg -ss \$(php ".escapeshellarg(__DIR__.'/../util/first_key_frame.php')." ".escapeshellarg($download_file)." $convert_from) -i " . escapeshellarg($download_file) . " -t $cut_duration -avoid_negative_ts make_zero -map 0:0 -c:0 copy -map 0:1 -c:1 copy -map_metadata 0 -movflags +faststart -default_mode infer_no_subs -ignore_unknown -f mp4 " . escapeshellarg($output_file);
+			$convert_cmd .= " && rm " . escapeshellarg($download_file);
 		}
 		
 		$cmd .= " -o ".escapeshellarg($download_file);
@@ -282,6 +282,7 @@ class Downloader
 		}
 
 		$cmd .= " >> " . $logfile;
+		// $cmd .= " 2>&1";
 
 		$cmd .= " & echo $!";
 
