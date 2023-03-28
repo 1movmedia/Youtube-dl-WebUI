@@ -142,6 +142,11 @@ class Downloader
 		{
 			unlink($file);
 		}
+
+		foreach(glob($folder.'*.uncut.mp4') as $file)
+		{
+			unlink($file);
+		}
 	}
 
 	private function check_requirements()
