@@ -39,14 +39,24 @@ while (($line = fgets($pipes[1])) !== false) {
 
     $frame[$key] = $value;
 
-    if (@$frame['key_frame'] === '1' && @$frame['pict_type'] == 'I' && isset($frame['pkt_dts_time'])) {
+    if (isset($frame['pkt_dts_time'])) {
         $pkt_dts_time = $frame['pkt_dts_time'];
-        if ($pkt_dts_time >= $input_ss) {
-            echo $pkt_dts_time . "\n";
+
+        if (@$frame['key_frame'] === '1' && @$frame['pict_type'] == 'I') {
+            if ($pkt_dts_time >= $input_ss) {
+                echo $pkt_dts_time . "\n";
+                break;
+            }
+        }
+
+        if ($pkt_dts_time > $input_ss + 5) {
+            echo "$input_ss\n";
             break;
         }
     }
 }
+
+echo "$input_ss\n";
 
 foreach ($pipes as $pipe) {
     fclose($pipe);
