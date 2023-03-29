@@ -43,8 +43,8 @@ while (($line = fgets($pipes[1])) !== false) {
 
     if (@$frame['key_frame'] === '1' && @$frame['pict_type'] == 'I' && isset($frame['pkt_dts_time'])) {
         $pkt_dts_time = $frame['pkt_dts_time'];
-        if ($pkt_dts_time > $input_ss) {
-            echo ($pkt_dts_time - (1/60)) . "\n";
+        if ($pkt_dts_time >= $input_ss) {
+            echo ($pkt_dts_time - (1/120)) . "\n";
             break;
         }
     }
