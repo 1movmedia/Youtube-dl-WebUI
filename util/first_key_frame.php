@@ -6,8 +6,6 @@
 $input_filename = $argv[1] ?? die("Argument missing");
 $input_ss = $argv[2] ?? 0;
 
-# ffprobe -show_frames -select_streams v -print_format flat ph-ph63521b12ca3a4.mp4
-
 $command = trim(<<<ENDOFCOMMAND
 ffprobe -show_frames -select_streams v -print_format flat $input_filename 2> /dev/null < /dev/null
 ENDOFCOMMAND);
