@@ -147,6 +147,22 @@ if (location.search.startsWith('?viewkey=')) {
     
         let buttons = [
             {
+                iconClass: 'ph-icon-arrow-back',
+                caption: 'Back',
+                onclick: (e, btn) => {
+                    let videoElement = S('#player video');
+                    videoElement.currentTime -= (1/25);
+                }
+            },
+            {
+                iconClass: 'ph-icon-arrow-forward',
+                caption: 'Forward',
+                onclick: (e, btn) => {
+                    let videoElement = S('#player video');
+                    videoElement.currentTime += (1/25);
+                }
+            },
+            {
                 buttonClass: 'signedout',
                 iconClass: 'ph-icon-login',
                 caption: 'Log In',
