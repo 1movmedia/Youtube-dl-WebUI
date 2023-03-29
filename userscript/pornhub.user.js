@@ -292,6 +292,8 @@ GM_addStyle(`
         padding: 10px 10px 12px;
         text-align: right;
         display: flex;
+
+        user-select: none;
     }
 
     .userscript-ui-container.signedout .signedin,
