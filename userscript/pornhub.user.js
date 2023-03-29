@@ -148,18 +148,34 @@ if (location.search.startsWith('?viewkey=')) {
         let buttons = [
             {
                 iconClass: 'ph-icon-arrow-back',
-                caption: 'Back',
+                caption: '',
+                onclick: (e, btn) => {
+                    let videoElement = S('#player video');
+                    videoElement.currentTime -= 1;
+                }
+            },
+            {
+                iconClass: 'ph-icon-chevron-left',
+                caption: '',
                 onclick: (e, btn) => {
                     let videoElement = S('#player video');
                     videoElement.currentTime -= (1/25);
                 }
             },
             {
-                iconClass: 'ph-icon-arrow-forward',
-                caption: 'Forward',
+                iconClass: 'ph-icon-chevron-right',
+                caption: '',
                 onclick: (e, btn) => {
                     let videoElement = S('#player video');
                     videoElement.currentTime += (1/25);
+                }
+            },
+            {
+                iconClass: 'ph-icon-arrow-forward',
+                caption: '',
+                onclick: (e, btn) => {
+                    let videoElement = S('#player video');
+                    videoElement.currentTime += 1;
                 }
             },
             {
