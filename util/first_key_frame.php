@@ -20,6 +20,8 @@ if ($ph === false) {
 
 $frames = [];
 
+$ss = $input_ss;
+
 while (($line = fgets($pipes[1])) !== false) {
     $line = trim($line);
 
@@ -44,19 +46,18 @@ while (($line = fgets($pipes[1])) !== false) {
 
         if (@$frame['key_frame'] === '1' && @$frame['pict_type'] == 'I') {
             if ($pkt_dts_time >= $input_ss) {
-                echo $pkt_dts_time . "\n";
+                $ss = $pkt_dts_time;
                 break;
             }
         }
 
-        if ($pkt_dts_time > $input_ss + 5) {
-            echo "$input_ss\n";
+        if ($pkt_dts_time > $input_ss + 10) {
             break;
         }
     }
 }
 
-echo "$input_ss\n";
+echo "$ss\n";
 
 foreach ($pipes as $pipe) {
     fclose($pipe);
