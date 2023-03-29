@@ -261,15 +261,13 @@ class Downloader
 		$download_file = $this->download_path."/".$this->id . '.%(ext)s';
 
 		if ($from != 0 || $from_end != 0) {
-			$cut_duration = $to - $from;
-
 			$cmd .= " --download-sections " . escapeshellarg("*0-$to");
 			// $cmd .= " --postprocessor-args " . escapeshellarg("-ss $from -t $cut_duration -avoid_negative_ts make_zero -map 0:0 -c:0 copy -map 0:1 -c:1 copy -map_metadata 0 -movflags +faststart -default_mode infer_no_subs -ignore_unknown");
 
 			$output_file = $this->download_path."/".$this->id . '.mp4';
 			$download_file = $this->download_path."/".$this->id . '.uncut.mp4';
 			$convert_from = max(0, $from - 0.33);
-			$convert_cmd = "ffmpeg -ss \$(php ".escapeshellarg(__DIR__.'/../util/first_key_frame.php')." ".escapeshellarg($download_file)." $convert_from) -i " . escapeshellarg($download_file) . " -t $cut_duration -avoid_negative_ts make_zero -map 0:0 -c:0 copy -map 0:1 -c:1 copy -map_metadata 0 -movflags +faststart -default_mode infer_no_subs -ignore_unknown -f mp4 " . escapeshellarg($output_file);
+			$convert_cmd = "ffmpeg -ss \$(php ".escapeshellarg(__DIR__.'/../util/first_key_frame.php')." ".escapeshellarg($download_file)." $convert_from) -i " . escapeshellarg($download_file) . " -to $to -avoid_negative_ts make_zero -map 0:0 -c:0 copy -map 0:1 -c:1 copy -map_metadata 0 -movflags +faststart -default_mode infer_no_subs -ignore_unknown -f mp4 " . escapeshellarg($output_file);
 			$convert_cmd .= " && rm " . escapeshellarg($download_file);
 		}
 		
