@@ -121,13 +121,32 @@ class FileHandler
 			$content["name"] = str_replace($folder, "", $file);
 			$content["size"] = $this->to_human_filesize(filesize($file));
 
+			$content["100"] = False;
+
 			try {
 				$lines = explode("\r", file_get_contents($file));
+
+				$first_line = 0;
+
+				for($line = 0; $line < count($lines); $line++)
+				{
+					if (preg_match('/\(frag \d+\/\d+\)$/', rtrim($lines[$line])) === 1) {
+						$first_line = $line;
+						$content["100"] = False;
+					}
+
+					if (strpos($lines[$line], ' 100% of ') > 0) {
+						$content["100"] = True;
+					}
+				}
+
+				if ($first_line !== 0) {
+					$lines = array_slice($lines, $first_line);
+				}
+
 				$content["lastline"] = array_slice($lines, -1)[0];
-				$content["100"] = strpos($lines[count($lines)-1], ' 100% of ') > 0;
 			} catch (Exception $e) {
 				$content["lastline"] = '';
-				$content["100"] = False;
 			}	
 			try {
 				$handle = fopen($file, 'r');

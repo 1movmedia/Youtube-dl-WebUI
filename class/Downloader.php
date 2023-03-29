@@ -82,8 +82,7 @@ class Downloader
 
 	public static function background_jobs()
 	{
-		$config = require dirname(__DIR__).'/config/config.php';
-		return shell_exec("ps aux | grep -v grep | grep -v \"".$config["bin"]." -U\" | grep \"".$config["bin"]." \" | wc -l");
+		return count(self::get_current_background_jobs());
 	}
 
 	public static function max_background_jobs()
@@ -94,22 +93,34 @@ class Downloader
 
 	public static function get_current_background_jobs()
 	{
-		$config = require dirname(__DIR__).'/config/config.php';
-		exec("ps -A -o user,pid,etime,cmd | grep -v grep | grep -v \"".$config["bin"]." -U\" | grep \"".$config["bin"]." \"", $output);
+		exec("ps -A -o user,pid,etime,cmd", $output);
 
 		$bjs = [];
 
 		if(count($output) > 0)
 		{
+			$marker = 'sh -c ( while true; do';
+			$marker_len = strlen($marker);
+
 			foreach($output as $line)
 			{
+				if ($line[1] === 'PID') {
+					continue;
+				}
+
 				$line = explode(' ', preg_replace ("/ +/", " ", $line), 4);
-				$bjs[] = array(
+				$job = array(
 					'user' => $line[0],
 					'pid' => $line[1],
 					'time' => $line[2],
 					'cmd' => $line[3]
 					);
+
+				if (substr($job['cmd'], 0, $marker_len) !== $marker) {
+					continue;
+				}
+
+				$bjs[] = $job;
 			}
 
 			return $bjs;
@@ -122,17 +133,8 @@ class Downloader
 
 	public static function kill_them_all()
 	{
-		$config = require dirname(__DIR__).'/config/config.php';
-		exec("ps -A -o pid,cmd | grep -v grep | grep -v \"".$config["bin"]." -U\" | grep \"".$config["bin"]." \" | awk '{print $1}'", $output);
-
-		if(count($output) <= 0)
-		{
-			return;
-		}
-
-		foreach($output as $p)
-		{
-			shell_exec("kill ".$p);
+		foreach(self::get_current_background_jobs() as $job) {
+			posix_kill($job['pid'], SIGTERM);
 		}
 
 		$fh = new FileHandler();
@@ -261,13 +263,13 @@ class Downloader
 		if ($from != 0 || $from_end != 0) {
 			$cut_duration = $to - $from;
 
-			$cmd .= " --download-sections " . escapeshellarg("*0-$to");
+			// $cmd .= " --download-sections " . escapeshellarg("*0-$to");
 			// $cmd .= " --postprocessor-args " . escapeshellarg("-ss $from -t $cut_duration -avoid_negative_ts make_zero -map 0:0 -c:0 copy -map 0:1 -c:1 copy -map_metadata 0 -movflags +faststart -default_mode infer_no_subs -ignore_unknown");
 
 			$output_file = $this->download_path."/".$this->id . '.mp4';
 			$download_file = $this->download_path."/".$this->id . '.uncut.mp4';
-			$convert_from = max(0, $from - 1);
-			$convert_cmd = "ffmpeg -i " . escapeshellarg($download_file) . " -ss $convert_from -t $cut_duration -avoid_negative_ts make_zero -map 0:0 -c:0 copy -map 0:1 -c:1 copy -map_metadata 0 -movflags +faststart -default_mode infer_no_subs -ignore_unknown -f mp4 " . escapeshellarg($output_file);
+			$convert_from = max(0, $from - 0.33);
+			$convert_cmd = "ffmpeg -ss \$(php ".escapeshellarg(__DIR__.'/../util/first_key_frame.php')." ".escapeshellarg($download_file)." $convert_from) -i " . escapeshellarg($download_file) . " -t $cut_duration -avoid_negative_ts make_zero -map 0:0 -c:0 copy -map 0:1 -c:1 copy -map_metadata 0 -movflags +faststart -default_mode infer_no_subs -ignore_unknown -f mp4 " . escapeshellarg($output_file);
 			$convert_cmd .= " && rm " . escapeshellarg($download_file);
 		}
 		
@@ -285,7 +287,7 @@ class Downloader
 
 		if($this->config["log"])
 		{
-			$logfile = $this->log_path . "/" . date("Y-m-d_H-i-s") . "_" . floor(fmod(microtime(true), 1) * 1000000) . ".txt";
+			$logfile = $this->log_path . "/" . date("Y-m-d_H-i-s") . "_" . floor(fmod(microtime(true), 1) * 1000000) . '-' . $this->id . ".txt";
 		}
 
 		$cmd .= " >> " . $logfile;
