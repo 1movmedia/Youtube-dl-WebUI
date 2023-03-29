@@ -262,9 +262,9 @@ class Downloader
 			$cut_duration = $to - $from;
 
 			$cmd .= " --download-sections " . escapeshellarg("*0-$to");
-			// $cmd .= " --postprocessor-args " . escapeshellarg("-max_muxing_queue_size 9999 -async 1 -muxpreload 0 -muxdelay 0 -copyts -start_at_zero");
+			// $cmd .= " --postprocessor-args " . escapeshellarg("-ss $from -t $cut_duration -avoid_negative_ts make_zero -map 0:0 -c:0 copy -map 0:1 -c:1 copy -map_metadata 0 -movflags +faststart -default_mode infer_no_subs -ignore_unknown");
 
-			$output_file = $this->download_path."/".$this->id . '.mp4';;
+			$output_file = $this->download_path."/".$this->id . '.mp4';
 			$download_file = $this->download_path."/".$this->id . '.uncut.mp4';
 			$convert_from = max(0, $from - 1);
 			$convert_cmd = "ffmpeg -i " . escapeshellarg($download_file) . " -ss $convert_from -t $cut_duration -avoid_negative_ts make_zero -map 0:0 -c:0 copy -map 0:1 -c:1 copy -map_metadata 0 -movflags +faststart -default_mode infer_no_subs -ignore_unknown -f mp4 " . escapeshellarg($output_file);
@@ -279,6 +279,8 @@ class Downloader
 			$cmd = "( $cmd && $convert_cmd )";
 		}
 
+		$cmd = "( while true; do $cmd && break; sleep 15; done )";
+
 		$logfile = '/dev/null';
 
 		if($this->config["log"])
@@ -287,7 +289,7 @@ class Downloader
 		}
 
 		$cmd .= " >> " . $logfile;
-		// $cmd .= " 2>&1";
+		$cmd .= " 2>&1";
 
 		$cmd .= " & echo $!";
 
