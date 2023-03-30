@@ -5,21 +5,21 @@ require_once 'class/FileHandler.php';
 
 $config = require __DIR__.'/config/config.php';
 
-$file = new FileHandler($config['db']);
+$fh = new FileHandler($config['db']);
 
 if ('y' == @$_REQUEST['as_json']) {
     $dataset = $_REQUEST['ds'] ?? 'all';
     if ($dataset === 'all') {
         header('Content-Type: application/json');
-        echo $file->dumpAllToJson();
+        echo $fh->dumpAllToJson();
     }
     elseif ($dataset === 'files') {
         header('Content-Type: application/json');
-        echo json_encode($file->listFiles(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        echo json_encode($fh->listFiles(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
     elseif ($dataset === 'ids') {
         header('Content-Type: application/json');
-        echo json_encode($file->getAllIds(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        echo json_encode($fh->getAllIds(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
     else {
         header('HTTP/1.0 404 Invalid dataset');
@@ -41,7 +41,7 @@ $dl_uri_prefix = (@$_SERVER['HTTPS'] !== 'off' ? 'http' : 'https') . "://" . $_S
 
 $out = fopen('php://output', 'w');
 
-foreach($file->listFiles() as $file) {
+foreach($fh->listFiles() as $file) {
     if (!empty($file['info'])) {
         $video_id = $file['id'];
         
@@ -96,7 +96,7 @@ foreach($file->listFiles() as $file) {
         fputcsv($out, $row, "\t");
 
         if ($mark_exported) {
-            $file->updateLastExport($video_id);
+            $fh->updateLastExport($video_id);
         }
     }
 }
