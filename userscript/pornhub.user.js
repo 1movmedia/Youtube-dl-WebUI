@@ -113,6 +113,8 @@ if (location.search.startsWith('?viewkey=')) {
             userTitle: userLink.innerText,
             userUrl: userLink.href,
         };
+
+        let video_id = 'ph-' + video.vkey;
     
         let isDownloaded = false;
     
@@ -122,7 +124,7 @@ if (location.search.startsWith('?viewkey=')) {
                     "accept": "application/json",
                     "content-type": "application/x-www-form-urlencoded",
                 },
-                "body": "id=" + video.vkey,
+                "body": "id=" + video_id,
                 "method": "POST",
             });
         
