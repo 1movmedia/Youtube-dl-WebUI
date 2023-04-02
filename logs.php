@@ -13,6 +13,7 @@
 	}
 
 	$files = $file->listLogs();
+	$deferred = $file->list_deferred();
 
 	if($session->is_logged_in() && isset($_GET["delete"]))
 	{

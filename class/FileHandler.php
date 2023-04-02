@@ -103,6 +103,44 @@ class FileHandler
 		return count(glob($folder.'*.txt', GLOB_BRACE));
 	}
 
+	public function list_deferred() {
+		$files = [];
+		
+		if(!$this->config["log"])
+			return;
+
+		if(!$this->logs_folder_exists())
+			return;
+
+		$folder = $this->get_logs_folder().'/';
+
+		foreach(glob($folder.'*.txt.deferred', GLOB_BRACE) as $file)
+		{
+			$content = [];
+			$content['log_filename'] = preg_replace('/\.deferred$/', '', $file);
+			$content["name"] = str_replace($folder, "", $file);
+
+			if (($fh = fopen($file, 'r')) === false) {
+				continue;
+			}
+		
+			while (!feof($fh)) {
+				$line = fgets($fh);
+		
+				if (preg_match('/^Command: (.*)$/', $line, $match)) {
+					$content['cmd'] = $match[1];
+					break;
+				}
+			}
+		
+			fclose($fh);
+
+			$files[$file] = $content;
+		}
+
+		return $files;
+	}
+
 	public function listLogs()
 	{
 		$files = [];

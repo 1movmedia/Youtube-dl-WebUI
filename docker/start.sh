@@ -29,4 +29,21 @@ chmod 0775 /var/lib/php/sessions
 
 echo 'Starting web server...'
 
-exec /usr/sbin/apache2ctl -D FOREGROUND
+#exec /usr/sbin/apache2ctl -D FOREGROUND
+
+# Run Apache in the background
+/usr/sbin/apache2ctl -D FOREGROUND &
+
+# Store the background process PID
+bg_pid=$!
+
+# Trap script exit and stop the server
+on_exit() {
+  echo 'Stopping the web server...'
+  kill $bg_pid
+}
+trap on_exit EXIT
+
+while :; do
+  su -c "php ${prefix}/download_deferred.php" -s /bin/bash www-data || sleep 5
+done

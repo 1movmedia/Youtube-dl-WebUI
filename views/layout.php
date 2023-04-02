@@ -79,27 +79,35 @@
 							<?php
 						}
 					?>
-							<li class="nav-item mx-1 dropdown">
-								<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-							<?php if(Downloader::background_jobs() > 0) echo "<b>"; ?>Background downloads : <?php echo Downloader::background_jobs()." / ".Downloader::max_background_jobs(); if(Downloader::background_jobs() > 0) echo "</b>"; ?> <span class="caret"></span></a>
-								<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-							<?php
-								if(Downloader::get_current_background_jobs() != null)
-								{
-									foreach(Downloader::get_current_background_jobs() as $key)
-									{
-										echo "									<li><span class=\"dropdown-item\" title=\"".htmlspecialchars($key['cmd'])."\">Elapsed time : ".$key['time']."</span></li>";
-									}
-
-									echo "									<li><hr class=\"dropdown-divider\"></li>";
-									echo "									<li><a class=\"dropdown-item\" href=\"./index.php?kill=all\">Kill all downloads</a></li>";
-								}
-								else
-								{
-									echo "									<li><a class=\"dropdown-item disabled\">No jobs !</a></li>";
-								}
-
-							?>
+									<li class="nav-item mx-1 dropdown">
+										<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+											<?php if((Downloader::background_jobs() + count($deferred)) > 0): ?>
+												<b>Background downloads :</b>
+											<?php else: ?>
+												Background downloads :
+											<?php endif; ?>
+											<?= Downloader::background_jobs() . " / " . Downloader::max_background_jobs() . " + " . count($deferred) . " deferred"; ?>
+											<?php if(Downloader::background_jobs() > 0): ?>
+												</b>
+											<?php endif; ?>
+											<span class="caret"></span>
+										</a>
+										<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+											<?php if(Downloader::get_current_background_jobs() != null): ?>
+												<?php foreach(Downloader::get_current_background_jobs() as $key): ?>
+													<li>
+														<span class="dropdown-item" title="<?= htmlspecialchars($key['cmd']); ?>">
+															Elapsed time : <?= $key['time']; ?>
+														</span>
+													</li>
+												<?php endforeach; ?>
+												<li><hr class="dropdown-divider"></li>
+												<li><a class="dropdown-item" href="./index.php?kill=all">Kill all downloads</a></li>
+											<?php else: ?>
+												<li><a class="dropdown-item disabled">No jobs !</a></li>
+											<?php endif; ?>
+										</ul>
+									</li>
 								</ul>
 							</li>
 					<?php

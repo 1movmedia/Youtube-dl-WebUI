@@ -24,7 +24,9 @@ $video_info = json_decode($json, true);
 
 $downloader = new Downloader($video_info);
 
-$downloader->download();
+$index = $video_info['index'] !== 'n';
+
+$downloader->download(false, true, $index);
 
 header('Content-Type: application/json');
 

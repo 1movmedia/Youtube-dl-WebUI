@@ -25,6 +25,7 @@ It supports:
 1. Clone this repo in your web folder (ex: `/var/www`).
 1. Copy `config/config.php.TEMPLATE` to  `config/config.php` and edit it as you like ([set binary](#set-binary), [change password](#set-a-password)).
 1. Check folders permissions (www-data user must be able to write in the download and log folders).
+1. Add `download_fererred.php to your crontab to process deferred downloads in background.`
 1. Load index.php to check that everything works.
 
 ## Set binary

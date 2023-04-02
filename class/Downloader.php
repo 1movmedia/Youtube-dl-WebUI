@@ -10,6 +10,7 @@ class Downloader
 	private $errors = [];
 	private $download_path = "";
 	private $log_path = "";
+	private $log_file = '/dev/null';
 	private $vformat = false;
 
 	public function __construct($video_info)
@@ -44,7 +45,29 @@ class Downloader
 		}
 	}
 
-	public function download($vformat=False) {
+	public static function check_can_download($config) {
+		if($config["max_dl"] == 0)
+		{
+			return true;
+		}
+		elseif($config["max_dl"] > 0)
+		{
+			$bg_jobs = self::background_jobs();
+
+			if($bg_jobs >= 0 && $bg_jobs < $config["max_dl"])
+			{
+				return true;
+			}
+			else
+			{
+				$GLOBALS['_ERRORS'] = ["Simultaneous downloads limit reached !"];
+			}
+		}
+
+		return false;
+	}
+
+	public function download($vformat=False, $deferred = false, $index = true) {
 		if(isset($this->errors) && count($this->errors) > 0)
 		{
 			$GLOBALS['_ERRORS'] = $this->errors;
@@ -56,20 +79,11 @@ class Downloader
 			$this->vformat = $vformat;
 		}
 
-		if($this->config["max_dl"] == 0)
-		{
-			$this->do_download();
+		if (self::check_can_download($this->config)) {
+			$this->do_download($deferred, $index);
 		}
-		elseif($this->config["max_dl"] > 0)
-		{
-			if($this->background_jobs() >= 0 && $this->background_jobs() < $this->config["max_dl"])
-			{
-				$this->do_download();
-			}
-			else
-			{
-				$this->errors[] = "Simultaneous downloads limit reached !";
-			}
+		else {
+			$this->errors = $GLOBALS['_ERRORS'];
 		}
 
 		if(isset($this->errors) && count($this->errors) > 0)
@@ -93,7 +107,19 @@ class Downloader
 
 	public static function get_current_background_jobs()
 	{
-		exec("ps -A -o user,pid,ppid,etime,cmd", $output);
+		$currentUid = posix_getuid();
+		$currentUsername = posix_getpwuid($currentUid)['name'];
+		
+		$ps_command = "ps -A -o user,pid,ppid,etime,cmd";
+
+		$ignore_commands = [
+			"sh -c $ps_command",
+			$ps_command,
+			'/usr/sbin/apache2 -D FOREGROUND',
+			'php /var/www/html/youtube-dl/download_deferred.php',
+		];
+
+		exec($ps_command, $output);
 
 		$bjs = [];
 
@@ -104,11 +130,12 @@ class Downloader
 
 			foreach($output as $line)
 			{
-				if ($line[1] === 'PID') {
+				$cells = explode(' ', preg_replace ("/ +/", " ", $line), 5);
+
+				if ($cells[1] === 'PID' || $cells[0] != $currentUsername || in_array($cells[4], $ignore_commands)) {
 					continue;
 				}
 
-				$cells = explode(' ', preg_replace ("/ +/", " ", $line), 5);
 				$job = array(
 					'line' => $line,
 					'user' => $cells[0],
@@ -118,16 +145,21 @@ class Downloader
 					'cmd' => $cells[4],
 					'chld' => [],
 				);
-					
+
 				$job['is_download'] = $job['ppid'] == '1' && substr($job['cmd'], 0, $marker_len) === $marker;
 
 				$bjs[$job['pid']] = $job;
+
+				if (isset($bjs[''])) {
+					var_dump([$job, $bjs]);
+					die;
+				}
 			}
 
-			foreach($bjs as &$job) {
+			foreach($bjs as $k => &$job) {
 				$ppid = $job['ppid'];
 
-				if ($ppid == '1') {
+				if ($ppid == '1' || !isset($bjs[$ppid])) {
 					continue;
 				}
 
@@ -140,7 +172,6 @@ class Downloader
 				if ($ppid != '1') {
 					continue;
 				}
-				// echo json_encode(['ppid' => $ppid, $ppid != '1', $job['pid']]);die;
 				
 				$pids = [ $job['pid'] ];
 				$tree = [];
@@ -273,7 +304,29 @@ class Downloader
 		
 	}
 
-	private function do_download()
+	private function do_download($deferred = false, $index = true) {
+		$cmd = $this->download_prepare($index);
+
+		if ($this->log_file !== '/dev/null') {
+			file_put_contents($this->log_file, "Command: $cmd\n\n");
+		}
+
+		if ($deferred) {
+			if (!rename($this->log_file, $this->log_file . '.deferred')) {
+				$this->errors[] = "Failed to rename log file to .deferred";
+			}
+
+			return;
+		}
+
+		$output = shell_exec($cmd);
+
+		if ($this->log_file !== '/dev/null') {
+			file_put_contents($this->log_file, "Output:\n\n$output", FILE_APPEND);
+		}
+	}
+
+	private function download_prepare($index = true)
 	{
 		$fh = new FileHandler($this->config['db']);
 
@@ -292,7 +345,7 @@ class Downloader
 		unset($json_info['id']);
 		unset($json_info['url']);
 
-		if (!$fh->addURL($this->id, $this->url, json_encode($json_info))) {
+		if ($index && !$fh->addURL($this->id, $this->url, json_encode($json_info))) {
 			$this->errors[] = "Failed to add $this->id";
 			return;
 		}
@@ -325,27 +378,17 @@ class Downloader
 
 		$cmd = "( while true; do $cmd && break; sleep 15; done )";
 
-		$logfile = '/dev/null';
-
 		if($this->config["log"])
 		{
-			$logfile = $this->log_path . "/" . date("Y-m-d_H-i-s") . "_" . floor(fmod(microtime(true), 1) * 1000000) . '-' . $this->id . ".txt";
+			$this->log_file = $this->log_path . "/" . date("Y-m-d_H-i-s") . "_" . floor(fmod(microtime(true), 1) * 1000000) . '-' . $this->id . ".txt";
 		}
 
-		$cmd .= " >> " . $logfile;
+		$cmd .= " >> " . $this->log_file;
 		$cmd .= " 2>&1";
 
 		$cmd .= " & echo $!";
 
-		if ($logfile !== '/dev/null') {
-			file_put_contents($logfile, "Command:\n\n$cmd\n\n");
-		}
-
-		$output = shell_exec($cmd);
-		
-		if ($logfile !== '/dev/null') {
-			file_put_contents($logfile, "Output:\n\n$output", FILE_APPEND);
-		}
+		return $cmd;
 	}
 
 }
