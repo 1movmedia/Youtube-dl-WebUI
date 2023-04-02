@@ -93,7 +93,7 @@ class Downloader
 
 	public static function get_current_background_jobs()
 	{
-		exec("ps -A -o user,pid,etime,cmd", $output);
+		exec("ps -A -o user,pid,ppid,etime,cmd", $output);
 
 		$bjs = [];
 
@@ -108,19 +108,59 @@ class Downloader
 					continue;
 				}
 
-				$line = explode(' ', preg_replace ("/ +/", " ", $line), 4);
+				$cells = explode(' ', preg_replace ("/ +/", " ", $line), 5);
 				$job = array(
-					'user' => $line[0],
-					'pid' => $line[1],
-					'time' => $line[2],
-					'cmd' => $line[3]
-					);
+					'line' => $line,
+					'user' => $cells[0],
+					'pid' => $cells[1],
+					'ppid' => $cells[2],
+					'time' => $cells[3],
+					'cmd' => $cells[4],
+					'chld' => [],
+				);
+					
+				$job['is_download'] = $job['ppid'] == '1' && substr($job['cmd'], 0, $marker_len) === $marker;
 
-				if (substr($job['cmd'], 0, $marker_len) !== $marker) {
+				$bjs[$job['pid']] = $job;
+			}
+
+			foreach($bjs as &$job) {
+				$ppid = $job['ppid'];
+
+				if ($ppid == '1') {
 					continue;
 				}
 
-				$bjs[] = $job;
+				$bjs[$ppid]['chld'][] = $job['pid'];
+			}
+
+			foreach($bjs as &$job) {
+				$ppid = $job['ppid'];
+
+				if ($ppid != '1') {
+					continue;
+				}
+				// echo json_encode(['ppid' => $ppid, $ppid != '1', $job['pid']]);die;
+				
+				$pids = [ $job['pid'] ];
+				$tree = [];
+
+				while(count($pids) > 0) {
+					$pid = array_pop($pids);
+					$tree[] = $pid;
+
+					foreach($bjs[$pid]['chld'] as $chld) {
+						$pids[] = $chld;
+					}
+				}
+
+				$job['tree'] = $tree;
+			}
+
+			foreach($bjs as $pid => $job) {
+				if (!$job['is_download']) {
+					unset($bjs[$pid]);
+				}
 			}
 
 			return $bjs;
@@ -134,7 +174,11 @@ class Downloader
 	public static function kill_them_all()
 	{
 		foreach(self::get_current_background_jobs() as $job) {
-			posix_kill($job['pid'], SIGTERM);
+			foreach($job['tree'] as $pid) {
+				$pid = intval($pid);
+
+				posix_kill($pid, 15);
+			}
 		}
 
 		$fh = new FileHandler();
