@@ -20,12 +20,6 @@ if (!Downloader::check_can_download($config)) {
 
 $fh = new FileHandler();
 
-var_dump([
-    time(), $fh->list_deferred()
-]);
-sleep(1);
-exit;
-
 foreach($fh->list_deferred() as $def_log => $log_info) {
     echo "Deferred download found: $def_log\n";
 
