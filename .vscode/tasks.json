@@ -13,7 +13,7 @@
         {
             "label": "Run Docker container",
             "type": "shell",
-            "command": "docker run --name ytdlwui --rm -p 8963:80 -v $(pwd):/var/www/html/youtube-dl ytdlwui",
+            "command": "docker run --name ytdlwui --rm -it -p 8963:80 -v $(pwd):/var/www/html/youtube-dl ytdlwui",
             "problemMatcher": [],
             "dependsOn": [ "Build Docker image" ],
             "promptOnClose": false,
