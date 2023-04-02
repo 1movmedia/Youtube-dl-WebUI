@@ -79,7 +79,7 @@ class Downloader
 			$this->vformat = $vformat;
 		}
 
-		if (self::check_can_download($this->config)) {
+		if ($deferred || self::check_can_download($this->config)) {
 			$this->do_download($deferred, $index);
 		}
 		else {
