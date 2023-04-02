@@ -104,15 +104,15 @@ class FileHandler
 	}
 
 	public function list_deferred() {
-		$files = [];
-		
 		if(!$this->config["log"])
-			return;
+			return [];
 
 		if(!$this->logs_folder_exists())
-			return;
+			return [];
 
 		$folder = $this->get_logs_folder().'/';
+
+		$files = [];
 
 		foreach(glob($folder.'*.txt.deferred', GLOB_BRACE) as $file)
 		{
