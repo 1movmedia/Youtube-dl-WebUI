@@ -1,6 +1,6 @@
 {
     "recommendations": [
-        "sanaajani.taskrunnercode",
-        "andywang.vscode-scriptmonkey"
+        "andywang.vscode-scriptmonkey",
+        "spmeesseman.vscode-taskexplorer"
     ]
 }
