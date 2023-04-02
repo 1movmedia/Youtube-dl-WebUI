@@ -41,6 +41,3 @@ foreach($fh->list_deferred() as $def_log => $log_info) {
 
 # Sleep before restarting the script
 sleep(5);
-
-// echo `clear`;
-echo time() . ": Finished\n";
