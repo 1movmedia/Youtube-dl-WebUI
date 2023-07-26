@@ -100,12 +100,12 @@ async function download(video, onsuccess) {
 
 if (location.search.startsWith('?viewkey=')) {
     (async () => {
-        
+
         let viewKey = location.search.substring('?viewkey='.length).split('&')[0];
-    
+
         let usernameWrap = S('.video-detailed-info .usernameWrap');
         let userLink = usernameWrap.querySelector('a[href]');
-    
+
         let video = {
             vkey: viewKey,
             url: 'https://www.pornhub.com/view_video.php?viewkey=' + viewKey,
@@ -115,9 +115,9 @@ if (location.search.startsWith('?viewkey=')) {
         };
 
         let video_id = 'ph-' + video.vkey;
-    
+
         let isDownloaded = false;
-    
+
         try {
             let response = await gmfetch(ytDlpUrl + '/check_id.php', {
                 "headers": {
@@ -127,26 +127,26 @@ if (location.search.startsWith('?viewkey=')) {
                 "body": "id=" + video_id,
                 "method": "POST",
             });
-        
+
             if (!response.ok) {
                 let responseText = await response.text();
-            
+
                 console.error("Invalid response received from", ytDlpUrl + '/check_id.php', "Response:", responseText);
-        
+
                 return;
             }
-        
+
             isDownloaded = await response.json();
         }
         catch (e) {
             console.error("Failed fetching video status from downloader:", e);
         }
-    
+
         console.log("Video:", video);
-    
+
         let iconDownloadClass = 'ph-icon-cloud-download';
         let iconDownloadedClass = 'ph-icon-cloud-done';
-    
+
         let buttons = [
             {
                 iconClass: 'ph-icon-arrow-back',
@@ -159,6 +159,7 @@ if (location.search.startsWith('?viewkey=')) {
             {
                 iconClass: 'ph-icon-chevron-left',
                 caption: '',
+
                 onclick: (e, btn) => {
                     let videoElement = S('#player video');
                     videoElement.currentTime -= (1/25);
@@ -234,11 +235,11 @@ if (location.search.startsWith('?viewkey=')) {
                             return;
                         }
                     }
-    
+
                     console.log("Download:", video);
-    
+
                     // let btn = this;
-    
+
                     download(video, () => {
                         console.log('button:', btn);
                         btn.buttonElement.onclick = null;
@@ -251,19 +252,19 @@ if (location.search.startsWith('?viewkey=')) {
                 },
             },
         ];
-    
+
         let titleContainer = S('.title-container');
         let controlEl = H(`<div class="userscript-ui-container"></div>`);
-    
+
         titleContainer.parentElement.insertBefore(controlEl, titleContainer);
-        
+
         resp = await gmfetch(ytDlpUrl + "/login.php", {
             "headers": {
                 "accept": "application/json",
             },
             "method": "GET",
         });
-        
+
         let loginState = await resp.json();
 
         let loggedIn = loginState['logged_in'];
@@ -280,22 +281,22 @@ if (location.search.startsWith('?viewkey=')) {
                 },
             }).then(async targetsResp => {
                 let targets = await targetsResp.json();
-        
+
                 if (targets !== null && targets.length > 0) {
                     let selectedTarget = GM_getValue('selectedTarget');
                     let targetSelect = H(
                         '<select class="userscript-ui-input signedin downloadvideo">' +
                         targets.map(s => `<option${selectedTarget == s ? ' selected' : ''} value="${s}">${s}</option>`).join('') +
                         '</select>');
-        
+
                     targetSelect.onchange = e => {
                         let newTarget = targetSelect.options[targetSelect.selectedIndex].value;
                         video.target = newTarget;
                         GM_setValue('selectedTarget', newTarget);
                     };
-                    
+
                     video.target = targetSelect.options[targetSelect.selectedIndex].value;
-        
+
                     controlEl.insertBefore(targetSelect, controlEl.childNodes[0]);
                 }
             });
@@ -307,19 +308,31 @@ if (location.search.startsWith('?viewkey=')) {
 
         buttons.forEach(button => {
             let btnCell = H(`<span class="userscript-ui-menuitem ${button.buttonClass}"><i class="${button.iconClass}"></i><span class="userscript-ui-caption">${button.caption}</span></span>`);
-            
+
             button.buttonElement = btnCell;
             button.iconElement = btnCell.querySelector('i');
             button.captionElement = btnCell.querySelector('span.userscript-ui-caption');
-        
+
             controlEl.appendChild(btnCell);
-        
+
             btnCell.onclick = e => button.onclick(e, button);
-            
+
             console.log('Added Button:', btnCell);
         });
     })();
 }
+
+window.onkeydown = function(e) {
+    if (e.keyCode == 65) {
+        let videoElement = S('#player video');
+        videoElement.currentTime -= 1;
+    }
+
+    if (e.keyCode == 68) {
+        let videoElement = S('#player video');
+        videoElement.currentTime += 1;
+    }
+};
 
 GM_addStyle(`
    .userscript-ui-container {
@@ -356,7 +369,7 @@ GM_addStyle(`
         color: #000;
         margin-left: auto;
     }
-    
+
     .userscript-ui-menuitem {
         padding-left: 10px;
         color: #c6c6c6;
