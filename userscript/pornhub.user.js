@@ -55,7 +55,7 @@ async function download(video, onsuccess) {
        
         "tags": Array.from(document.querySelectorAll('.tagsWrapper a[data-label="Tag"]')).map(a => ({'tag_name': a.innerText})),
         "pornstars": Array.from(document.querySelectorAll('a[data-mxptype="Pornstar"][data-mxptext]')).map(a => ({'pornstar_name': a.dataset.mxptext})),
-        "categories": dataLayer[0].videodata.categories_in_video.split(',').map(c => ({ category: c })),
+        "categories": dataLayer.filter(e => !!e.videodata)[0].videodata.categories_in_video.split(',').map(c => ({ category: c })),
     };
 
     if (videoInfo.pornstars.length === 0 && (/\/model\/[^/]+$/.test(video.userUrl))) {
