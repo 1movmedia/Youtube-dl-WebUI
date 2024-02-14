@@ -10,10 +10,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN cd /usr/local/bin \
  && curl https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz --remote-name -s \
  && tar -xf ffmpeg-release-amd64-static.tar.xz \
- && cd ffmpeg-6.0-amd64-static \
+ && cd ffmpeg-*-amd64-static \
  && mv ffmpeg ffprobe qt-faststart ../ \
  && cd .. \
- && rm -r ffmpeg-release-amd64-static.tar.xz ffmpeg-6.0-amd64-static
+ && rm -r ffmpeg-release-amd64-static.tar.xz ffmpeg-*-amd64-static
 
 RUN pip3 install yt-dlp
 
