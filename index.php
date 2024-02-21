@@ -14,9 +14,14 @@
 	}
 	else
 	{
-		if(isset($_GET['kill']) && !empty($_GET['kill']) && $_GET['kill'] === "all")
+		if(isset($_GET['kill']) && !empty($_GET['kill']))
 		{
-			Downloader::kill_them_all();
+			if ($_GET['kill'] === "all") {
+				Downloader::kill_them_all();
+			}
+			elseif (is_numeric($_GET['kill'])) {
+				Downloader::kill($_GET['kill']);
+			}
 		}
 	}
 

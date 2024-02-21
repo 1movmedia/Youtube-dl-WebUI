@@ -93,11 +93,14 @@
 											<span class="caret"></span>
 										</a>
 										<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-											<?php if(Downloader::get_current_background_jobs() != null): ?>
-												<?php foreach(Downloader::get_current_background_jobs() as $key): ?>
+											<?php $background_jobs = Downloader::get_current_background_jobs(); ?>
+											<?php if(!empty($background_jobs)): ?>
+												<?php foreach( array_filter($background_jobs, function($job) { return !empty($job['tree']); }) as $job): ?>
 													<li>
-														<span class="dropdown-item" title="<?= htmlspecialchars($key['cmd']); ?>">
-															Elapsed time : <?= $key['time']; ?>
+														<span class="dropdown-item" title="<?= htmlspecialchars($job['cmd']); ?>">
+															Elapsed time : <?= $job['time']; ?>
+															
+															<a href="./index.php?kill=<?= $job['pid'] ?>" class="btn btn-danger">Kill</a>
 														</span>
 													</li>
 												<?php endforeach; ?>

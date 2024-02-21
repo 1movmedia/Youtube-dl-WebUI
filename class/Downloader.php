@@ -189,7 +189,7 @@ class Downloader
 			}
 
 			foreach($bjs as $pid => $job) {
-				if (!$job['is_download']) {
+				if ($pid != $job['pid'] || !$job['is_download']) {
 					unset($bjs[$pid]);
 				}
 			}
@@ -200,6 +200,26 @@ class Downloader
 		{
 			return null;
 		}
+	}
+
+	public static function kill($pid) {
+		$pid = intval($pid);
+
+		foreach(self::get_current_background_jobs() as $job) {
+			if ($job['pid'] == $pid) {
+				posix_kill($pid, 15);
+
+				foreach($job['tree'] as $pid) {
+					$pid = intval($pid);
+
+					posix_kill($pid, 15);
+				}
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public static function kill_them_all()
