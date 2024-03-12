@@ -126,7 +126,7 @@ class Downloader
 		if(count($output) > 0)
 		{
 			$config = require dirname(__DIR__).'/config/config.php';
-			$markers = [ $config["bin"], "( $config[bin]" ];
+			$markers = [ $config["bin"], "sh -c ( $config[bin]" ];
 
 			foreach($output as $line)
 			{
