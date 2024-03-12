@@ -352,6 +352,8 @@ class Downloader
 
 		$cmd = $this->config["bin"];
 		$cmd .= " --ignore-error";
+		$cmd .= " --socket-timeout 30";
+		$cmd .= " --retry-sleep exp=1:600:2";
 		
 		if ($this->vformat) 
 		{
@@ -396,7 +398,7 @@ class Downloader
 			$cmd = "( $cmd && $convert_cmd )";
 		}
 
-		$cmd = "( while true; do $cmd && break; sleep 15; done )";
+		// $cmd = "( while true; do $cmd && break; sleep 15; done )";
 
 		if($this->config["log"])
 		{
