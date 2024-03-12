@@ -125,8 +125,8 @@ class Downloader
 
 		if(count($output) > 0)
 		{
-			$marker = 'sh -c ( while true; do';
-			$marker_len = strlen($marker);
+			$config = require dirname(__DIR__).'/config/config.php';
+			$markers = [ $config["bin"], "( $config[bin]" ];
 
 			foreach($output as $line)
 			{
@@ -146,7 +146,15 @@ class Downloader
 					'chld' => [],
 				);
 
-				$job['is_download'] = $job['ppid'] == '1' && substr($job['cmd'], 0, $marker_len) === $marker;
+				$job['is_download'] = false;
+				if ($job['ppid'] == '1') {
+					foreach($markers as $marker) {
+						if (substr($job['cmd'], 0, strlen($marker)) === $marker) {
+							$job['is_download'] = true;
+							break;
+						}
+					}
+				}
 
 				$bjs[$job['pid']] = $job;
 
