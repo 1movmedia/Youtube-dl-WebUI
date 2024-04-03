@@ -25,20 +25,7 @@ const H = html => {
     return el.childNodes[0];
 };
 
-let logTs = new Date().getTime();
-
-const log = function() {
-    let args = Array.from(arguments);
-
-    let ts = new Date().getTime();
-
-    args.unshift(ts - logTs);
-    args.unshift("YOUTUBE-DL:");
-
-    logTs = ts;
-
-    console.log.apply(console, args);
-};
+const log = () => {};
 
 async function download(video, onsuccess) {
     log('Download request for video', video);
