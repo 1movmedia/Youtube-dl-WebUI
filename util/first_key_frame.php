@@ -18,6 +18,8 @@ if ($ph === false) {
     die("Failed to execute command: $command");
 }
 
+$proc_status = proc_get_status($ph);
+
 $frames = [];
 
 $ss = $input_ss;
@@ -63,4 +65,4 @@ foreach ($pipes as $pipe) {
     fclose($pipe);
 }
 
-proc_terminate($ph, 9);
+posix_kill($proc_status['pid'], 9);
