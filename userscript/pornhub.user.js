@@ -5,10 +5,7 @@
 // @match       https://pornhub.com/view_video.php*
 // @version     0.3
 // @author      Azazar <https://github.com/azazar/>
-// @require     https://unpkg.com/gmxhr-fetch
-// @grant       GM_xmlhttpRequest
 // @grant       GM.xmlHttpRequest
-// @require     https://cdn.jsdelivr.net/npm/js-base64@3.7.5/base64.min.js
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -28,8 +25,23 @@ const H = html => {
     return el.childNodes[0];
 };
 
+let logTs = new Date().getTime();
+
+const log = function() {
+    let args = Array.from(arguments);
+
+    let ts = new Date().getTime();
+
+    args.unshift(ts - logTs);
+    args.unshift("YOUTUBE-DL:");
+
+    logTs = ts;
+
+    console.log.apply(console, args);
+};
+
 async function download(video, onsuccess) {
-    console.log('Download request for video', video);
+    log('Download request for video', video);
 
     // Get video details
     let videoInfo;
@@ -46,7 +58,7 @@ async function download(video, onsuccess) {
 
     video_id = match[1];
 
-    console.log(match);
+    log(match);
 
     videoInfo = {
         "id": "ph-" + video_id,
@@ -65,37 +77,39 @@ async function download(video, onsuccess) {
     // Copy fields not available via API
     [ "url", "userTitle", "userType", "userUrl", "cutFrom", "cutTo", "duration", "cutEnd", "target" ].forEach(key => videoInfo[key] = video[key]);
 
-    console.log('videoInfo:', videoInfo);
+    log('videoInfo:', videoInfo);
 
     // Submit download request
 
-    let response = await gmfetch(ytDlpUrl + '/download.php', {
-        "headers": {
+    GM.xmlHttpRequest({
+        method: 'POST',
+        url: ytDlpUrl + '/download.php',
+        headers: {
             "accept": "application/json",
             "content-type": "application/json",
         },
-        "body": JSON.stringify(videoInfo),
-        "method": "POST",
-    });
+        data: JSON.stringify(videoInfo),
+        onload: function(response) {
+            if (response.status >= 200 && response.status < 300) {
+                let responseObj = JSON.parse(response.responseText);
 
-    if (!response.ok) {
-        let responseText = await response.text();
-    
-        console.error("Invalid response received from", ytDlpUrl + '/download.php', "Response:", responseText);
-
-        return;
-    }
-
-    let responseObj = await response.json();
-
-    if (responseObj.success) {
-        if (onsuccess) {
-            onsuccess(responseObj);
+                if (responseObj.success) {
+                    if (onsuccess) {
+                        onsuccess(responseObj);
+                    }
+                }
+                else {
+                    alert(responseObj.errors.join("\n"));
+                }
+            }
+            else {
+                alert('Request failed with status ' + response.status);
+            }
+        },
+        onerror: function(error) {
+            alert('Request failed with error ' + error);
         }
-    }
-    else {
-        alert(responseObj.errors.join("\n"));
-    }
+    });
 }
 
 if (location.search.startsWith('?viewkey=')) {
@@ -114,39 +128,47 @@ if (location.search.startsWith('?viewkey=')) {
             userUrl: userLink.href,
         };
 
-        let video_id = 'ph-' + video.vkey;
+        log("Video:", video);
+
+        let videoId = 'ph-' + video.vkey;
 
         let state = null;
 
         let isDownloaded = false;
 
         try {
-            let response = await gmfetch(ytDlpUrl + '/prepare.php', {
-                "headers": {
-                    "accept": "application/json",
-                    "content-type": "application/x-www-form-urlencoded",
-                },
-                "body": "id=" + video_id,
-                "method": "POST",
-            });
+            log('Fetching...');
 
-            if (!response.ok) {
-                let responseText = await response.text();
-
-                console.error("Invalid response received from", ytDlpUrl + '/prepare.php', "Response:", responseText);
-
-                return;
-            }
-
-            state = await response.json();
+            state = await (new Promise((resolve, reject) => {
+                GM.xmlHttpRequest({
+                    method: 'POST',
+                    url: ytDlpUrl + '/prepare.php',
+                    headers: {
+                        "accept": "application/json",
+                        "content-type": "application/x-www-form-urlencoded",
+                    },
+                    data: `id=${videoId}`,
+                    onload: function(response) {
+                        if (response.status >= 200 && response.status < 300) {
+                            resolve(JSON.parse(response.responseText));
+                        }
+                        else {
+                            reject(new Error('Request failed with status ' + response.status));
+                        }
+                    },
+                    onerror: function(error) {
+                        reject(new Error('Request failed with error ' + error));
+                    }
+                });
+            }));
 
             isDownloaded = state.downloaded;
         }
         catch (e) {
-            console.error("Failed fetching video status from downloader:", e);
+            console.error("YOUTUBE-DL: Failed fetching video status from downloader:", e);
         }
 
-        console.log("Video:", video, "State:", state);
+        log("State:", state);
 
         let iconDownloadClass = 'ph-icon-cloud-download';
         let iconDownloadedClass = 'ph-icon-cloud-done';
@@ -240,12 +262,12 @@ if (location.search.startsWith('?viewkey=')) {
                         }
                     }
 
-                    console.log("Download:", video);
+                    log("Download:", video);
 
                     // let btn = this;
 
                     download(video, () => {
-                        console.log('button:', btn);
+                        log('button:', btn);
                         btn.buttonElement.onclick = null;
                         btn.iconElement.classList.remove(iconDownloadClass);
                         btn.iconElement.classList.add(iconDownloadedClass);
@@ -302,7 +324,7 @@ if (location.search.startsWith('?viewkey=')) {
 
             btnCell.onclick = e => button.onclick(e, button);
 
-            console.log('Added Button:', btnCell);
+            log('Added Button:', btnCell);
         });
     })();
 }
