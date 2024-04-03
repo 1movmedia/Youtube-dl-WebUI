@@ -1,5 +1,10 @@
 <?php
 
+if ($_SERVER['HTTP_ACCEPT'] === 'application/json') {
+	header('HTTP/1.0 400 Obsolete Userscript');
+	die('Obsolete Userscript. Update it.');
+}
+
 require_once 'class/Session.php';
 require_once 'class/Downloader.php';
 
