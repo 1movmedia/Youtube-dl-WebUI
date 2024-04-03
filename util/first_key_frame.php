@@ -6,19 +6,17 @@
 $input_filename = $argv[1] ?? die("Argument missing");
 $input_ss = $argv[2] ?? 0;
 
-$command = trim(<<<ENDOFCOMMAND
-ffprobe -show_frames -select_streams v -print_format flat $input_filename 2> /dev/null < /dev/null
-ENDOFCOMMAND);
+$command = [`which ffprobe`, '-show_frames', '-select_streams', 'v', '-print_format', 'flat', escapeshellarg($input_filename)];
 
 $ph = proc_open($command, [
+    0 => ['file', '/dev/null', 'r'],
     1 => ['pipe', 'w'],
+    2 => ['file', '/dev/null', 'a'],
 ], $pipes);
 
 if ($ph === false) {
-    die("Failed to execute command: $command");
+    die("Failed to execute command: " . implode(' ', $command));
 }
-
-$proc_status = proc_get_status($ph);
 
 $frames = [];
 
@@ -65,4 +63,6 @@ foreach ($pipes as $pipe) {
     fclose($pipe);
 }
 
-posix_kill($proc_status['pid'], 9);
+proc_terminate($ph, 9);
+
+proc_close($ph);
