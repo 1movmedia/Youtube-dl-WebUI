@@ -3,7 +3,7 @@
 // @namespace   Azazar's Scripts
 // @match       https://*.pornhub.com/view_video.php*
 // @match       https://pornhub.com/view_video.php*
-// @version     0.2
+// @version     0.3
 // @author      Azazar <https://github.com/azazar/>
 // @require     https://unpkg.com/gmxhr-fetch
 // @grant       GM_xmlhttpRequest
@@ -116,10 +116,12 @@ if (location.search.startsWith('?viewkey=')) {
 
         let video_id = 'ph-' + video.vkey;
 
+        let state = null;
+
         let isDownloaded = false;
 
         try {
-            let response = await gmfetch(ytDlpUrl + '/check_id.php', {
+            let response = await gmfetch(ytDlpUrl + '/prepare.php', {
                 "headers": {
                     "accept": "application/json",
                     "content-type": "application/x-www-form-urlencoded",
@@ -131,18 +133,20 @@ if (location.search.startsWith('?viewkey=')) {
             if (!response.ok) {
                 let responseText = await response.text();
 
-                console.error("Invalid response received from", ytDlpUrl + '/check_id.php', "Response:", responseText);
+                console.error("Invalid response received from", ytDlpUrl + '/prepare.php', "Response:", responseText);
 
                 return;
             }
 
-            isDownloaded = await response.json();
+            state = await response.json();
+
+            isDownloaded = state.downloaded;
         }
         catch (e) {
             console.error("Failed fetching video status from downloader:", e);
         }
 
-        console.log("Video:", video);
+        console.log("Video:", video, "State:", state);
 
         let iconDownloadClass = 'ph-icon-cloud-download';
         let iconDownloadedClass = 'ph-icon-cloud-done';
@@ -258,49 +262,30 @@ if (location.search.startsWith('?viewkey=')) {
 
         titleContainer.parentElement.insertBefore(controlEl, titleContainer);
 
-        resp = await gmfetch(ytDlpUrl + "/login.php", {
-            "headers": {
-                "accept": "application/json",
-            },
-            "method": "GET",
-        });
-
-        let loginState = await resp.json();
-
-        let loggedIn = loginState['logged_in'];
+        let loggedIn = !!state;
 
         controlEl.classList.add(loggedIn ? 'signedin' : 'signedout');
         controlEl.classList.add(isDownloaded ? 'downloaded' : 'newvideo')
 
-        console.log("Download User:", loginState, loggedIn);
+        if (loggedIn && state.targets) {
+            if (state.targets !== null && state.targets.length > 0) {
+                let selectedTarget = GM_getValue('selectedTarget');
+                let targetSelect = H(
+                    '<select class="userscript-ui-input signedin downloadvideo">' +
+                    state.targets.map(s => `<option${selectedTarget == s ? ' selected' : ''} value="${s}">${s}</option>`).join('') +
+                    '</select>');
 
-        if (loggedIn) {
-            gmfetch(ytDlpUrl + "/targets.php", {
-                "headers": {
-                    "accept": "application/json",
-                },
-            }).then(async targetsResp => {
-                let targets = await targetsResp.json();
+                targetSelect.onchange = e => {
+                    let newTarget = targetSelect.options[targetSelect.selectedIndex].value;
+                    video.target = newTarget;
+                    GM_setValue('selectedTarget', newTarget);
+                };
 
-                if (targets !== null && targets.length > 0) {
-                    let selectedTarget = GM_getValue('selectedTarget');
-                    let targetSelect = H(
-                        '<select class="userscript-ui-input signedin downloadvideo">' +
-                        targets.map(s => `<option${selectedTarget == s ? ' selected' : ''} value="${s}">${s}</option>`).join('') +
-                        '</select>');
+                video.target = targetSelect.options[targetSelect.selectedIndex].value;
 
-                    targetSelect.onchange = e => {
-                        let newTarget = targetSelect.options[targetSelect.selectedIndex].value;
-                        video.target = newTarget;
-                        GM_setValue('selectedTarget', newTarget);
-                    };
-
-                    video.target = targetSelect.options[targetSelect.selectedIndex].value;
-
-                    controlEl.insertBefore(targetSelect, controlEl.childNodes[0]);
-                }
-            });
-        }
+                controlEl.insertBefore(targetSelect, controlEl.childNodes[0]);
+            }
+    }
 
         let el = H('<span class="userscript-ui-message downloadedvideo">This video is downloaded already</span>');
 
