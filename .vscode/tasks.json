@@ -46,5 +46,20 @@
             "problemMatcher": [],
             "promptOnClose": false,
         },
+        {
+            "label": "Install ViolentMonkey into default browser",
+            "type": "shell",
+            "command": "x-www-browser --new-window https://chromewebstore.google.com/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag",
+            "problemMatcher": [],
+            "promptOnClose": false,
+        },
+        {
+            "label": "Open everything in default browser",
+            "type": "shell",
+            "command": "x-www-browser --new-window http://localhost:8963/ https://rt.pornhub.com/pornstar/jia-lissa/videos http://localhost:8963/pornhub.user.js",
+            "problemMatcher": [],
+            "promptOnClose": false,
+            "dependsOn": "Launch Docker container"
+        }
     ]
 }
