@@ -19,6 +19,13 @@
             "promptOnClose": false,
         },
         {
+            "label": "View Docker container logs",
+            "type": "shell",
+            "command": "docker logs -f ytdlwui",
+            "problemMatcher": [],
+            "promptOnClose": false,
+        },
+        {
             "label": "Stop Docker container and remove it",
             "type": "shell",
             "command": "docker rm -f ytdlwui",
