@@ -11,7 +11,7 @@
             "url": "http://localhost:8963",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Launch Docker container",
-            // "postDebugTask": "Stop Docker container and remove it",
+            "postDebugTask": "Stop Docker container and remove it",
             "runtimeExecutable": "/usr/bin/x-www-browser",
             "runtimeArgs": [ "https://rt.pornhub.com/pornstars" ],
         },
