@@ -10,7 +10,7 @@
             "name": "Launch Chrome",
             "url": "http://localhost:8963",
             "webRoot": "${workspaceFolder}",
-            // "preLaunchTask": "Run Docker container",
+            "preLaunchTask": "Launch Docker container",
             // "postDebugTask": "Stop Docker container and remove it",
             "runtimeExecutable": "/usr/bin/x-www-browser",
             "runtimeArgs": [ "https://rt.pornhub.com/pornstars" ],
