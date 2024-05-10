@@ -40,23 +40,30 @@ class VideoAdTrimmer {
         if (!empty($outputs)) {
             // Construct base ffmpeg command
             $cmd = escapeshellcmd("ffmpeg -loglevel error -i " . escapeshellarg($filename));
-    
+
             // Add each output to the ffmpeg command
             foreach ($outputs as $output) {
                 $cmd .= $output;
             }
-    
+
             // Initialize output array
             $output = [];
             // Initialize return value
             $returnValue = 0;
-    
+
             // Execute ffmpeg command
             exec($cmd, $output, $returnValue);
-    
+
             // Check if command failed
             if ($returnValue !== 0) {
                 throw new Exception("FFmpeg command failed with return code $returnValue");
+            }
+
+            // Verify that all files were created
+            foreach ($outputFiles as $timestamp => $outputFile) {
+                if (!file_exists($outputFile)) {
+                    throw new Exception("Expected frame file was not created: $outputFile");
+                }
             }
         }
 
@@ -109,11 +116,11 @@ class VideoAdTrimmer {
         $startTimestamp = 0;
         $endTimestamp = $duration;
 
-    
+
         // Initialize start and end timestamps
         $startTimestamp = 0;
         $endTimestamp = $duration;
-    
+
         // Binary search to find start of video
         $low = 0; // Start at the beginning of the video
         $high = intval($duration / 2);
@@ -128,7 +135,7 @@ class VideoAdTrimmer {
             }
         }
 
-    
+
         // Binary search to find end of video
         $low = intval($duration / 2);
         $high = $duration - 1; // End at 1 second before the video's duration to avoid checking after the video ends
@@ -152,7 +159,7 @@ class VideoAdTrimmer {
             $endTimestamp = $duration - 1; // Ensure end timestamp is not after the video ends
         }
 
-    
+
         return [
             'begin' => $startTimestamp,
             'end' => $endTimestamp,
