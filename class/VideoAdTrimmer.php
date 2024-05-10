@@ -25,9 +25,9 @@ class VideoAdTrimmer {
         // Loop through each timestamp
         foreach ($timestamps as $timestamp) {
             // Create output file name
-            $outputFile = sprintf("%s%s-frame_%d.jpg", $prefix, $fn_chs, $timestamp);
+            $outputFile = "$prefix$fn_chs-frame_$timestamp.jpg";
             // Store output file name in associative array with timestamp as key
-            $outputFiles[$timestamp] = $outputFile;
+            $outputFiles["$timestamp"] = $outputFile;
 
             if (file_exists($outputFile)) {
                 continue;
@@ -87,7 +87,7 @@ class VideoAdTrimmer {
         $result = [];
 
         foreach($response as $file_info) {
-            $result[substr($file_info['parameter_name'], 4)] = $file_info['prediction'] === 'ok';
+            $result[substr($file_info['parameter_name'], 4)] = $file_info['prediction'] !== 'ok';
         }
 
         return $result;
