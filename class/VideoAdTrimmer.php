@@ -104,13 +104,18 @@ class VideoAdTrimmer {
             // Get video duration
             $duration = self::getVideoDuration($filename);
         }
+
+        // Initialize start and end timestamps
+        $startTimestamp = 0;
+        $endTimestamp = $duration;
+
     
         // Initialize start and end timestamps
         $startTimestamp = 0;
         $endTimestamp = $duration;
     
         // Binary search to find start of video
-        $low = 0;
+        $low = 1; // Start at 1 second to avoid checking before the video starts
         $high = intval($duration / 2);
         while ($low <= $high) {
             $mid = intval(($low + $high) / 2);
@@ -122,10 +127,11 @@ class VideoAdTrimmer {
                 $low = $mid + 1;
             }
         }
+
     
         // Binary search to find end of video
         $low = intval($duration / 2);
-        $high = $duration;
+        $high = $duration - 1; // End at 1 second before the video's duration to avoid checking after the video ends
         while ($low <= $high) {
             $mid = intval(($low + $high) / 2);
             $response = self::classifyFrames($filename, [$mid]);
@@ -136,6 +142,7 @@ class VideoAdTrimmer {
                 $high = $mid - 1;
             }
         }
+
     
         return [
             'begin' => $startTimestamp,
