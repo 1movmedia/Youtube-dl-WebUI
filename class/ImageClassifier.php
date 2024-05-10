@@ -18,6 +18,8 @@ class ImageClassifier {
         ];
 
         foreach ($files as $index => $file) {
+            assert(file_exists($file));
+            
             $data["file{$index}"] = new CURLFile($file, mime_content_type($file));
         }
 
