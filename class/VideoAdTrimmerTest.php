@@ -7,17 +7,37 @@ if (!empty($_SERVER['SERVER_NAME'])) {
 require_once __DIR__ . '/VideoAdTrimmer.php';
 
 $test_videos = [
-    'https://rt.pornhub.com/view_video.php?viewkey=63e54e89101b0',   // 5:43,    start ad: 10.11 sec, no end ad
-    'https://rt.pornhub.com/view_video.php?viewkey=ph63c7c160ea58a', // 2:37,    start ad: 13.06 sec, no end ad
-    'https://rt.pornhub.com/view_video.php?viewkey=ph634c78ed6c98f', // 1:08, no start ad,               end ad: 59.21
-    'https://rt.pornhub.com/view_video.php?viewkey=ph62191ed983427', // 9:42,    start ad: 2.18,         end ad: 9:30.05
+    [
+        'url' => 'https://rt.pornhub.com/view_video.php?viewkey=63e54e89101b0',
+        'duration' => '5:43',
+        'start_ad' => 10.11,
+        'end_ad' => null
+    ],
+    [
+        'url' => 'https://rt.pornhub.com/view_video.php?viewkey=ph63c7c160ea58a',
+        'duration' => '2:37',
+        'start_ad' => 13.06,
+        'end_ad' => null
+    ],
+    [
+        'url' => 'https://rt.pornhub.com/view_video.php?viewkey=ph634c78ed6c98f',
+        'duration' => '1:08',
+        'start_ad' => null,
+        'end_ad' => 59.21
+    ],
+    [
+        'url' => 'https://rt.pornhub.com/view_video.php?viewkey=ph62191ed983427',
+        'duration' => '9:42',
+        'start_ad' => 2.18,
+        'end_ad' => 570.05 // Converted 9:30.05 to seconds
+    ],
 ];
 
-function downloadTestVideosIfNecessary() {
+function downloadTestVideosIfNecessary(&$test_videos) {
     global $test_videos;
 
-    foreach ($test_videos as $index => &$test_video) {
-        $filename = "/tmp/test_video_" . $index . ".mp4";
+    foreach ($test_videos as $index => $video_info) {
+        $filename = "/tmp/test_video_" . md5($video_info['url']) . ".mp4";
 
         if ($test_video !== $filename && !file_exists($filename)) {
             // download using yt-dlp
@@ -26,7 +46,7 @@ function downloadTestVideosIfNecessary() {
         }
 
         // store the downloaded file path
-        $test_video = $filename;
+        $test_videos[$index]['filename'] = $filename;
     }
     
     return $test_videos;
@@ -35,7 +55,7 @@ function downloadTestVideosIfNecessary() {
 // Define a test function for the VideoAdTrimmer::extractFrames method
 function testExtractFrames() {
     global $test_videos;
-    $downloaded_files = downloadTestVideosIfNecessary();
+    $downloaded_files = downloadTestVideosIfNecessary($test_videos);
 
     foreach ($downloaded_files as $filename) {
         $timestamps = [1, 10, 11];
@@ -55,7 +75,7 @@ function testExtractFrames() {
 // Define a test function for the VideoAdTrimmer::classifyFrames method
 function testClassifyFrames() {
     global $test_videos;
-    $downloaded_files = downloadTestVideosIfNecessary();
+    $downloaded_files = downloadTestVideosIfNecessary($test_videos);
 
     foreach ($downloaded_files as $filename) {
         $timestamps = [1, 10, 11];
@@ -72,27 +92,26 @@ function testClassifyFrames() {
 }
 
 // Define a test function for the VideoAdTrimmer::identifyVideoTimestamps method
-function testIdentifyVideoTimestamps() {
+function testIdentifyVideoTimestamps(&$test_videos) {
     global $test_videos;
-    $downloaded_files = downloadTestVideosIfNecessary();
+    $downloaded_files = downloadTestVideosIfNecessary($test_videos);
 
-    foreach ($downloaded_files as $filename) {
-        $videoTimestamps = VideoAdTrimmer::identifyVideoTimestamps($filename);
+    foreach ($test_videos as $video_info) {
+        $videoTimestamps = VideoAdTrimmer::identifyVideoTimestamps($video_info['filename']);
 
         // Validate outputs
-        assert(isset($videoTimestamps['begin']), "Error: No begin timestamp output");
-        assert(isset($videoTimestamps['end']), "Error: No end timestamp output");
-        assert(is_numeric($videoTimestamps['begin']), "Error: Expected numeric value for begin timestamp, got " . gettype($videoTimestamps['begin']));
-        assert(is_numeric($videoTimestamps['end']), "Error: Expected numeric value for end timestamp, got " . gettype($videoTimestamps['end']));
-        assert($videoTimestamps['begin'] < $videoTimestamps['end'], "Error: Expected begin timestamp to be less than end timestamp");
+        $expectedStartAd = $video_info['start_ad'] ?? 0;
+        $expectedEndAd = $video_info['end_ad'] ?? $video_info['duration'];
+        assert(abs($videoTimestamps['begin'] - $expectedStartAd) < 1, "Error: Expected begin ad timestamp to be close to $expectedStartAd, got " . $videoTimestamps['begin']);
+        assert(abs($videoTimestamps['end'] - $expectedEndAd) < 1, "Error: Expected end ad timestamp to be close to $expectedEndAd, got " . $videoTimestamps['end']);
     }
 
     echo "All tests passed for identifyVideoTimestamps.\n";
 }
 
-downloadTestVideosIfNecessary();
+downloadTestVideosIfNecessary($test_videos);
 
 // Call the test functions
 testExtractFrames();
 testClassifyFrames();
-testIdentifyVideoTimestamps();
+testIdentifyVideoTimestamps($test_videos);
