@@ -7,9 +7,10 @@ if (!empty($_SERVER['SERVER_NAME'])) {
 require_once __DIR__ . '/VideoAdTrimmer.php';
 
 $test_videos = [
-    'https://rt.pornhub.com/view_video.php?viewkey=63e54e89101b0', // 5:43
-    'https://rt.pornhub.com/view_video.php?viewkey=ph63c7c160ea58a', // 2:37
-    'https://rt.pornhub.com/view_video.php?viewkey=ph634c78ed6c98f', // 1:08
+    'https://rt.pornhub.com/view_video.php?viewkey=63e54e89101b0',   // 5:43,    start ad: 10.11 sec, no end ad
+    'https://rt.pornhub.com/view_video.php?viewkey=ph63c7c160ea58a', // 2:37,    start ad: 13.06 sec, no end ad
+    'https://rt.pornhub.com/view_video.php?viewkey=ph634c78ed6c98f', // 1:08, no start ad,               end ad: 59.21
+    'https://rt.pornhub.com/view_video.php?viewkey=ph62191ed983427', // 9:42,    start ad: 2.18,         end ad: 9:30.05
 ];
 
 function downloadTestVideosIfNecessary() {
