@@ -15,5 +15,14 @@
             "runtimeExecutable": "/usr/bin/x-www-browser",
             "runtimeArgs": [ "https://rt.pornhub.com/pornstars" ],
         },
+        {
+            "name": "Launch current script in console",
+            "type": "php",
+            "request": "launch",
+            "program": "${file}",
+            "cwd": "${fileDirname}",
+            "externalConsole": false,
+            "port": 9003
+        },
     ]
 }
