@@ -115,7 +115,7 @@ class VideoAdTrimmer {
         $endTimestamp = $duration;
     
         // Binary search to find start of video
-        $low = 1; // Start at 1 second to avoid checking before the video starts
+        $low = 0; // Start at the beginning of the video
         $high = intval($duration / 2);
         while ($low <= $high) {
             $mid = intval(($low + $high) / 2);
@@ -132,6 +132,7 @@ class VideoAdTrimmer {
         // Binary search to find end of video
         $low = intval($duration / 2);
         $high = $duration - 1; // End at 1 second before the video's duration to avoid checking after the video ends
+        $high = $duration;
         while ($low <= $high) {
             $mid = intval(($low + $high) / 2);
             $response = self::classifyFrames($filename, [$mid]);
@@ -141,6 +142,14 @@ class VideoAdTrimmer {
             } else {
                 $high = $mid - 1;
             }
+        }
+
+        // Adjust the start and end timestamps if necessary
+        if ($startTimestamp < 1) {
+            $startTimestamp = 1; // Ensure start timestamp is not before the video starts
+        }
+        if ($endTimestamp > $duration - 1) {
+            $endTimestamp = $duration - 1; // Ensure end timestamp is not after the video ends
         }
 
     
