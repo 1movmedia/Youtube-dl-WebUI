@@ -115,3 +115,21 @@ downloadTestVideosIfNecessary($test_videos);
 testExtractFrames();
 testClassifyFrames();
 testIdentifyVideoTimestamps($test_videos);
+/**
+ * Converts a duration string in the format "hh:mm:ss" to seconds.
+ *
+ * @param string $duration The duration string.
+ * @return int The duration in seconds.
+ */
+function convertDurationToSeconds($duration) {
+    $parts = explode(':', $duration);
+    $seconds = 0;
+    $multiplier = 1;
+
+    while ($parts) {
+        $seconds += $multiplier * array_pop($parts);
+        $multiplier *= 60;
+    }
+
+    return $seconds;
+}
