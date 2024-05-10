@@ -9,44 +9,46 @@ require_once __DIR__ . '/VideoAdTrimmer.php';
 $test_videos = [
     [
         'url' => 'https://rt.pornhub.com/view_video.php?viewkey=63e54e89101b0',
-        'duration' => '5:43',
+        'duration' => 343,
         'start_ad' => 10.11,
         'end_ad' => null
     ],
     [
         'url' => 'https://rt.pornhub.com/view_video.php?viewkey=ph63c7c160ea58a',
-        'duration' => '2:37',
+        'duration' => 157,
         'start_ad' => 13.06,
         'end_ad' => null
     ],
     [
         'url' => 'https://rt.pornhub.com/view_video.php?viewkey=ph634c78ed6c98f',
-        'duration' => '1:08',
+        'duration' => 68,
         'start_ad' => null,
         'end_ad' => 59.21
     ],
     [
         'url' => 'https://rt.pornhub.com/view_video.php?viewkey=ph62191ed983427',
-        'duration' => '9:42',
+        'duration' => 582,
         'start_ad' => 2.18,
-        'end_ad' => 570.05 // Converted 9:30.05 to seconds
+        'end_ad' => 570.05
     ],
 ];
 
-function downloadTestVideosIfNecessary(&$test_videos) {
+function downloadTestVideosIfNecessary() {
     global $test_videos;
 
     foreach ($test_videos as $index => $video_info) {
-        $filename = "/tmp/test_video_" . md5($video_info['url']) . ".mp4";
+        if (empty($test_videos[$index]['filename'])) {
+            $filename = "/tmp/test_video_" . md5($video_info['url']) . ".mp4";
 
-        if ($test_video !== $filename && !file_exists($filename)) {
-            // download using yt-dlp
-            $command = "yt-dlp -f mp4 -o ".escapeshellarg($filename)." " . escapeshellarg($test_video);
-            shell_exec($command);
+            if (!file_exists($filename)) {
+                // download using yt-dlp
+                $command = "yt-dlp -f mp4 -o ".escapeshellarg($filename)." " . escapeshellarg($video_info['url']);
+                shell_exec($command);
+            }
+    
+            // store the downloaded file path
+            $test_videos[$index]['filename'] = $filename;
         }
-
-        // store the downloaded file path
-        $test_videos[$index]['filename'] = $filename;
     }
     
     return $test_videos;
@@ -54,18 +56,20 @@ function downloadTestVideosIfNecessary(&$test_videos) {
 
 // Define a test function for the VideoAdTrimmer::extractFrames method
 function testExtractFrames() {
-    global $test_videos;
-    $downloaded_files = downloadTestVideosIfNecessary($test_videos);
+    $test_videos = downloadTestVideosIfNecessary();
 
-    foreach ($downloaded_files as $filename) {
-        $timestamps = [1, 10, 11];
-        $outputFiles = VideoAdTrimmer::extractFrames($filename, $timestamps);
+    foreach ($test_videos as $video_info) {
+        $timestamps = [
+            0, $video_info['duration'] - 1, $video_info['duration'] / 2
+        ];
+
+        $outputFiles = VideoAdTrimmer::extractFrames($video_info['filename'], $timestamps);
 
         // Validate outputs
         foreach ($timestamps as $timestamp) {
-            $expectedFile = sprintf("frame_%s.jpg", str_replace([':', ' '], '-', $timestamp));
-            assert(isset($outputFiles[$timestamp]), "Error: No file output for timestamp $timestamp");
-            assert($outputFiles[$timestamp] === $expectedFile, "Error: Expected filename $expectedFile, got {$outputFiles[$timestamp]}");
+            assert(isset($outputFiles["$timestamp"]), "Error: No file output for timestamp $timestamp");
+            $filename = $outputFiles["$timestamp"];
+            assert(file_exists($filename));
         }
     }
 
@@ -74,27 +78,43 @@ function testExtractFrames() {
 
 // Define a test function for the VideoAdTrimmer::classifyFrames method
 function testClassifyFrames() {
-    global $test_videos;
-    $downloaded_files = downloadTestVideosIfNecessary($test_videos);
+    $test_videos = downloadTestVideosIfNecessary();
 
-    foreach ($downloaded_files as $filename) {
-        $timestamps = [1, 10, 11];
-        $classifiedFrames = VideoAdTrimmer::classifyFrames($filename, $timestamps);
+    $total_classifications = 0;
+    $bad_classifications = 0;
+
+    foreach ($test_videos as $timestamp => $video_info) {
+        if ($video_info['start_ad'] === null) {
+            continue;
+        }
+
+        $classes = [
+            "".$video_info['start_ad'] - 1 => true,
+            "".$video_info['start_ad'] + 1 => false,
+        ];
+
+        $classifiedFrames = VideoAdTrimmer::classifyFrames($video_info['filename'], array_keys($classes));
 
         // Validate outputs
-        foreach ($timestamps as $timestamp) {
+        foreach ($classes as $timestamp => $class) {
             assert(isset($classifiedFrames[$timestamp]), "Error: No classification output for timestamp $timestamp");
             assert(is_bool($classifiedFrames[$timestamp]), "Error: Expected boolean value for timestamp $timestamp, got " . gettype($classifiedFrames[$timestamp]));
+
+            $total_classifications++;
+            if ($classifiedFrames[$timestamp] !== $class) {
+                $bad_classifications++;
+            }
         }
     }
+
+    assert($bad_classifications < ceil($total_classifications / 3));
 
     echo "All tests passed for classifyFrames.\n";
 }
 
 // Define a test function for the VideoAdTrimmer::identifyVideoTimestamps method
-function testIdentifyVideoTimestamps(&$test_videos) {
-    global $test_videos;
-    $downloaded_files = downloadTestVideosIfNecessary($test_videos);
+function testIdentifyVideoTimestamps() {
+    $test_videos = downloadTestVideosIfNecessary();
 
     foreach ($test_videos as $video_info) {
         $videoTimestamps = VideoAdTrimmer::identifyVideoTimestamps($video_info['filename']);
@@ -109,27 +129,7 @@ function testIdentifyVideoTimestamps(&$test_videos) {
     echo "All tests passed for identifyVideoTimestamps.\n";
 }
 
-downloadTestVideosIfNecessary($test_videos);
-
 // Call the test functions
 testExtractFrames();
 testClassifyFrames();
-testIdentifyVideoTimestamps($test_videos);
-/**
- * Converts a duration string in the format "hh:mm:ss" to seconds.
- *
- * @param string $duration The duration string.
- * @return int The duration in seconds.
- */
-function convertDurationToSeconds($duration) {
-    $parts = explode(':', $duration);
-    $seconds = 0;
-    $multiplier = 1;
-
-    while ($parts) {
-        $seconds += $multiplier * array_pop($parts);
-        $multiplier *= 60;
-    }
-
-    return $seconds;
-}
+testIdentifyVideoTimestamps();
