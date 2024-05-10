@@ -19,6 +19,9 @@
             "name": "Launch current script in console",
             "type": "php",
             "request": "launch",
+            "runtimeArgs": [
+                "-d", "zend.assertions=1",
+            ],
             "program": "${file}",
             "cwd": "${fileDirname}",
             "externalConsole": false,
