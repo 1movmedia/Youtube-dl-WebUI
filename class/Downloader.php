@@ -398,6 +398,17 @@ class Downloader
 			$convert_cmd = "ffmpeg -ss \$(php ".escapeshellarg(__DIR__.'/../util/first_key_frame.php')." ".escapeshellarg($download_file)." $convert_from) -i " . escapeshellarg($download_file) . " -to $to -avoid_negative_ts make_zero -map 0:0 -c:0 copy -map 0:1 -c:1 copy -map_metadata 0 -movflags +faststart -default_mode infer_no_subs -ignore_unknown -f mp4 " . escapeshellarg($output_file);
 			$convert_cmd .= " && rm " . escapeshellarg($download_file);
 		}
+		else {
+			$output_file = $this->download_path."/".$this->id . '.mp4';
+			$download_file = $this->download_path."/".$this->id . '.uncut.mp4';
+
+			$convert_cmd = implode(' ', [
+				'php', escapeshellarg(__DIR__.'/../util/remove_ads.php'), escapeshellarg($download_file), escapeshellarg($output_file),
+				
+				'&&',
+				'rm', '-f', escapeshellarg($download_file),
+			]);
+		}
 		
 		$cmd .= " -o ".escapeshellarg($download_file);
 
