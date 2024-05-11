@@ -43,5 +43,21 @@
             "port": 9003,
             "preLaunchTask": "Download test video to /tmp/test_video.mp4 if missing",
         },
+        {
+            "name": "Launch util/remove_ads.php",
+            "type": "php",
+            "request": "launch",
+            "runtimeArgs": [
+                "-d", "zend.assertions=1",
+            ],
+            "program": "${workspaceRoot}/util/remove_ads.php",
+            "args": [
+                "/tmp/test_video.mp4", "/tmp/test_video_no_ads.mp4"
+            ],
+            "cwd": "${workspaceRoot}",
+            "externalConsole": false,
+            "port": 9003,
+            "preLaunchTask": "Download test video to /tmp/test_video.mp4 if missing",
+        },
     ]
 }
