@@ -58,7 +58,7 @@ class VideoAdFinder {
 
         for(;;) {
             // Binary search to find start of video
-            $low = $startTimestamp + 1; // Start at the beginning of the video
+            $low = $startTimestamp; // Start at the beginning of the video
             $high = $middle;
     
             // Initialize if necessary
