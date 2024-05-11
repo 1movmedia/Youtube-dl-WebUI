@@ -63,7 +63,7 @@ function testExtractFrames() {
             0, $video_info['duration'] - 1, $video_info['duration'] / 2
         ];
 
-        $outputFiles = VideoAdTrimmer::extractFrames($video_info['filename'], $timestamps);
+        $outputFiles = VideoAdFinder::extractFrames($video_info['filename'], $timestamps);
 
         // Validate outputs
         foreach ($timestamps as $timestamp) {
@@ -93,7 +93,7 @@ function testClassifyFrames() {
             "".$video_info['start_ad'] + 1 => false,
         ];
 
-        $classifiedFrames = VideoAdTrimmer::classifyFrames($video_info['filename'], array_keys($classes));
+        $classifiedFrames = VideoAdFinder::classifyFrames($video_info['filename'], array_keys($classes));
 
         // Validate outputs
         foreach ($classes as $timestamp => $class) {
@@ -118,7 +118,7 @@ function testIdentifyVideoTimestamps() {
 
     foreach ($test_videos as $video_info) {
         $start = time();
-        $videoTimestamps = VideoAdTrimmer::identifyAds($video_info['filename'], $video_info['duration']);
+        $videoTimestamps = VideoAdFinder::identifyAds($video_info['filename'], $video_info['duration']);
         $dur = time() - $start;
 
         // Validate outputs

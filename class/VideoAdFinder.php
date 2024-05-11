@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/ImageClassifier.php';
 
-class VideoAdTrimmer {
+class VideoAdFinder {
 
     /**
      * Extracts specific MP4 file frames into JPEG files using a single ffmpeg command, and returns an array with timestamps as keys.
