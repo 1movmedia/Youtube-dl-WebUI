@@ -117,13 +117,18 @@ function testIdentifyVideoTimestamps() {
     $test_videos = downloadTestVideosIfNecessary();
 
     foreach ($test_videos as $video_info) {
-        $videoTimestamps = VideoAdTrimmer::identifyAds($video_info['filename']);
+        $start = time();
+        $videoTimestamps = VideoAdTrimmer::identifyAds($video_info['filename'], $video_info['duration']);
+        $dur = time() - $start;
 
         // Validate outputs
-        $expectedStartAd = $video_info['start_ad'] ?? 0;
-        $expectedEndAd = $video_info['end_ad'] ?? $video_info['duration'];
-        assert(abs($videoTimestamps['begin'] - $expectedStartAd) < 1, "Error: Expected begin ad timestamp to be close to $expectedStartAd, got " . $videoTimestamps['begin']);
-        assert(abs($videoTimestamps['end'] - $expectedEndAd) < 1, "Error: Expected end ad timestamp to be close to $expectedEndAd, got " . $videoTimestamps['end']);
+        $expectedStart = $video_info['start_ad'] ?? 0;
+        $expectedEnd = $video_info['end_ad'] ?? $video_info['duration'];
+
+        assert(abs($videoTimestamps['begin'] - $expectedStart) < 1, "Error: Expected begin ad timestamp to be close to $expectedStart, got " . $videoTimestamps['begin']);
+        assert(abs($videoTimestamps['end'] - $expectedEnd) < 1, "Error: Expected end ad timestamp to be close to $expectedEnd, got " . $videoTimestamps['end']);
+
+        assert($dur < 60, "Processing took $dur seconds");
     }
 
     echo "All tests passed for identifyVideoTimestamps.\n";

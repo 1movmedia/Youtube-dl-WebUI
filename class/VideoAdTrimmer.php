@@ -111,62 +111,63 @@ class VideoAdTrimmer {
             // Get video duration
             $duration = self::getVideoDuration($filename);
         }
+
         // Ensure that the timestamps are within the video duration
         if ($duration <= 0) {
             throw new Exception("Video duration must be greater than zero.");
         }
-
-
 
         // Initialize start and end timestamps
         $startTimestamp = 0;
         $endTimestamp = $duration;
 
         // Binary search to find start of video
-        $low = 0; // Start at the beginning of the video
-        $high = intval($duration);
-        while ($low <= $high) {
-            $mid = intval(($low + $high) / 2);
-            // Ensure the timestamp is within the video duration
-            if ($mid >= $duration) {
-                $mid = $duration - 1; // Adjust mid to be within the video duration
-            }
-            $response = self::classifyFrames($filename, [$mid]);
-            if (!$response[$mid]) {
-                $high = $mid - 1;
-                $startTimestamp = $mid;
-            } else {
-                $low = $mid + 1;
+        $low = 1; // Start at the beginning of the video
+        $high = min(round($duration / 2, 1), 5 * 60);
+
+        // Check if the video has starting ad at all
+        $response = self::classifyFrames($filename, [$low]);
+        if (array_values($response)[0]) {
+            while ($high - $low > 0.1) {
+                $mid = round(($low + $high) / 2, 1);
+
+                // Ensure the timestamp is within the video duration
+                assert($mid < $duration);
+
+                $response = self::classifyFrames($filename, [$mid]);
+                
+                if (!$response["$mid"]) {
+                    $high = $mid;
+                    $startTimestamp = $mid;
+                } else {
+                    $low = $mid;
+                }
             }
         }
-
 
         // Binary search to find end of video
-        $low = intval($duration / 2);
-        $high = intval($duration);
-        while ($low <= $high) {
-            $mid = intval(($low + $high) / 2);
-            // Ensure the timestamp is within the video duration
-            if ($mid >= $duration) {
-                $mid = $duration - 1; // Adjust mid to be within the video duration
-            }
-            $response = self::classifyFrames($filename, [$mid]);
-            if (!$response[$mid]) {
-                $low = $mid + 1;
-                $endTimestamp = $mid;
-            } else {
-                $high = $mid - 1;
-            }
-        }
+        $low = max(round($duration / 2, 1), $duration - 5 * 60);
+        $high = round($duration - 0.5, 1);
 
-        // Adjust the start and end timestamps if necessary
-        if ($startTimestamp < 1) {
-            $startTimestamp = 1; // Ensure start timestamp is not before the video starts
-        }
-        if ($endTimestamp > $duration - 1) {
-            $endTimestamp = $duration - 1; // Ensure end timestamp is not after the video ends
-        }
+        // Check if the video has an ending ad at all
+        $response = self::classifyFrames($filename, [ $high ]);
+        if (array_values($response)[0]) {
+            while ($high - $low > 0.1) {
+                $mid = round(($low + $high) / 2, 1);
+                
+                // Ensure the timestamp is within the video duration
+                assert($mid < $duration);
 
+                $response = self::classifyFrames($filename, [$mid]);
+
+                if (!$response["$mid"]) {
+                    $low = $mid + 0.1;
+                    $endTimestamp = $mid;
+                } else {
+                    $high = $mid - 0.1;
+                }
+            }
+        }
 
         return [
             'begin' => $startTimestamp,
