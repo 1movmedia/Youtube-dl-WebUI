@@ -59,10 +59,16 @@ class VideoAdFinder {
         $low = 1; // Start at the beginning of the video
         $high = min(round($duration / 2, 1), 5 * 60);
 
+        // Initialize if necessary
+        assert($mid = PHP_INT_MAX);
+
         // Check if the video has starting ad at all
         $response = self::classifyFrames($filename, [$low]);
         if (array_values($response)[0]) {
-            while ($high - $low > 0.1) {
+            while ($high - $low > 0.15) {
+                // Check if we're stuck
+                assert($mid != round(($low + $high) / 2, 1));
+
                 $mid = round(($low + $high) / 2, 1);
 
                 // Ensure the timestamp is within the video duration
@@ -86,7 +92,10 @@ class VideoAdFinder {
         // Check if the video has an ending ad at all
         $response = self::classifyFrames($filename, [ $high ]);
         if (array_values($response)[0]) {
-            while ($high - $low > 0.1) {
+            while ($high - $low > 0.15) {
+                // Check if we're stuck
+                assert($mid != round(($low + $high) / 2, 1));
+
                 $mid = round(($low + $high) / 2, 1);
                 
                 // Ensure the timestamp is within the video duration
