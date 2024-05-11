@@ -296,7 +296,7 @@ if (location.search.startsWith('?viewkey=')) {
             }
     }
 
-        let el = H('<span class="userscript-ui-message downloadedvideo">This video is downloaded already</span>');
+        let el = H('<span class="userscript-ui-message downloadedvideo">This video was scheduled for download</span>');
 
         controlEl.appendChild(el);
 
