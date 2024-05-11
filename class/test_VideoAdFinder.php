@@ -4,7 +4,7 @@ if (!empty($_SERVER['SERVER_NAME'])) {
     die("Forbidden\n");
 }
 
-require_once __DIR__ . '/VideoAdTrimmer.php';
+require_once __DIR__ . '/VideoAdFinder.php';
 
 $test_videos = [
     [
@@ -63,7 +63,7 @@ function testExtractFrames() {
             0, $video_info['duration'] - 1, $video_info['duration'] / 2
         ];
 
-        $outputFiles = VideoAdFinder::extractFrames($video_info['filename'], $timestamps);
+        $outputFiles = VideoUtil::extractFrames($video_info['filename'], $timestamps);
 
         // Validate outputs
         foreach ($timestamps as $timestamp) {
