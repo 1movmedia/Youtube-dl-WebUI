@@ -2,8 +2,16 @@
 
 class VideoUtil {
 
+    static function ffmpeg_path() {
+        return trim(`which ffmpeg`);
+    }
+
+    static function ffprobe_path() {
+        return trim(`which ffprobe`);
+    }
+
     static function findKeyframeAfter(string $filename, float $after_position): float {
-        $command = [trim(`which ffprobe`), '-show_frames', '-select_streams', 'v', '-print_format', 'flat', escapeshellarg($filename)];
+        $command = [self::ffprobe_path(), '-show_frames', '-select_streams', 'v', '-print_format', 'flat', escapeshellarg($filename)];
 
         $command = implode(' ', $command) . " 2> /dev/null";
 
@@ -102,7 +110,7 @@ class VideoUtil {
 
         if (!empty($outputs)) {
             // Construct base ffmpeg command
-            $cmd = escapeshellcmd("ffmpeg -loglevel error -i " . escapeshellarg($filename));
+            $cmd = escapeshellcmd(self::ffmpeg_path() . " -loglevel error -i " . escapeshellarg($filename));
 
             // Add each output to the ffmpeg command
             foreach ($outputs as $output) {
@@ -141,10 +149,30 @@ class VideoUtil {
      * @return int The duration of the video file in seconds.
      */
     static function getVideoDuration(string $filename): int {
-        $cmd = escapeshellcmd("ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 ". escapeshellarg($filename));
+        $cmd = self::ffprobe_path() . " -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 ". escapeshellarg($filename);
         $output = [];
         exec($cmd, $output);
         return (int) round(floatval($output[0]));
+    }
+
+    /**
+     * Cuts a video file based on the provided constraints.
+     *
+     * @param string $input_filename The path to the input video file.
+     * @param array $video_constraints An associative array containing the 'begin' and 'end' times for the video cut.
+     * @param string $output_filename The path to the output video file.
+     */
+    static function cutVideo(string $input_filename, array $video_constraints, string $output_filename): void
+    {
+        $ss = $video_constraints['begin'];
+        $to = $video_constraints['end'];
+
+        $cmd = self::ffmpeg_path() . " -ss $ss -i " . escapeshellarg($input_filename) . " -to $to -avoid_negative_ts make_zero -map 0:0 -c:0 copy -map 0:1 -c:1 copy -map_metadata 0 -movflags +faststart -default_mode infer_no_subs -ignore_unknown -f mp4 " . escapeshellarg($output_filename);
+
+        exec($cmd, $output, $return_var);
+        if ($return_var !== 0) {
+            throw new Exception("ffmpeg failed with status $return_var: " . implode("\n", $output));
+        }
     }
 
 }
