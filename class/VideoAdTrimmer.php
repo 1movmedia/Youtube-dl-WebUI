@@ -116,9 +116,6 @@ class VideoAdTrimmer {
             throw new Exception("Video duration must be greater than zero.");
         }
 
-        // Initialize start and end timestamps
-        $startTimestamp = 0;
-        $endTimestamp = $duration;
 
 
         // Initialize start and end timestamps
@@ -127,12 +124,12 @@ class VideoAdTrimmer {
 
         // Binary search to find start of video
         $low = 0; // Start at the beginning of the video
-        $high = intval($duration / 2);
+        $high = intval($duration);
         while ($low <= $high) {
             $mid = intval(($low + $high) / 2);
             // Ensure the timestamp is within the video duration
             if ($mid >= $duration) {
-                throw new Exception("Timestamp exceeds video duration.");
+                $mid = $duration - 1; // Adjust mid to be within the video duration
             }
             $response = self::classifyFrames($filename, [$mid]);
             if (!$response[$mid]) {
@@ -146,13 +143,12 @@ class VideoAdTrimmer {
 
         // Binary search to find end of video
         $low = intval($duration / 2);
-        $high = $duration - 1; // End at 1 second before the video's duration to avoid checking after the video ends
-        $high = $duration;
+        $high = intval($duration);
         while ($low <= $high) {
             $mid = intval(($low + $high) / 2);
             // Ensure the timestamp is within the video duration
             if ($mid >= $duration) {
-                throw new Exception("Timestamp exceeds video duration.");
+                $mid = $duration - 1; // Adjust mid to be within the video duration
             }
             $response = self::classifyFrames($filename, [$mid]);
             if (!$response[$mid]) {
