@@ -106,7 +106,7 @@ class VideoAdTrimmer {
      * @param $filename MP4 filename
      * @return array Returns an associative array with keys "begin" and "end" and timestamps for values.
      */
-    static function identifyVideoTimestamps(string $filename, float $duration = -1): array {
+    static function identifyAds(string $filename, float $duration = -1): array {
         if ($duration < 0) {
             // Get video duration
             $duration = self::getVideoDuration($filename);

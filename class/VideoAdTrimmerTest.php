@@ -117,7 +117,7 @@ function testIdentifyVideoTimestamps() {
     $test_videos = downloadTestVideosIfNecessary();
 
     foreach ($test_videos as $video_info) {
-        $videoTimestamps = VideoAdTrimmer::identifyVideoTimestamps($video_info['filename']);
+        $videoTimestamps = VideoAdTrimmer::identifyAds($video_info['filename']);
 
         // Validate outputs
         $expectedStartAd = $video_info['start_ad'] ?? 0;
