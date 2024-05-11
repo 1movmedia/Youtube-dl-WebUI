@@ -167,7 +167,7 @@ class VideoUtil {
         $ss = $video_constraints['begin'];
         $to = $video_constraints['end'];
 
-        $cmd = self::ffmpeg_path() . " -y -ss $ss -i " . escapeshellarg($input_filename) . " -to $to -avoid_negative_ts make_zero -map 0:0 -c:0 copy -map 0:1 -c:1 copy -map_metadata 0 -movflags +faststart -default_mode infer_no_subs -ignore_unknown -f mp4 " . escapeshellarg($output_filename);
+        $cmd = self::ffmpeg_path() . " -y -ss $ss -to $to -i " . escapeshellarg($input_filename) . " -avoid_negative_ts make_zero -map 0:0 -c:0 copy -map 0:1 -c:1 copy -map_metadata 0 -movflags +faststart -default_mode infer_no_subs -ignore_unknown -f mp4 " . escapeshellarg($output_filename);
 
         exec($cmd, $output, $return_var);
         if ($return_var !== 0) {
