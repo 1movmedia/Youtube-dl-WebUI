@@ -60,6 +60,13 @@
             "problemMatcher": [],
             "promptOnClose": false,
             "dependsOn": "Launch Docker container"
+        },
+        {
+            "label": "Download test video to /tmp/test_video.mp4 if missing",
+            "type": "shell",
+            "command": "test -e /tmp/test_video.mp4 || yt-dlp -o /tmp/test_video.mp4 'https://rt.pornhub.com/view_video.php?viewkey=ph634c78ed6c98f'",
+            "problemMatcher": [],
+            "promptOnClose": false,
         }
     ]
 }

@@ -27,5 +27,21 @@
             "externalConsole": false,
             "port": 9003
         },
+        {
+            "name": "Launch util/first_key_frame.php",
+            "type": "php",
+            "request": "launch",
+            "runtimeArgs": [
+                "-d", "zend.assertions=1",
+            ],
+            "program": "${workspaceRoot}/util/first_key_frame.php",
+            "args": [
+                "/tmp/test_video.mp4", "2"
+            ],
+            "cwd": "${workspaceRoot}",
+            "externalConsole": false,
+            "port": 9003,
+            "preLaunchTask": "Download test video to /tmp/test_video.mp4 if missing",
+        },
     ]
 }
