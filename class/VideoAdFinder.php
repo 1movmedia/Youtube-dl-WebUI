@@ -31,6 +31,8 @@ class VideoAdFinder {
             $result[substr($file_info['parameter_name'], 4)] = $file_info['prediction'] !== 'ok';
         }
 
+        echo "Checked frames: " . json_encode($result) . "\n";
+
         return $result;
     }
 
@@ -59,7 +61,7 @@ class VideoAdFinder {
         for(;;) {
             // Binary search to find start of video
             $low = $startTimestamp; // Start at the beginning of the video
-            $high = $middle;
+            $high = min($middle, $startTimestamp + 300);
     
             // Initialize if necessary
             assert($mid = PHP_INT_MAX);
@@ -90,7 +92,7 @@ class VideoAdFinder {
             if ($startTimestamp < $middle) {
                 $check_positions = [];
 
-                for($i = $startTimestamp + 1; $i < $middle && count($check_positions) < 10; $i += 10) {
+                for($i = $startTimestamp + 1; $i < $middle && count($check_positions) < 20; $i += 0.5) {
                     $check_positions[] = $i;
                 }
 
@@ -107,31 +109,55 @@ class VideoAdFinder {
             break;
         }
 
-        // Binary search to find end of video
-        $low = max($middle, $duration - 5 * 60);
-        $high = round($duration - 0.5, 1);
+        $end_filename = $filename;
+        $end_offset = 0;
 
-        // Check if the video has an ending ad at all
-        $response = self::classifyFrames($filename, [ $high ]);
-        if (array_values($response)[0]) {
-            while ($high - $low > 0.15) {
-                // Check if we're stuck
-                assert($mid != round(($low + $high) / 2, 1));
-
-                $mid = round(($low + $high) / 2, 1);
-                
-                // Ensure the timestamp is within the video duration
-                assert($mid < $duration);
-
-                $response = self::classifyFrames($filename, [$mid]);
-
-                if (!$response["$mid"]) {
-                    $low = $mid + 0.1;
-                    $endTimestamp = $mid;
-                } else {
-                    $high = $mid - 0.1;
+        for(;;) {
+            // Binary search to find end of video
+            $low = max($middle, $endTimestamp - 300);
+            $high = round($endTimestamp - 0.5, 1);
+    
+            // Check if the video has an ending ad at all
+            $response = self::classifyFrames($end_filename, [ $high - $end_offset ]);
+            if (array_values($response)[0]) {
+                while ($high - $low > 0.15) {
+                    // Check if we're stuck
+                    assert($mid != round(($low + $high) / 2, 1));
+    
+                    $mid = round(($low + $high) / 2, 1);
+                    
+                    // Ensure the timestamp is within the video duration
+                    assert($mid < $duration);
+    
+                    $response = self::classifyFrames($end_filename, [$mid - $end_offset]);
+    
+                    if (!array_values($response)[0]) {
+                        $low = $mid + 0.1;
+                        $endTimestamp = $mid;
+                    } else {
+                        $high = $mid - 0.1;
+                    }
                 }
             }
+
+            if ($endTimestamp > $middle) {
+                $check_positions = [];
+
+                for($i = $endTimestamp - 1; $i > $middle && count($check_positions) < 20; $i -= 0.5) {
+                    $check_positions[] = $i - $end_offset;
+                }
+
+                sort($check_positions, SORT_NUMERIC);
+
+                $response = self::classifyFrames($end_filename, $check_positions);
+
+                if (($ad_position = array_search(true, $response, true)) !== false) {
+                    $endTimestamp = $ad_position + $end_offset;
+                    continue;
+                }
+            }
+
+            break;
         }
 
         if ($endTimestamp - $startTimestamp < 15) {
