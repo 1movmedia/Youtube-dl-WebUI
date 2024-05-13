@@ -61,7 +61,7 @@ class VideoAdFinder {
         for(;;) {
             // Binary search to find start of video
             $low = $startTimestamp; // Start at the beginning of the video
-            $high = min($middle, $startTimestamp + 300);
+            $high = min($middle, $startTimestamp + 60);
     
             // Initialize if necessary
             assert($mid = PHP_INT_MAX);
@@ -92,7 +92,7 @@ class VideoAdFinder {
             if ($startTimestamp < $middle) {
                 $check_positions = [];
 
-                for($i = $startTimestamp + 1; $i < $middle && count($check_positions) < 20; $i += 0.5) {
+                for($i = $startTimestamp + 1; $i < $middle && count($check_positions) < 5; $i += 0.5) {
                     $check_positions[] = $i;
                 }
 
@@ -114,9 +114,9 @@ class VideoAdFinder {
 
         for(;;) {
             // Binary search to find end of video
-            $low = max($middle, $endTimestamp - 300);
+            $low = max($middle, $endTimestamp - 60);
             $high = round($endTimestamp - 0.5, 1);
-    
+
             // Check if the video has an ending ad at all
             $response = self::classifyFrames($end_filename, [ $high - $end_offset ]);
             if (array_values($response)[0]) {
@@ -143,7 +143,7 @@ class VideoAdFinder {
             if ($endTimestamp > $middle) {
                 $check_positions = [];
 
-                for($i = $endTimestamp - 1; $i > $middle && count($check_positions) < 20; $i -= 0.5) {
+                for($i = $endTimestamp - 1; $i > $middle && count($check_positions) < 5; $i -= 0.5) {
                     $check_positions[] = $i - $end_offset;
                 }
 
