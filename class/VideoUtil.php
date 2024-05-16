@@ -19,7 +19,7 @@ class VideoUtil {
             try {
                 $frames = [];
             
-                $ss = $after_position;
+                $ss = max(0, $after_position);
         
                 $successful = false;
                 
