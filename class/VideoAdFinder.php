@@ -112,10 +112,10 @@ class VideoAdFinder {
         $end_filename = $filename;
         $end_offset = 0;
 
-        if ($duration - 600 > 600) {
-            $offset_keyframe = VideoUtil::findKeyframeAfter($filename, $duration - 660);
+        if ($duration - 120 > 60) {
+            $offset_keyframe = VideoUtil::findKeyframeAfter($filename, $duration - 120);
 
-            if ($offset_keyframe > 300) {
+            if ($offset_keyframe >= 60) {
                 $end_filename = substr($filename, 0, -4) . ".end.mp4";
                 $end_offset = $offset_keyframe;
 
