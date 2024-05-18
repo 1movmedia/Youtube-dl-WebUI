@@ -112,6 +112,17 @@ class VideoAdFinder {
         $end_filename = $filename;
         $end_offset = 0;
 
+        if ($duration - 600 > 600) {
+            $offset_keyframe = VideoUtil::findKeyframeAfter($filename, $duration - 660);
+
+            if ($offset_keyframe > 300) {
+                $end_filename = substr($filename, 0, -4) . ".end.mp4";
+                $end_offset = $offset_keyframe;
+
+                VideoUtil::cutVideo($filename, ['begin' => $offset_keyframe], $end_filename);
+            }
+        }
+
         for(;;) {
             // Binary search to find end of video
             $low = max($middle, $endTimestamp - 60);
@@ -158,6 +169,10 @@ class VideoAdFinder {
             }
 
             break;
+        }
+
+        if ($end_filename !== $filename) {
+            unlink($end_filename);
         }
 
         if ($endTimestamp - $startTimestamp < 15) {
