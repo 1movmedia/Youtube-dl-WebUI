@@ -47,3 +47,5 @@ function downloadTestVideosIfNecessary() {
     
     return $test_videos;
 }
+
+downloadTestVideosIfNecessary();
