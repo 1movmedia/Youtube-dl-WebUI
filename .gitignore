@@ -5,3 +5,4 @@ config/config.php
 data/*.sqlite3
 tmp
 test-rest/
+/*.session.sql
