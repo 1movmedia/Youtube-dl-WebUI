@@ -1,6 +1,7 @@
 {
     "recommendations": [
         "andywang.vscode-scriptmonkey",
-        "spmeesseman.vscode-taskexplorer"
+        "spmeesseman.vscode-taskexplorer",
+        "mtxr.sqltools-driver-sqlite"
     ]
 }
