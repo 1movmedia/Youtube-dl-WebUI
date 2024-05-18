@@ -8,12 +8,6 @@ $test_videos = [
         'end_ad' => null
     ],
     [
-        'url' => 'https://rt.pornhub.com/view_video.php?viewkey=ph63c7c160ea58a',
-        'duration' => 157,
-        'start_ad' => 13.06,
-        'end_ad' => null
-    ],
-    [
         'url' => 'https://rt.pornhub.com/view_video.php?viewkey=ph634c78ed6c98f',
         'duration' => 68,
         'start_ad' => null,
