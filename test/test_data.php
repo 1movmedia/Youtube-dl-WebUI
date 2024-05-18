@@ -1,34 +1,17 @@
 <?php
 
-$test_videos = [
-    [
-        'url' => 'https://rt.pornhub.com/view_video.php?viewkey=63e54e89101b0',
-        'duration' => 343,
-        'start_ad' => 10.11,
-        'end_ad' => null
-    ],
-    [
-        'url' => 'https://rt.pornhub.com/view_video.php?viewkey=ph634c78ed6c98f',
-        'duration' => 68,
-        'start_ad' => null,
-        'end_ad' => 59.21
-    ],
-    [
-        'url' => 'https://rt.pornhub.com/view_video.php?viewkey=ph62191ed983427',
-        'duration' => 582,
-        'start_ad' => 2.18,
-        'end_ad' => 570.05
-    ],
-];
+$test_videos = json_decode(file_get_contents(__DIR__ . '/test_data.json'), true);
 
 function downloadTestVideosIfNecessary() {
     global $test_videos;
 
     foreach ($test_videos as $index => $video_info) {
         if (empty($test_videos[$index]['filename'])) {
-            $filename = "/tmp/test_video_" . md5($video_info['url']) . ".mp4";
+            $filename = __DIR__ . "/../tmp/test_video_$index.mp4";
 
             if (!file_exists($filename)) {
+                echo "Downloading $filename\n";
+    
                 // download using yt-dlp
                 $command = "yt-dlp -f mp4 -o ".escapeshellarg($filename)." " . escapeshellarg($video_info['url']);
                 shell_exec($command);

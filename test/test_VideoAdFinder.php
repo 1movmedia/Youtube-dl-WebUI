@@ -15,13 +15,13 @@ function testClassifyFrames() {
     $bad_classifications = 0;
 
     foreach ($test_videos as $timestamp => $video_info) {
-        if ($video_info['start_ad'] === null) {
+        if ($video_info['cutFrom'] === null) {
             continue;
         }
 
         $classes = [
-            "".$video_info['start_ad'] - 1 => true,
-            "".$video_info['start_ad'] + 1 => false,
+            "".($video_info['cutFrom'] - 1) => true,
+            "".($video_info['cutFrom'] + 1) => false,
         ];
 
         $classifiedFrames = VideoAdFinder::classifyFrames($video_info['filename'], array_keys($classes));
@@ -55,8 +55,8 @@ function testIdentifyVideoTimestamps() {
         $dur = time() - $start;
 
         // Validate outputs
-        $expectedStart = $video_info['start_ad'] ?? 0;
-        $expectedEnd = $video_info['end_ad'] ?? $video_info['duration'];
+        $expectedStart = $video_info['cutFrom'] ?? 0;
+        $expectedEnd = $video_info['cutTo'] ?? $video_info['duration'];
 
         assert(abs($videoTimestamps['begin'] - $expectedStart) < 1, "Error: Expected begin ad timestamp to be close to $expectedStart, got " . $videoTimestamps['begin']);
         assert(abs($videoTimestamps['end'] - $expectedEnd) < 1, "Error: Expected end ad timestamp to be close to $expectedEnd, got " . $videoTimestamps['end']);
