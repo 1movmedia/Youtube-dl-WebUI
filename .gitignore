@@ -6,3 +6,4 @@ data/*.sqlite3
 tmp
 test-rest/
 /*.session.sql
+.vscode/settings.json
