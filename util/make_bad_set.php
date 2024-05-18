@@ -11,29 +11,29 @@ $test_videos = [
         'id' => '63e54e89101b0',
         'url' => 'https://rt.pornhub.com/view_video.php?viewkey=63e54e89101b0',
         'duration' => 343,
-        'start_ad' => 10.11,
-        'end_ad' => null
+        'cutFrom' => 10.11,
+        'cutTo' => null
     ],
     [
         'id' => 'ph63c7c160ea58a',
         'url' => 'https://rt.pornhub.com/view_video.php?viewkey=ph63c7c160ea58a',
         'duration' => 157,
-        'start_ad' => 13.06,
-        'end_ad' => null
+        'cutFrom' => 13.06,
+        'cutTo' => null
     ],
     [
         'id' => 'ph634c78ed6c98f',
         'url' => 'https://rt.pornhub.com/view_video.php?viewkey=ph634c78ed6c98f',
         'duration' => 68,
-        'start_ad' => null,
-        'end_ad' => 59.21
+        'cutFrom' => null,
+        'cutTo' => 59.21
     ],
     [
         'id' => 'ph62191ed983427',
         'url' => 'https://rt.pornhub.com/view_video.php?viewkey=ph62191ed983427',
         'duration' => 582,
-        'start_ad' => 2.18,
-        'end_ad' => 570.05
+        'cutFrom' => 2.18,
+        'cutTo' => 570.05
     ],
 ];
 
@@ -65,8 +65,8 @@ $config = require __DIR__ . '/../config/config.php';
 foreach($test_videos as $test_video) {
     $sections = [];
 
-    $start = $test_video['start_ad'] ?? 0;
-    $end = $test_video['end_ad'] ?? $test_video['duration'];
+    $start = $test_video['cutFrom'] ?? 0;
+    $end = $test_video['cutTo'] ?? $test_video['duration'];
 
     $sections[] = [
         's' => $start,
