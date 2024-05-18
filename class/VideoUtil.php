@@ -164,10 +164,28 @@ class VideoUtil {
      */
     static function cutVideo(string $input_filename, array $video_constraints, string $output_filename): void
     {
-        $ss = $video_constraints['begin'];
-        $to = $video_constraints['end'];
+        if (empty($video_constraints['begin']) && empty($video_constraints['end'])) {
+            link($input_filename, $output_filename);
+            return;
+        }
 
-        $cmd = self::ffmpeg_path() . " -y -ss $ss -to $to -i " . escapeshellarg($input_filename) . " -avoid_negative_ts make_zero -map 0:0 -c:0 copy -map 0:1 -c:1 copy -map_metadata 0 -movflags +faststart -default_mode infer_no_subs -ignore_unknown -f mp4 " . escapeshellarg($output_filename);
+        $args = [
+            "-y"
+        ];
+
+        if (!empty($video_constraints['begin'])) {
+            $ss = $video_constraints['begin'];
+            $args[] = "-ss $ss";
+        }
+
+        if (!empty($video_constraints['end'])) {
+            $to = $video_constraints['end'];
+            $args[] = "-to $to";
+        }
+
+        $args[] = "-i " . escapeshellarg($input_filename) . " -avoid_negative_ts make_zero -map 0:0 -c:0 copy -map 0:1 -c:1 copy -map_metadata 0 -movflags +faststart -default_mode infer_no_subs -ignore_unknown -f mp4 " . escapeshellarg($output_filename);
+
+        $cmd = self::ffmpeg_path() . ' ' . implode(' ', $args);
 
         exec($cmd, $output, $return_var);
         if ($return_var !== 0) {
