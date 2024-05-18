@@ -5,6 +5,7 @@ if (!empty($_SERVER['SERVER_NAME'])) {
 }
 
 require_once __DIR__ . '/../class/VideoUtil.php';
+require_once __DIR__ . '/test_data.php';
 
 // Define a test function for the VideoAdTrimmer::extractFrames method
 function testExtractFrames() {
