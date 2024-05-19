@@ -1,7 +1,6 @@
 <?php
 
-require_once 'class/Session.php';
-require_once 'class/FileHandler.php';
+require_once 'vendor/autoload.php';
 
 $config = require __DIR__.'/config/config.php';
 

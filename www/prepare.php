@@ -6,7 +6,7 @@ if ($_SERVER['HTTP_ACCEPT'] !== 'application/json') {
     die('false');
 }
 
-require_once 'class/Session.php';
+require_once 'vendor/autoload.php';
 
 $session = Session::getInstance();
 if(!$session->is_logged_in()) {
@@ -14,8 +14,6 @@ if(!$session->is_logged_in()) {
     header('Content-Type: application/json');
     die('false');
 }
-
-require_once 'class/FileHandler.php';
 
 $config = require __DIR__.'/config/config.php';
 

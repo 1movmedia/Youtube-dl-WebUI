@@ -1,3 +1,18 @@
+FROM debian:bullseye AS builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    php composer php-curl git \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+ 
+ COPY --chown=www-data:www-data www/composer.json www/composer.lock /var/www/html/youtube-dl/
+
+USER www-data
+
+RUN cd /var/www/html/youtube-dl \
+ && composer update \
+ && composer install
+
 FROM debian:bullseye
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -18,6 +33,8 @@ RUN cd /usr/local/bin \
 RUN pip3 install yt-dlp
 
 COPY --chown=www-data:www-data www /var/www/html/youtube-dl
+
+COPY --from=builder /var/www/html/youtube-dl/vendor /var/www/html/youtube-dl/
 
 COPY docker/vhost.conf /etc/apache2/sites-available/ytdlwui.conf
 

@@ -5,8 +5,7 @@ if (!empty($_SERVER['SERVER_NAME'])) {
     die('This script can only be run from the command line!');
 }
 
-require_once 'class/Downloader.php';
-require_once 'class/FileHandler.php';
+require_once 'vendor/autoload.php';
 
 $config = require __DIR__.'/config/config.php';
 

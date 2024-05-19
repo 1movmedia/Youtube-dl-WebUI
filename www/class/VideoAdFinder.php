@@ -1,8 +1,5 @@
 <?php
 
-require_once __DIR__ . '/ImageClassifier.php';
-require_once __DIR__ . '/VideoUtil.php';
-
 class VideoAdFinder {
 
     /**

@@ -1,8 +1,6 @@
 <?php
 
-	require_once 'class/Session.php';
-	require_once 'class/Downloader.php';
-	require_once 'class/FileHandler.php';
+	require_once 'vendor/autoload.php';
 	
 	$session = Session::getInstance();
 	$file = new FileHandler;

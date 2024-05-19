@@ -4,7 +4,8 @@ if (!empty($_SERVER['SERVER_NAME'])) {
     die("Forbidden\n");
 }
 
-require_once __DIR__ . '/../class/VideoUtil.php';
+require __DIR__ . '/../www/vendor/autoload.php';
+
 require_once __DIR__ . '/test_data.php';
 
 // Define a test function for the VideoAdTrimmer::extractFrames method

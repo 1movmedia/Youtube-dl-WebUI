@@ -7,3 +7,4 @@ tmp
 test-rest/
 /*.session.sql
 .vscode/settings.json
+www/vendor/

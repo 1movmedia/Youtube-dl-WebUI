@@ -6,8 +6,7 @@ if ($_SERVER['HTTP_ACCEPT'] !== 'application/json') {
 	die('Bad Request');
 }
 
-require_once 'class/Session.php';
-require_once 'class/Downloader.php';
+require_once 'vendor/autoload.php';
 
 $session = Session::getInstance();
 

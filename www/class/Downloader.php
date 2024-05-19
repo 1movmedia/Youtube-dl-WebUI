@@ -1,5 +1,4 @@
 <?php
-include_once('FileHandler.php');
 
 class Downloader
 {

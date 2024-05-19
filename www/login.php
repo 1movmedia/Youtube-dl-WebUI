@@ -5,8 +5,7 @@ if ($_SERVER['HTTP_ACCEPT'] === 'application/json') {
 	die('Obsolete Userscript. Update it.');
 }
 
-require_once 'class/Session.php';
-require_once 'class/Downloader.php';
+require_once 'vendor/autoload.php';
 
 $session = Session::getInstance();
 $loginError = "";
