@@ -4,7 +4,7 @@ if (!empty($_SERVER['SERVER_NAME'])) {
     die("Forbidden\n");
 }
 
-require_once __DIR__ . '/../class/VideoAdFinder.php';
+require_once 'vendor/autoload.php';
 
 $test_videos = [
     [
