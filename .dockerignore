@@ -7,3 +7,4 @@ www/logs
 www/data/*.sqlite3
 www/config/config.php
 tmp
+.keep
