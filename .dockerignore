@@ -3,7 +3,7 @@
 README.md
 img
 .gitignore
-logs
-data/*.sqlite3
-config/config.php
+www/logs
+www/data/*.sqlite3
+www/config/config.php
 tmp

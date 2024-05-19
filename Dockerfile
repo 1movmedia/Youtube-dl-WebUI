@@ -17,12 +17,12 @@ RUN cd /usr/local/bin \
 
 RUN pip3 install yt-dlp
 
-COPY --chown=www-data:www-data . /var/www/html/youtube-dl
+COPY --chown=www-data:www-data www /var/www/html/youtube-dl
 
 COPY docker/vhost.conf /etc/apache2/sites-available/ytdlwui.conf
 
 COPY docker/start.sh /start.sh
-COPY config/config.php.TEMPLATE /config.php.TEMPLATE
+COPY --chown=www-data:www-data www/config/config.php.TEMPLATE /config.php.TEMPLATE
 
 RUN a2dissite 000-default \
  && a2ensite ytdlwui \
