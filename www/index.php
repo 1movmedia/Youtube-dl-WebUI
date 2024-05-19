@@ -23,5 +23,7 @@
 		}
 	}
 
+	$deferred = $file->list_deferred();
+
 	require 'views/layout.php';
 	require 'views/index.php';

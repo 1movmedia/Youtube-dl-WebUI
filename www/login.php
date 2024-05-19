@@ -23,5 +23,7 @@ if(isset($_POST["username"]) && isset($_POST["password"]))
 	}
 }
 
+$deferred = $file->list_deferred();
+
 require 'views/layout.php';
 require 'views/login.php';

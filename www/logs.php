@@ -19,5 +19,7 @@
 		header("Location: logs.php");
 	}
 
+	$deferred = $file->list_deferred();
+
 	require 'views/layout.php';
 	require 'views/logs.php';

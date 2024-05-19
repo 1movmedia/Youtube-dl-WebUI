@@ -20,6 +20,7 @@
 
 	$files = $file->listFiles();
 	$parts = $file->listParts();
+	$deferred = $file->list_deferred();
 
 	require 'views/layout.php';
 	require 'views/list.php';
