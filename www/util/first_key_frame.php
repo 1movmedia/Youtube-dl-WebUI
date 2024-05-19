@@ -6,7 +6,7 @@
 $input_filename = $argv[1] ?? die("Argument missing");
 $input_ss = floatval($argv[2]) ?? 0;
 
-require_once 'vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $keyframe = VideoUtil::findKeyframeAfter($input_filename, $input_ss);
 

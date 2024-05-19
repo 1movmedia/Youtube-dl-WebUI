@@ -3,7 +3,7 @@
 $input_filename = $argv[1] ?? die("Argument #1 missing");
 $output_filename = $argv[2] ?? die("Argument #2 missing");
 
-require_once 'vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 echo "Removing ads from $input_filename ...\n";
 
