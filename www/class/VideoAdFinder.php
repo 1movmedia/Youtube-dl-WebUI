@@ -28,7 +28,7 @@ class VideoAdFinder {
             $result[substr($file_info['parameter_name'], 4)] = $file_info['prediction'] !== 'ok';
         }
 
-        echo "Checked frames: " . json_encode($result) . "\n";
+        echo "Classification API response: " . json_encode($result) . "\n";
 
         return $result;
     }
@@ -59,6 +59,8 @@ class VideoAdFinder {
         $start_classes = self::classifyFrames($filename, $start_frames);
 
         foreach($start_classes as $frame => $is_ad) {
+            echo "Frame at $frame is " . ($is_ad ? "ad" : "not ad") . "\n";
+
             $startTimestamp = $frame;
 
             if (!$is_ad) {
@@ -70,6 +72,8 @@ class VideoAdFinder {
         $end_classes = self::classifyFrames($filename, $end_frames);
 
         foreach($end_classes as $frame => $is_ad) {
+            echo "Frame at $frame is " . ($is_ad ? "ad" : "not ad") . "\n";
+
             $endTimestamp = $frame;
 
             if ($is_ad) {
