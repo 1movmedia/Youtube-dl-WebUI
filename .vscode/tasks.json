@@ -67,6 +67,13 @@
             "command": "test -e /tmp/test_video.mp4 || yt-dlp -o /tmp/test_video.mp4 'https://rt.pornhub.com/view_video.php?viewkey=ph634c78ed6c98f'",
             "problemMatcher": [],
             "promptOnClose": false,
+        },
+        {
+            "label": "Sync to demo server",
+            "type": "shell",
+            "command": "rsync -avz --delete --inplace --exclude tmp . m@n.uo1.net:/home/m/ytdl",
+            "problemMatcher": [],
+            "promptOnClose": false,
         }
     ]
 }
