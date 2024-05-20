@@ -72,7 +72,11 @@ void find_video_stream(AVFormatContext *fmt_ctx, int *video_stream_idx, AVCodecC
         exit(EXIT_FAILURE);
     }
 
-    avcodec_parameters_to_context(*video_dec_ctx, (*video_stream)->codecpar);
+    ret = avcodec_parameters_to_context(*video_dec_ctx, (*video_stream)->codecpar);
+    if (ret < 0) {
+        fprintf(stderr, "Failed to copy codec parameters to context\n");
+        exit(EXIT_FAILURE);
+    }
 
     if ((ret = avcodec_open2(*video_dec_ctx, dec, NULL)) < 0) {
         fprintf(stderr, "Failed to open codec for stream #%u\n", *video_stream_idx);
@@ -83,7 +87,17 @@ void find_video_stream(AVFormatContext *fmt_ctx, int *video_stream_idx, AVCodecC
 void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, AVStream *video_stream, double start_position, double end_position, int limit, const char *output_dir) {
     AVPacket packet;
     AVFrame *frame = av_frame_alloc();
+    if (!frame) {
+        fprintf(stderr, "Could not allocate frame\n");
+        exit(EXIT_FAILURE);
+    }
+
     AVFrame *rgb_frame = av_frame_alloc();
+    if (!rgb_frame) {
+        fprintf(stderr, "Could not allocate RGB frame\n");
+        exit(EXIT_FAILURE);
+    }
+
     struct SwsContext *sws_ctx = NULL;
     int frame_count = 0;
     double packet_dts_time;
@@ -91,11 +105,23 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
 
     int num_bytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, video_dec_ctx->width, video_dec_ctx->height, 1);
     uint8_t *buffer = (uint8_t *) av_malloc(num_bytes * sizeof(uint8_t));
-    av_image_fill_arrays(rgb_frame->data, rgb_frame->linesize, buffer, AV_PIX_FMT_RGB24, video_dec_ctx->width, video_dec_ctx->height, 1);
+    if (!buffer) {
+        fprintf(stderr, "Could not allocate buffer\n");
+        exit(EXIT_FAILURE);
+    }
+    ret = av_image_fill_arrays(rgb_frame->data, rgb_frame->linesize, buffer, AV_PIX_FMT_RGB24, video_dec_ctx->width, video_dec_ctx->height, 1);
+    if (ret < 0) {
+        fprintf(stderr, "Could not fill image arrays: %s\n", av_err2str(ret));
+        exit(EXIT_FAILURE);
+    }
 
     sws_ctx = sws_getContext(video_dec_ctx->width, video_dec_ctx->height, video_dec_ctx->pix_fmt,
                              video_dec_ctx->width, video_dec_ctx->height, AV_PIX_FMT_RGB24,
                              SWS_BILINEAR, NULL, NULL, NULL);
+    if (!sws_ctx) {
+        fprintf(stderr, "Could not initialize the conversion context\n");
+        exit(EXIT_FAILURE);
+    }
 
     char json_filename[1024];
     snprintf(json_filename, sizeof(json_filename), "%s/index.json", output_dir);
@@ -181,12 +207,26 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
 
     // Convert frame to YUVJ420P format
     AVFrame *yuv_frame = av_frame_alloc();
+    if (!yuv_frame) {
+        fprintf(stderr, "Could not allocate YUV frame\n");
+        exit(EXIT_FAILURE);
+    }
+
     yuv_frame->format = AV_PIX_FMT_YUVJ420P;
     yuv_frame->width = width;
     yuv_frame->height = height;
-    av_frame_get_buffer(yuv_frame, 32);
+    ret = av_frame_get_buffer(yuv_frame, 32);
+    if (ret < 0) {
+        fprintf(stderr, "Could not allocate YUV frame buffer\n");
+        exit(EXIT_FAILURE);
+    }
 
     struct SwsContext *sws_ctx = sws_getContext(width, height, AV_PIX_FMT_RGB24, width, height, AV_PIX_FMT_YUVJ420P, SWS_BILINEAR, NULL, NULL, NULL);
+    if (!sws_ctx) {
+        fprintf(stderr, "Could not initialize the scaling context\n");
+        exit(EXIT_FAILURE);
+    }
+
     sws_scale(sws_ctx, (const uint8_t *const *)frame->data, frame->linesize, 0, height, yuv_frame->data, yuv_frame->linesize);
 
     av_init_packet(&packet);
