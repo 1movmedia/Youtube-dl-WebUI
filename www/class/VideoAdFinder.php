@@ -73,12 +73,12 @@ class VideoAdFinder {
         $end_frames = VideoUtil::keyframes($filename, max($duration - 60, $middle), $duration);
         $end_classes = self::classifyFrames($filename, $end_frames);
 
-        foreach($end_classes as $frame => $is_ad) {
+        foreach(array_reverse($end_classes, true) as $frame => $is_ad) {
             echo "Frame at $frame is " . ($is_ad ? "ad" : "not ad") . "\n";
 
             $endTimestamp = $frame;
 
-            if ($is_ad) {
+            if (!$is_ad) {
                 echo "Video end: $endTimestamp\n";
 
                 break;
