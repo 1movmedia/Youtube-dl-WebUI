@@ -12,7 +12,7 @@
 void open_input_file(const char *filename, AVFormatContext **fmt_ctx);
 void find_video_stream(AVFormatContext *fmt_ctx, int *video_stream_idx, AVCodecContext **video_dec_ctx, AVStream **video_stream);
 void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, AVStream *video_stream, double start_position, double end_position, int limit, const char *output_dir, int create_jpeg, int create_index);
-void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, const char *output_dir, double timestamp);
+void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, const char *output_dir);
 void cleanup(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx);
 
 // Main Function
@@ -111,7 +111,7 @@ void find_video_stream(AVFormatContext *fmt_ctx, int *video_stream_idx, AVCodecC
     }
 
     if ((ret = avcodec_open2(*video_dec_ctx, dec, NULL)) < 0) {
-        fprintf(stderr, "Failed to open codec for stream #%u\n", *video_stream_idx);
+        fprintf(stderr, "Failed to open codec for stream #%d\n", *video_stream_idx);
         exit(EXIT_FAILURE);
     }
 }
@@ -162,7 +162,7 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
                 while ((ret = avcodec_receive_frame(video_dec_ctx, frame)) >= 0) {
                     if (frame->key_frame == 1 && frame->pict_type == AV_PICTURE_TYPE_I) {
                         if (create_jpeg) {
-                            save_frame_as_jpeg(frame, video_dec_ctx->width, video_dec_ctx->height, frame_count, output_dir, packet_dts_time);
+                            save_frame_as_jpeg(frame, video_dec_ctx->width, video_dec_ctx->height, frame_count, output_dir);
                         }
 
                         if (create_index) {
@@ -200,7 +200,7 @@ end:
     av_frame_free(&frame);
 }
 
-void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, const char *output_dir, double timestamp) {
+void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, const char *output_dir) {
     AVCodecContext *jpeg_ctx = NULL;
     const AVCodec *jpeg_codec = NULL;
     AVPacket *packet = NULL;
@@ -250,7 +250,7 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
         exit(EXIT_FAILURE);
     }
 
-    av_image_copy(yuv_frame->data, yuv_frame->linesize, (const uint8_t **)(frame->data), frame->linesize, frame->format, width, height);
+    av_image_copy(yuv_frame->data, yuv_frame->linesize, (const uint8_t **)(frame->data), frame->linesize, (enum AVPixelFormat)frame->format, width, height);
 
     // Allocate packet
     packet = av_packet_alloc();
