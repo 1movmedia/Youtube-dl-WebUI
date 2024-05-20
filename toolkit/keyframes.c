@@ -148,7 +148,7 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
 void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, const char *output_dir, double timestamp, FILE *json_file) {
     AVCodecContext *jpeg_ctx = NULL;
     const AVCodec *jpeg_codec = NULL;
-    AVPacket packet;
+    AVPacket *packet = NULL;
     int ret;
 
     jpeg_codec = avcodec_find_encoder(AV_CODEC_ID_MJPEG);
@@ -197,10 +197,12 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
 
     av_image_copy(yuv_frame->data, yuv_frame->linesize, (const uint8_t **)(frame->data), frame->linesize, frame->format, width, height);
 
-    // Initialize packet
-    av_init_packet(&packet);
-    packet.data = NULL;
-    packet.size = 0;
+    // Allocate packet
+    packet = av_packet_alloc();
+    if (!packet) {
+        fprintf(stderr, "Could not allocate packet\n");
+        exit(EXIT_FAILURE);
+    }
 
     ret = avcodec_send_frame(jpeg_ctx, yuv_frame);
     if (ret < 0) {
@@ -208,7 +210,7 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
         exit(EXIT_FAILURE);
     }
 
-    ret = avcodec_receive_packet(jpeg_ctx, &packet);
+    ret = avcodec_receive_packet(jpeg_ctx, packet);
     if (ret < 0) {
         fprintf(stderr, "Error during encoding: %s\n", av_err2str(ret));
         exit(EXIT_FAILURE);
@@ -222,7 +224,7 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
         fprintf(stderr, "Could not open %s\n", filename);
         exit(EXIT_FAILURE);
     }
-    fwrite(packet.data, 1, packet.size, jpeg_file);
+    fwrite(packet->data, 1, packet->size, jpeg_file);
     fclose(jpeg_file);
 
     // Write JSON entry
@@ -231,7 +233,7 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
     }
     fprintf(json_file, "    \"%.3f\": \"%s/frame-%04d.jpg\"", timestamp, output_dir, frame_index);
 
-    av_packet_unref(&packet);
+    av_packet_free(&packet);
     avcodec_free_context(&jpeg_ctx);
     av_frame_free(&yuv_frame);
 }
