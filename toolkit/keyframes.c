@@ -12,7 +12,7 @@
 void open_input_file(const char *filename, AVFormatContext **fmt_ctx);
 void find_video_stream(AVFormatContext *fmt_ctx, int *video_stream_idx, AVCodecContext **video_dec_ctx, AVStream **video_stream);
 void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, AVStream *video_stream, double start_position, double end_position, int limit, const char *output_dir);
-void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, const char *output_dir);
+void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, const char *output_dir, double timestamp, FILE *json_file);
 void cleanup(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx);
 
 // Main Function
@@ -97,6 +97,15 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
                              video_dec_ctx->width, video_dec_ctx->height, AV_PIX_FMT_RGB24,
                              SWS_BILINEAR, NULL, NULL, NULL);
 
+    char json_filename[1024];
+    snprintf(json_filename, sizeof(json_filename), "%s/index.json", output_dir);
+    FILE *json_file = fopen(json_filename, "w");
+    if (!json_file) {
+        fprintf(stderr, "Could not open %s for writing\n", json_filename);
+        exit(EXIT_FAILURE);
+    }
+    fprintf(json_file, "{\n");
+
     while (av_read_frame(fmt_ctx, &packet) >= 0) {
         if (packet.stream_index == video_stream->index) {
             packet_dts_time = packet.dts * av_q2d(video_stream->time_base);
@@ -118,7 +127,7 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
                         }
 
                         sws_scale(sws_ctx, (uint8_t const * const *)frame->data, frame->linesize, 0, video_dec_ctx->height, rgb_frame->data, rgb_frame->linesize);
-                        save_frame_as_jpeg(rgb_frame, video_dec_ctx->width, video_dec_ctx->height, frame_count, output_dir);
+                        save_frame_as_jpeg(rgb_frame, video_dec_ctx->width, video_dec_ctx->height, frame_count, output_dir, packet_dts_time, json_file);
                         frame_count++;
                         if (frame_count >= limit) {
                             break;
@@ -133,13 +142,16 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
         }
     }
 
+    fprintf(json_file, "\n}\n");
+    fclose(json_file);
+
     av_frame_free(&frame);
     av_frame_free(&rgb_frame);
     av_free(buffer);
     sws_freeContext(sws_ctx);
 }
 
-void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, const char *output_dir) {
+void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, const char *output_dir, double timestamp, FILE *json_file) {
     AVCodecContext *jpeg_ctx = NULL;
     const AVCodec *jpeg_codec = NULL;
     AVPacket packet;
@@ -203,6 +215,12 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
     }
     fwrite(packet.data, 1, packet.size, jpeg_file);
     fclose(jpeg_file);
+
+    // Write JSON entry
+    if (frame_index > 0) {
+        fprintf(json_file, ",\n");
+    }
+    fprintf(json_file, "    \"%.3f\": \"%s/frame-%04d.jpg\"", timestamp, output_dir, frame_index);
 
     av_packet_unref(&packet);
     avcodec_free_context(&jpeg_ctx);
