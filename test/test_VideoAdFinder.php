@@ -60,7 +60,9 @@ function testIdentifyVideoTimestamps() {
         assert(abs($videoTimestamps['begin'] - $expectedStart) < 1, "Error: Expected begin ad timestamp to be close to $expectedStart, got " . $videoTimestamps['begin']);
         assert(abs($videoTimestamps['end'] - $expectedEnd) < 5, "Error: Expected end ad timestamp to be close to $expectedEnd, got " . $videoTimestamps['end']);
 
-        // assert($dur < 300, "Processing took $dur seconds");
+        if ($dur > 300) {
+            error_log("Processing took $dur seconds");
+        }
     }
 
     echo "All tests passed for identifyVideoTimestamps.\n";
