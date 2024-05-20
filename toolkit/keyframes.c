@@ -229,9 +229,8 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
 
     sws_scale(sws_ctx, (const uint8_t *const *)frame->data, frame->linesize, 0, height, yuv_frame->data, yuv_frame->linesize);
 
-    av_init_packet(&packet);
-    packet.data = NULL;
-    packet.size = 0;
+    // Initialize packet
+    memset(&packet, 0, sizeof(packet));
 
     ret = avcodec_send_frame(jpeg_ctx, yuv_frame);
     if (ret < 0) {
