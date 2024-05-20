@@ -64,6 +64,8 @@ class VideoAdFinder {
             $startTimestamp = $frame;
 
             if (!$is_ad) {
+                echo "Video start: $startTimestamp\n";
+
                 break;
             }
         }
@@ -77,6 +79,8 @@ class VideoAdFinder {
             $endTimestamp = $frame;
 
             if ($is_ad) {
+                echo "Video end: $endTimestamp\n";
+
                 break;
             }
         }
