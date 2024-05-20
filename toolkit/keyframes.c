@@ -110,7 +110,7 @@ void find_video_stream(AVFormatContext *fmt_ctx, int *video_stream_idx, AVCodecC
         exit(EXIT_FAILURE);
     }
 
-    if ((ret = avcodec_open2(*video_dec_ctx, dec, NULL)) < 0) {
+    if (avcodec_open2(*video_dec_ctx, dec, NULL) < 0) {
         fprintf(stderr, "Failed to open codec for stream #%d\n", *video_stream_idx);
         exit(EXIT_FAILURE);
     }
