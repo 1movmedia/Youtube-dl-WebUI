@@ -10,17 +10,33 @@ class VideoUtil {
         return trim(`which ffprobe`);
     }
 
-    static function findKeyframeAfter(string $filename, float $after_position): float {
-        $command = [self::ffprobe_path(), '-show_frames', '-select_streams', 'v', '-print_format', 'flat', escapeshellarg($filename)];
+    static function findKeyframeAfter(string $filename, float $start_position): float {
+        $keyframes = self::keyframes($filename, $start_position, $start_position + 10, 1);
+
+        return empty($keyframes) ? $start_position : $keyframes[0];
+    }
+    
+    static function keyframes(string $filename, float $start_position = 0, float $end_position = PHP_FLOAT_MAX, int $limit = PHP_INT_MAX): array {
+        $intervals = '';
+
+        if ($start_position > 0) {
+            $intervals .= '+' . $start_position;
+        }
+
+        if ($end_position < PHP_FLOAT_MAX) {
+            $intervals .= '%+' . ($end_position - $start_position);
+        }
+
+        $command = [self::ffprobe_path(), '-show_frames', '-read_intervals', $intervals, '', '-select_streams', 'v', '-print_format', 'flat', escapeshellarg($filename)];
 
         $command = implode(' ', $command) . " 2> /dev/null";
+
+        $keyframes = [];
 
         if (($ph = popen($command, 'r')) !== false) {
             try {
                 $frames = [];
             
-                $ss = max(0, $after_position);
-        
                 $successful = false;
                 
                 while (($line = fgets($ph)) !== false) {
@@ -48,13 +64,19 @@ class VideoUtil {
                         $pkt_dts_time = $frame['pkt_dts_time'];
                 
                         if (@$frame['key_frame'] === '1' && isset($frame['pict_type']) && @$frame['pict_type'] == 'I') {
-                            if ($pkt_dts_time >= $after_position) {
-                                $ss = floatval($pkt_dts_time);
-                                break;
+                            if ($pkt_dts_time >= $start_position) {
+                                $keyframe = floatval($pkt_dts_time);
+
+                                if (empty($keyframes) || $keyframes[count($keyframes)-1] != $keyframe)
+                                $keyframes[] = $keyframe;
+                                
+                                if (count($keyframes) >= $limit) {
+                                    break;
+                                }
                             }
                         }
                 
-                        if ($pkt_dts_time > $after_position + 10) {
+                        if ($pkt_dts_time >= $end_position) {
                             break;
                         }
                     }
@@ -64,7 +86,7 @@ class VideoUtil {
                     throw new Exception("ffprobe didn't return any data! (command: $command)");
                 }
 
-                return $ss;
+                return $keyframes;
             }
             finally {
                 pclose($ph);
