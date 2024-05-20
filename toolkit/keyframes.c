@@ -6,26 +6,59 @@
 #include <stdlib.h>
 #include <float.h>
 #include <string.h>
+#include <getopt.h>
 
 // Function Prototypes
 void open_input_file(const char *filename, AVFormatContext **fmt_ctx);
 void find_video_stream(AVFormatContext *fmt_ctx, int *video_stream_idx, AVCodecContext **video_dec_ctx, AVStream **video_stream);
-void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, AVStream *video_stream, double start_position, double end_position, int limit, const char *output_dir);
+void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, AVStream *video_stream, double start_position, double end_position, int limit, const char *output_dir, int create_jpeg, int create_index);
 void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, const char *output_dir, double timestamp, FILE *json_file);
 void cleanup(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx);
 
 // Main Function
 int main(int argc, char **argv) {
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s <video file> [start position] [end position] [limit] [output directory]\n", argv[0]);
-        exit(EXIT_FAILURE);
+    const char *filename = NULL;
+    double start_position = 0;
+    double end_position = DBL_MAX;
+    int limit = INT_MAX;
+    const char *output_dir = ".";
+    int create_jpeg = 0;
+    int create_index = 0;
+
+    int opt;
+    while ((opt = getopt(argc, argv, "f:s:e:l:d:ji")) != -1) {
+        switch (opt) {
+            case 'f':
+                filename = optarg;
+                break;
+            case 's':
+                start_position = atof(optarg);
+                break;
+            case 'e':
+                end_position = atof(optarg);
+                break;
+            case 'l':
+                limit = atoi(optarg);
+                break;
+            case 'd':
+                output_dir = optarg;
+                break;
+            case 'j':
+                create_jpeg = 1;
+                break;
+            case 'i':
+                create_index = 1;
+                break;
+            default:
+                fprintf(stderr, "Usage: %s -f <video file> [-s start position] [-e end position] [-l limit] [-d output directory] [-j (create jpegs)] [-i (create index json)]\n", argv[0]);
+                exit(EXIT_FAILURE);
+        }
     }
 
-    const char *filename = argv[1];
-    double start_position = (argc > 2) ? atof(argv[2]) : 0;
-    double end_position = (argc > 3) ? atof(argv[3]) : DBL_MAX;
-    int limit = (argc > 4) ? atoi(argv[4]) : INT_MAX;
-    const char *output_dir = (argc > 5) ? argv[5] : ".";
+    if (!filename) {
+        fprintf(stderr, "Usage: %s -f <video file> [-s start position] [-e end position] [-l limit] [-d output directory] [-j (create jpegs)] [-i (create index json)]\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
 
     avformat_network_init(); // Initialize libavformat and network components
 
@@ -36,7 +69,7 @@ int main(int argc, char **argv) {
 
     open_input_file(filename, &fmt_ctx);
     find_video_stream(fmt_ctx, &video_stream_idx, &video_dec_ctx, &video_stream);
-    process_keyframes(fmt_ctx, video_dec_ctx, video_stream, start_position, end_position, limit, output_dir);
+    process_keyframes(fmt_ctx, video_dec_ctx, video_stream, start_position, end_position, limit, output_dir, create_jpeg, create_index);
     cleanup(fmt_ctx, video_dec_ctx);
 
     return 0;
@@ -83,7 +116,7 @@ void find_video_stream(AVFormatContext *fmt_ctx, int *video_stream_idx, AVCodecC
     }
 }
 
-void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, AVStream *video_stream, double start_position, double end_position, int limit, const char *output_dir) {
+void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, AVStream *video_stream, double start_position, double end_position, int limit, const char *output_dir, int create_jpeg, int create_index) {
     AVPacket packet;
     AVFrame *frame = av_frame_alloc();
     if (!frame) {
@@ -95,52 +128,69 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
     double packet_dts_time;
     int ret;
 
-    char json_filename[1024];
-    snprintf(json_filename, sizeof(json_filename), "%s/index.json", output_dir);
-    FILE *json_file = fopen(json_filename, "w");
-    if (!json_file) {
-        fprintf(stderr, "Could not open %s for writing\n", json_filename);
-        exit(EXIT_FAILURE);
+    FILE *json_file = NULL;
+    if (create_index) {
+        char json_filename[1024];
+        snprintf(json_filename, sizeof(json_filename), "%s/index.json", output_dir);
+        json_file = fopen(json_filename, "w");
+        if (!json_file) {
+            fprintf(stderr, "Could not open %s for writing\n", json_filename);
+            exit(EXIT_FAILURE);
+        }
+        fprintf(json_file, "{\n");
     }
-    fprintf(json_file, "{\n");
 
-    while (av_read_frame(fmt_ctx, &packet) >= 0) {
+    while (frame_count < limit && av_read_frame(fmt_ctx, &packet) >= 0) {
         if (packet.stream_index == video_stream->index) {
             packet_dts_time = packet.dts * av_q2d(video_stream->time_base);
-            if (packet_dts_time >= start_position && packet_dts_time <= end_position) {
-                if (packet.flags & AV_PKT_FLAG_KEY) {
-                    ret = avcodec_send_packet(video_dec_ctx, &packet);
-                    if (ret < 0) {
-                        fprintf(stderr, "Error sending packet for decoding: %s\n", av_err2str(ret));
-                        continue;
-                    }
 
-                    while (ret >= 0) {
-                        ret = avcodec_receive_frame(video_dec_ctx, frame);
-                        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                            break;
-                        } else if (ret < 0) {
-                            fprintf(stderr, "Error during decoding: %s\n", av_err2str(ret));
-                            exit(EXIT_FAILURE);
+            if (packet_dts_time >= end_position) {
+                av_packet_unref(&packet);
+                break;
+            }
+
+            if (packet_dts_time >= start_position) {
+                ret = avcodec_send_packet(video_dec_ctx, &packet);
+                if (ret < 0) {
+                    fprintf(stderr, "Error sending packet for decoding: %s\n", av_err2str(ret));
+                    av_packet_unref(&packet);
+                    continue;
+                }
+
+                while ((ret = avcodec_receive_frame(video_dec_ctx, frame)) >= 0) {
+                    if (frame->key_frame == 1 && frame->pict_type == AV_PICTURE_TYPE_I) {
+                        if (create_jpeg) {
+                            save_frame_as_jpeg(frame, video_dec_ctx->width, video_dec_ctx->height, frame_count, output_dir, packet_dts_time, json_file);
                         }
 
-                        save_frame_as_jpeg(frame, video_dec_ctx->width, video_dec_ctx->height, frame_count, output_dir, packet_dts_time, json_file);
+                        if (create_index) {
+                            if (frame_count > 0) {
+                                fprintf(json_file, ",\n");
+                            }
+                            fprintf(json_file, "    \"%.3f\": \"%s/frame-%04d.jpg\"", packet_dts_time, output_dir, frame_count);
+                        }
+
                         frame_count++;
                         if (frame_count >= limit) {
                             break;
                         }
                     }
                 }
+
+                if (ret != AVERROR(EAGAIN) && ret != AVERROR_EOF) {
+                    fprintf(stderr, "Error during decoding: %s\n", av_err2str(ret));
+                    av_packet_unref(&packet);
+                    exit(EXIT_FAILURE);
+                }
             }
         }
         av_packet_unref(&packet);
-        if (frame_count >= limit) {
-            break;
-        }
     }
 
-    fprintf(json_file, "\n}\n");
-    fclose(json_file);
+    if (json_file) {
+        fprintf(json_file, "\n}\n");
+        fclose(json_file);
+    }
 
     av_frame_free(&frame);
 }
@@ -228,10 +278,12 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
     fclose(jpeg_file);
 
     // Write JSON entry
-    if (frame_index > 0) {
-        fprintf(json_file, ",\n");
+    if (json_file) {
+        if (frame_index > 0) {
+            fprintf(json_file, ",\n");
+        }
+        fprintf(json_file, "    \"%.3f\": \"%s/frame-%04d.jpg\"", timestamp, output_dir, frame_index);
     }
-    fprintf(json_file, "    \"%.3f\": \"%s/frame-%04d.jpg\"", timestamp, output_dir, frame_index);
 
     av_packet_free(&packet);
     avcodec_free_context(&jpeg_ctx);
