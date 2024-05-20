@@ -2,7 +2,6 @@
 #include <libavcodec/avcodec.h>
 #include <libavutil/imgutils.h>
 #include <libavutil/opt.h>
-#include <libswscale/swscale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
@@ -92,36 +91,9 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
         exit(EXIT_FAILURE);
     }
 
-    AVFrame *rgb_frame = av_frame_alloc();
-    if (!rgb_frame) {
-        fprintf(stderr, "Could not allocate RGB frame\n");
-        exit(EXIT_FAILURE);
-    }
-
-    struct SwsContext *sws_ctx = NULL;
     int frame_count = 0;
     double packet_dts_time;
     int ret;
-
-    int num_bytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, video_dec_ctx->width, video_dec_ctx->height, 1);
-    uint8_t *buffer = (uint8_t *) av_malloc(num_bytes * sizeof(uint8_t));
-    if (!buffer) {
-        fprintf(stderr, "Could not allocate buffer\n");
-        exit(EXIT_FAILURE);
-    }
-    ret = av_image_fill_arrays(rgb_frame->data, rgb_frame->linesize, buffer, AV_PIX_FMT_RGB24, video_dec_ctx->width, video_dec_ctx->height, 1);
-    if (ret < 0) {
-        fprintf(stderr, "Could not fill image arrays: %s\n", av_err2str(ret));
-        exit(EXIT_FAILURE);
-    }
-
-    sws_ctx = sws_getContext(video_dec_ctx->width, video_dec_ctx->height, video_dec_ctx->pix_fmt,
-                             video_dec_ctx->width, video_dec_ctx->height, AV_PIX_FMT_RGB24,
-                             SWS_BILINEAR, NULL, NULL, NULL);
-    if (!sws_ctx) {
-        fprintf(stderr, "Could not initialize the conversion context\n");
-        exit(EXIT_FAILURE);
-    }
 
     char json_filename[1024];
     snprintf(json_filename, sizeof(json_filename), "%s/index.json", output_dir);
@@ -152,8 +124,7 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
                             exit(EXIT_FAILURE);
                         }
 
-                        sws_scale(sws_ctx, (uint8_t const * const *)frame->data, frame->linesize, 0, video_dec_ctx->height, rgb_frame->data, rgb_frame->linesize);
-                        save_frame_as_jpeg(rgb_frame, video_dec_ctx->width, video_dec_ctx->height, frame_count, output_dir, packet_dts_time, json_file);
+                        save_frame_as_jpeg(frame, video_dec_ctx->width, video_dec_ctx->height, frame_count, output_dir, packet_dts_time, json_file);
                         frame_count++;
                         if (frame_count >= limit) {
                             break;
@@ -172,9 +143,6 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
     fclose(json_file);
 
     av_frame_free(&frame);
-    av_frame_free(&rgb_frame);
-    av_free(buffer);
-    sws_freeContext(sws_ctx);
 }
 
 void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, const char *output_dir, double timestamp, FILE *json_file) {
@@ -221,16 +189,18 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
         exit(EXIT_FAILURE);
     }
 
-    struct SwsContext *sws_ctx = sws_getContext(width, height, AV_PIX_FMT_RGB24, width, height, AV_PIX_FMT_YUVJ420P, SWS_BILINEAR, NULL, NULL, NULL);
-    if (!sws_ctx) {
-        fprintf(stderr, "Could not initialize the scaling context\n");
+    ret = av_frame_make_writable(yuv_frame);
+    if (ret < 0) {
+        fprintf(stderr, "Could not make YUV frame writable\n");
         exit(EXIT_FAILURE);
     }
 
-    sws_scale(sws_ctx, (const uint8_t *const *)frame->data, frame->linesize, 0, height, yuv_frame->data, yuv_frame->linesize);
+    av_image_copy(yuv_frame->data, yuv_frame->linesize, (const uint8_t **)(frame->data), frame->linesize, frame->format, width, height);
 
     // Initialize packet
-    memset(&packet, 0, sizeof(packet));
+    av_init_packet(&packet);
+    packet.data = NULL;
+    packet.size = 0;
 
     ret = avcodec_send_frame(jpeg_ctx, yuv_frame);
     if (ret < 0) {
@@ -264,7 +234,6 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
     av_packet_unref(&packet);
     avcodec_free_context(&jpeg_ctx);
     av_frame_free(&yuv_frame);
-    sws_freeContext(sws_ctx);
 }
 
 void cleanup(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx) {

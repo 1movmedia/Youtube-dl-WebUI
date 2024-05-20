@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -g
-LIBS = -lavformat -lavcodec -lavutil -lswscale
+LIBS = -lavformat -lavcodec -lavutil
 
 SRCS = keyframes.c
 OBJS = $(SRCS:.c=.o)
