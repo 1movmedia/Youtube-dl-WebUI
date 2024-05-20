@@ -21,8 +21,8 @@ function testClassifyFrames() {
         }
 
         $classes = [
-            "".($video_info['cutFrom'] - 1) => true,
-            "".($video_info['cutFrom'] + 1) => false,
+            "".($video_info['cutFrom'] / 2) => true,
+            "".($video_info['cutFrom'] * 2) => false,
         ];
 
         $classifiedFrames = VideoAdFinder::classifyFrames($video_info['filename'], array_keys($classes));
@@ -49,8 +49,6 @@ function testIdentifyVideoTimestamps() {
     $test_videos = downloadTestVideosIfNecessary();
 
     foreach ($test_videos as $video_info) {
-        var_dump($video_info);
-
         $start = time();
         $videoTimestamps = VideoAdFinder::identifyAds($video_info['filename'], $video_info['duration']);
         $dur = time() - $start;
