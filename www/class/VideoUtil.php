@@ -95,6 +95,8 @@ class VideoUtil {
         else {
             throw new Exception("Can't execute ffprobe!");
         }
+
+        throw new Exception("Should never happen"); // Suppress linter warning
     }
 
     /**
