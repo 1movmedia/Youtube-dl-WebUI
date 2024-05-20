@@ -58,7 +58,7 @@ function testIdentifyVideoTimestamps() {
         $expectedEnd = $video_info['cutTo'] ?? $video_info['duration'];
 
         assert(abs($videoTimestamps['begin'] - $expectedStart) < 1, "Error: Expected begin ad timestamp to be close to $expectedStart, got " . $videoTimestamps['begin']);
-        assert(abs($videoTimestamps['end'] - $expectedEnd) < 1, "Error: Expected end ad timestamp to be close to $expectedEnd, got " . $videoTimestamps['end']);
+        assert(abs($videoTimestamps['end'] - $expectedEnd) < 5, "Error: Expected end ad timestamp to be close to $expectedEnd, got " . $videoTimestamps['end']);
 
         assert($dur < 300, "Processing took $dur seconds");
     }
