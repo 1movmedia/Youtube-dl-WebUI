@@ -110,7 +110,7 @@ void open_input_file(const char *filename, AVFormatContext **fmt_ctx) {
         fatal("Could not open source file", ret);
     }
 
-    if (avformat_find_stream_info(*fmt_ctx, NULL) < 0) {
+    if ((ret = avformat_find_stream_info(*fmt_ctx, NULL)) < 0) {
         fatal("Could not find stream information", ret);
     }
 }
