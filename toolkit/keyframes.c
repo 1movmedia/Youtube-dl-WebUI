@@ -76,15 +76,36 @@ int main(int argc, char **argv) {
 }
 
 // Function Implementations
+void handle_error(const char *message) {
+    fprintf(stderr, "%s\n", message);
+    exit(EXIT_FAILURE);
+}
+
+void process_frame(AVCodecContext *video_dec_ctx, AVFrame *frame, int *frame_count, double packet_dts_time, const char *output_dir, int create_jpeg, int create_index, FILE *json_file, int *first_entry) {
+    if (frame->key_frame == 1 && frame->pict_type == AV_PICTURE_TYPE_I) {
+        if (create_jpeg) {
+            save_frame_as_jpeg(frame, video_dec_ctx->width, video_dec_ctx->height, *frame_count, output_dir);
+        }
+
+        if (create_index) {
+            if (!*first_entry) {
+                fprintf(json_file, ",\n");
+            }
+            fprintf(json_file, "    \"%.3f\": \"%s/frame-%04d.jpg\"", packet_dts_time, output_dir, *frame_count);
+            *first_entry = 0;
+        }
+
+        (*frame_count)++;
+    }
+}
+
 void open_input_file(const char *filename, AVFormatContext **fmt_ctx) {
     if (avformat_open_input(fmt_ctx, filename, NULL, NULL) < 0) {
-        fprintf(stderr, "Could not open source file %s\n", filename);
-        exit(EXIT_FAILURE);
+        handle_error("Could not open source file");
     }
 
     if (avformat_find_stream_info(*fmt_ctx, NULL) < 0) {
-        fprintf(stderr, "Could not find stream information\n");
-        exit(EXIT_FAILURE);
+        handle_error("Could not find stream information");
     }
 }
 
@@ -92,27 +113,23 @@ void find_video_stream(AVFormatContext *fmt_ctx, int *video_stream_idx, AVCodecC
     const AVCodec *dec = NULL;
     int ret = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, &dec, 0);
     if (ret < 0) {
-        fprintf(stderr, "Could not find video stream in input file\n");
-        exit(EXIT_FAILURE);
+        handle_error("Could not find video stream in input file");
     }
     *video_stream_idx = ret;
     *video_stream = fmt_ctx->streams[*video_stream_idx];
 
     *video_dec_ctx = avcodec_alloc_context3(dec);
     if (!*video_dec_ctx) {
-        fprintf(stderr, "Failed to allocate the video codec context\n");
-        exit(EXIT_FAILURE);
+        handle_error("Failed to allocate the video codec context");
     }
 
     ret = avcodec_parameters_to_context(*video_dec_ctx, (*video_stream)->codecpar);
     if (ret < 0) {
-        fprintf(stderr, "Failed to copy codec parameters to context\n");
-        exit(EXIT_FAILURE);
+        handle_error("Failed to copy codec parameters to context");
     }
 
     if (avcodec_open2(*video_dec_ctx, dec, NULL) < 0) {
-        fprintf(stderr, "Failed to open codec for stream #%d\n", *video_stream_idx);
-        exit(EXIT_FAILURE);
+        handle_error("Failed to open codec for stream");
     }
 }
 
@@ -120,8 +137,7 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
     AVPacket packet;
     AVFrame *frame = av_frame_alloc();
     if (!frame) {
-        fprintf(stderr, "Could not allocate frame\n");
-        exit(EXIT_FAILURE);
+        handle_error("Could not allocate frame");
     }
 
     int frame_count = 0;
@@ -134,8 +150,7 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
         snprintf(json_filename, sizeof(json_filename), "%s/index.json", output_dir);
         json_file = fopen(json_filename, "w");
         if (!json_file) {
-            fprintf(stderr, "Could not open %s for writing\n", json_filename);
-            exit(EXIT_FAILURE);
+            handle_error("Could not open index.json for writing");
         }
         fprintf(json_file, "{\n");
     }
@@ -160,24 +175,11 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
                 }
 
                 while ((ret = avcodec_receive_frame(video_dec_ctx, frame)) >= 0) {
-                    if (frame->key_frame == 1 && frame->pict_type == AV_PICTURE_TYPE_I) {
-                        if (create_jpeg) {
-                            save_frame_as_jpeg(frame, video_dec_ctx->width, video_dec_ctx->height, frame_count, output_dir);
-                        }
+                    process_frame(video_dec_ctx, frame, &frame_count, packet_dts_time, output_dir, create_jpeg, create_index, json_file, &first_entry);
 
-                        if (create_index) {
-                            if (!first_entry) {
-                                fprintf(json_file, ",\n");
-                            }
-                            fprintf(json_file, "    \"%.3f\": \"%s/frame-%04d.jpg\"", packet_dts_time, output_dir, frame_count);
-                            first_entry = 0;
-                        }
-
-                        frame_count++;
-                        if (frame_count >= limit) {
-                            av_packet_unref(&packet);
-                            goto end;
-                        }
+                    if (frame_count >= limit) {
+                        av_packet_unref(&packet);
+                        goto end;
                     }
                 }
 
@@ -208,14 +210,12 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
 
     jpeg_codec = avcodec_find_encoder(AV_CODEC_ID_MJPEG);
     if (!jpeg_codec) {
-        fprintf(stderr, "Codec not found\n");
-        exit(EXIT_FAILURE);
+        handle_error("Codec not found");
     }
 
     jpeg_ctx = avcodec_alloc_context3(jpeg_codec);
     if (!jpeg_ctx) {
-        fprintf(stderr, "Could not allocate video codec context\n");
-        exit(EXIT_FAILURE);
+        handle_error("Could not allocate video codec context");
     }
 
     jpeg_ctx->pix_fmt = AV_PIX_FMT_YUVJ420P;
@@ -224,15 +224,13 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
     jpeg_ctx->time_base = (AVRational){1, 25};
 
     if (avcodec_open2(jpeg_ctx, jpeg_codec, NULL) < 0) {
-        fprintf(stderr, "Could not open codec\n");
-        exit(EXIT_FAILURE);
+        handle_error("Could not open codec");
     }
 
     // Convert frame to YUVJ420P format
     AVFrame *yuv_frame = av_frame_alloc();
     if (!yuv_frame) {
-        fprintf(stderr, "Could not allocate YUV frame\n");
-        exit(EXIT_FAILURE);
+        handle_error("Could not allocate YUV frame");
     }
 
     yuv_frame->format = AV_PIX_FMT_YUVJ420P;
@@ -240,14 +238,12 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
     yuv_frame->height = height;
     ret = av_frame_get_buffer(yuv_frame, 32);
     if (ret < 0) {
-        fprintf(stderr, "Could not allocate YUV frame buffer\n");
-        exit(EXIT_FAILURE);
+        handle_error("Could not allocate YUV frame buffer");
     }
 
     ret = av_frame_make_writable(yuv_frame);
     if (ret < 0) {
-        fprintf(stderr, "Could not make YUV frame writable\n");
-        exit(EXIT_FAILURE);
+        handle_error("Could not make YUV frame writable");
     }
 
     av_image_copy(yuv_frame->data, yuv_frame->linesize, (const uint8_t **)(frame->data), frame->linesize, (enum AVPixelFormat)frame->format, width, height);
@@ -255,20 +251,17 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
     // Allocate packet
     packet = av_packet_alloc();
     if (!packet) {
-        fprintf(stderr, "Could not allocate packet\n");
-        exit(EXIT_FAILURE);
+        handle_error("Could not allocate packet");
     }
 
     ret = avcodec_send_frame(jpeg_ctx, yuv_frame);
     if (ret < 0) {
-        fprintf(stderr, "Error sending a frame for encoding: %s\n", av_err2str(ret));
-        exit(EXIT_FAILURE);
+        handle_error("Error sending a frame for encoding");
     }
 
     ret = avcodec_receive_packet(jpeg_ctx, packet);
     if (ret < 0) {
-        fprintf(stderr, "Error during encoding: %s\n", av_err2str(ret));
-        exit(EXIT_FAILURE);
+        handle_error("Error during encoding");
     }
 
     char filename[1024];
@@ -276,8 +269,7 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
 
     FILE *jpeg_file = fopen(filename, "wb");
     if (!jpeg_file) {
-        fprintf(stderr, "Could not open %s\n", filename);
-        exit(EXIT_FAILURE);
+        handle_error("Could not open jpeg file for writing");
     }
     fwrite(packet->data, 1, packet->size, jpeg_file);
     fclose(jpeg_file);
