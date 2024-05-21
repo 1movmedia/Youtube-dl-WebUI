@@ -2,16 +2,22 @@ FROM debian:bookworm AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     php composer php-curl git \
+    build-essential libavformat-dev \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
  
-COPY --chown=www-data:www-data www/composer.json www/composer.lock /var/www/html/youtube-dl/
-
 USER www-data
+
+COPY --chown=www-data:www-data www/composer.json www/composer.lock /var/www/html/youtube-dl/
 
 RUN cd /var/www/html/youtube-dl \
  && composer update \
  && composer install
+
+COPY --chown=www-data:www-data toolkit /opt/toolkit
+ 
+RUN cd /opt/toolkit \
+ && make
 
 FROM debian:bookworm
 
@@ -19,6 +25,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git python3 python3-pip python3-setuptools pipx build-essential apache2 php curl ca-certificates \
     python3-certifi python3-brotli python3-websockets python3-mutagen python3-pyxattr python3-secretstorage \
     php-sqlite3 php-curl sqlite3 \
+    libavformat-extra59 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
@@ -35,6 +42,8 @@ RUN PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install yt-dlp
 COPY --chown=www-data:www-data www /var/www/html/youtube-dl
 
 COPY --from=builder /var/www/html/youtube-dl/vendor /var/www/html/youtube-dl/
+
+COPY --from=builder /opt/toolkit/keyframes /usr/local/bin/
 
 COPY docker/vhost.conf /etc/apache2/sites-available/ytdlwui.conf
 
