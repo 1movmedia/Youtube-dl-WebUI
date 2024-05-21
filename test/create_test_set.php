@@ -14,11 +14,13 @@ if ($urls === false) {
 
 $test_videos = [];
 
-$mp4_path = realpath(__DIR__ . '/../tmp/mp4-cache');
+$mp4_path = __DIR__ . '/../tmp/mp4-cache';
 
 if (!is_dir($mp4_path)) {
     mkdir($mp4_path, 0777, true);
 }
+
+$mp4_path = realpath($mp4_path);
 
 while($row = $urls->fetchArray(SQLITE3_ASSOC)) {
     $entry = json_decode($row['details_json'], true);
