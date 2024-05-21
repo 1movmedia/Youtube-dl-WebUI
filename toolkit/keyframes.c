@@ -105,7 +105,7 @@ void process_frame(AVCodecContext *video_dec_ctx, AVFrame *frame, int *frame_cou
 }
 
 void open_input_file(const char *filename, AVFormatContext **fmt_ctx) {
-    int ret;
+    int ret = 0;
     if ((ret = avformat_open_input(fmt_ctx, filename, NULL, NULL)) < 0) {
         fatal("Could not open source file", ret);
     }
