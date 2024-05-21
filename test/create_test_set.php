@@ -46,8 +46,8 @@ function get_video_set(int $set_size = 10, string $order = 'ORDER BY RANDOM() DE
 
             $opts = '';
 
-            if ($entry['cutEnd'] == 0) {
-                $cut_to = max($entry['cutFrom'], 180);
+            if ($entry['cutEnd'] == 0 && $entry['duration'] > 300) {
+                $cut_to = max($entry['cutFrom'] * 2, 180);
                 if ($cut_to < $entry['duration']) {
                     $opts .= '--postprocessor-args ' . escapeshellarg("-t ");
                 }
