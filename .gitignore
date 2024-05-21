@@ -8,3 +8,4 @@ test-rest/
 /*.session.sql
 .vscode/settings.json
 www/vendor/
+test/db.sqlite3
