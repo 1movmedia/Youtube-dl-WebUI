@@ -148,7 +148,7 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
 
     int frame_count = 0;
     double packet_dts_time;
-    int ret;
+    int ret = 0;
 
     FILE *json_file = NULL;
     if (create_index) {
