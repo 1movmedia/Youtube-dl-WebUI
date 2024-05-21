@@ -15,10 +15,14 @@ void find_video_stream(AVFormatContext *fmt_ctx, int *video_stream_idx, AVCodecC
 void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, AVStream *video_stream, double start_position, double end_position, int limit, const char *output_dir, int create_jpeg, int create_index);
 void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, const char *output_dir);
 void cleanup(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx);
+void fatal(const char *message, int errnum);
+void print_usage(const char *prog_name);
+void process_frame(AVCodecContext *video_dec_ctx, AVFrame *frame, int *frame_count, double packet_dts_time, const char *output_dir, int create_jpeg, int create_index, FILE *json_file, int *first_entry);
 
 void print_usage(const char *prog_name) {
     fprintf(stderr, "Usage: %s -f <video file> [-s start position] [-e end position] [-l limit] [-d output directory] [-j (create jpegs)] [-i (create index json)]\n", prog_name);
 }
+
 int main(int argc, char **argv) {
     const char *filename = NULL;
     double start_position = 0;
@@ -84,24 +88,6 @@ void fatal(const char *message, int errnum) {
     av_strerror(errnum, errbuf, sizeof(errbuf));
     fprintf(stderr, "%s: %s\n", message, errbuf);
     exit(EXIT_FAILURE);
-}
-
-void process_frame(AVCodecContext *video_dec_ctx, AVFrame *frame, int *frame_count, double packet_dts_time, const char *output_dir, int create_jpeg, int create_index, FILE *json_file, int *first_entry) {
-    if (frame->key_frame == 1 && frame->pict_type == AV_PICTURE_TYPE_I) {
-        if (create_jpeg) {
-            save_frame_as_jpeg(frame, video_dec_ctx->width, video_dec_ctx->height, *frame_count, output_dir);
-        }
-
-        if (create_index) {
-            if (!*first_entry) {
-                fprintf(json_file, ",\n");
-            }
-            fprintf(json_file, "    \"%.3f\": \"%s/frame-%04d.jpg\"", packet_dts_time, output_dir, *frame_count);
-            *first_entry = 0;
-        }
-
-        (*frame_count)++;
-    }
 }
 
 void open_input_file(const char *filename, AVFormatContext **fmt_ctx) {
@@ -206,6 +192,24 @@ end:
     }
 
     av_frame_free(&frame);
+}
+
+void process_frame(AVCodecContext *video_dec_ctx, AVFrame *frame, int *frame_count, double packet_dts_time, const char *output_dir, int create_jpeg, int create_index, FILE *json_file, int *first_entry) {
+    if (frame->key_frame == 1 && frame->pict_type == AV_PICTURE_TYPE_I) {
+        if (create_jpeg) {
+            save_frame_as_jpeg(frame, video_dec_ctx->width, video_dec_ctx->height, *frame_count, output_dir);
+        }
+
+        if (create_index) {
+            if (!*first_entry) {
+                fprintf(json_file, ",\n");
+            }
+            fprintf(json_file, "    \"%.3f\": \"%s/frame-%04d.jpg\"", packet_dts_time, output_dir, *frame_count);
+            *first_entry = 0;
+        }
+
+        (*frame_count)++;
+    }
 }
 
 void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, const char *output_dir) {
