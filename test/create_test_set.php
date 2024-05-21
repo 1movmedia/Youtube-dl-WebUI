@@ -12,7 +12,7 @@ if ($urls === false) {
     die("Can't fetch URLs data");
 }
 
-$test_data = [];
+$test_videos = [];
 
 while($row = $urls->fetchArray(SQLITE3_ASSOC)) {
     $entry = json_decode($row['details_json'], true);
@@ -33,17 +33,17 @@ while($row = $urls->fetchArray(SQLITE3_ASSOC)) {
         system('yt-dlp -o ' . escapeshellarg($entry['filename']) . ' ' . escapeshellarg($row['url'])) || die("Can't download video\n");
     }
 
-    $test_data[] = $entry;
+    $test_videos[] = $entry;
 
-    if (count($test_data) == 10) {
+    if (count($test_videos) == 10) {
         break;
     }
 }
 
-if (empty($test_data)) {
+if (empty($test_videos)) {
     die("No test data\n");
 }
 
-file_put_contents(__DIR__ . '/test_data.json', json_encode($test_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+file_put_contents(__DIR__ . '/test_data.json', json_encode($test_videos, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
 echo "Done\n";

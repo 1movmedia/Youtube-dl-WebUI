@@ -9,7 +9,7 @@ require __DIR__ . '/../www/vendor/autoload.php';
 require_once __DIR__ . '/test_data.php';
 
 function testKeyframes() {
-    $test_videos = downloadTestVideosIfNecessary();
+    global $test_videos;
 
     foreach ($test_videos as $video_info) {
         $frames = VideoUtil::keyframes($video_info['filename'], 1, 60, 4);
@@ -34,7 +34,7 @@ function testKeyframes() {
 
 // Define a test function for the VideoAdTrimmer::extractFrames method
 function testExtractFrames() {
-    $test_videos = downloadTestVideosIfNecessary();
+    global $test_videos;
 
     foreach ($test_videos as $video_info) {
         $timestamps = [

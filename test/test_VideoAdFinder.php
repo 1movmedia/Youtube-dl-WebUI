@@ -10,7 +10,7 @@ require_once __DIR__ . '/test_data.php';
 
 // Define a test function for the VideoAdTrimmer::classifyFrames method
 function testClassifyFrames() {
-    $test_videos = downloadTestVideosIfNecessary();
+    global $test_videos;
 
     $total_classifications = 0;
     $bad_classifications = 0;
@@ -43,7 +43,7 @@ function testClassifyFrames() {
 
 // Define a test function for the VideoAdTrimmer::identifyVideoTimestamps method
 function testIdentifyVideoTimestamps() {
-    $test_videos = downloadTestVideosIfNecessary();
+    global $test_videos;
 
     foreach ($test_videos as $video_info) {
         $start = time();
