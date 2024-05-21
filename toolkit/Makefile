@@ -1,6 +1,4 @@
-CC = gcc
 CFLAGS = -Wall -g
-LDFLAGS =
 LDLIBS = -lavformat -lavcodec -lavutil
 
 TARGET = keyframes
