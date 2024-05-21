@@ -8,4 +8,4 @@ TARGET = keyframes
 all: $(TARGET)
 
 clean:
-	rm -f $(TARGET) keyframes.o
+	$(RM) $(TARGET)
