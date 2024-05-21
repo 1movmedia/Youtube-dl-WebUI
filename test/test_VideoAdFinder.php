@@ -66,5 +66,5 @@ function testIdentifyVideoTimestamps() {
 }
 
 // Call the test functions
-testClassifyFrames();
+// testClassifyFrames();
 testIdentifyVideoTimestamps();

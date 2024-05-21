@@ -85,18 +85,33 @@ class VideoAdFinder {
         $endTimestamp = $duration;
         $middle = round($duration / 2, 1);
 
+        $stop_threshold = 0.33;
+        $weight_prev = 0.9;
+        $weight_cur = 1 - $weight_prev;
+
         $start_classes = self::classifyFrames($filename, 0, min(60, $middle));
+
+        $value = 0.75;
+
+        $prev_ad = true;
 
         foreach ($start_classes as $frame => $is_ad) {
             echo "Frame at $frame is " . ($is_ad ? "ad" : "not ad") . "\n";
 
-            $startTimestamp = $frame;
+            if ($prev_ad && !$is_ad) {
+                $startTimestamp = $frame;
+            }
 
-            if (!$is_ad) {
-                echo "Video start: $startTimestamp\n";
+            $value = ($value * $weight_prev) + ($is_ad ? $weight_cur : 0);
+
+            if ($value < $stop_threshold && !$is_ad) {
                 break;
             }
+
+            $prev_ad = $is_ad;
         }
+
+        echo "Video start: $startTimestamp\n";
 
         $end_classes = self::classifyFrames($filename, max($duration - 60, $middle), $duration);
 
