@@ -85,46 +85,17 @@ class VideoAdFinder {
         $endTimestamp = $duration;
         $middle = round($duration / 2, 1);
 
-        $stop_threshold = 0.33;
-        $weight_prev = 0.9;
-        $weight_cur = 1 - $weight_prev;
-
+        // Determine start timestamp
         $start_classes = self::classifyFrames($filename, 0, min(60, $middle));
-
-        $value = 0.75;
-
-        $prev_ad = true;
-
-        foreach ($start_classes as $frame => $is_ad) {
-            echo "Frame at $frame is " . ($is_ad ? "ad" : "not ad") . "\n";
-
-            if ($prev_ad && !$is_ad) {
-                $startTimestamp = $frame;
-            }
-
-            $value = ($value * $weight_prev) + ($is_ad ? $weight_cur : 0);
-
-            if ($value < $stop_threshold && !$is_ad) {
-                break;
-            }
-
-            $prev_ad = $is_ad;
-        }
-
+        $startTimestamp = self::detectTransition($start_classes, 0.75, 0.33, 0.9, 0);
+        
         echo "Video start: $startTimestamp\n";
 
+        // Determine end timestamp
         $end_classes = self::classifyFrames($filename, max($duration - 60, $middle), $duration);
-
-        foreach (array_reverse($end_classes, true) as $frame => $is_ad) {
-            echo "Frame at $frame is " . ($is_ad ? "ad" : "not ad") . "\n";
-
-            $endTimestamp = $frame;
-
-            if (!$is_ad) {
-                echo "Video end: $endTimestamp\n";
-                break;
-            }
-        }
+        $endTimestamp = self::detectTransition($end_classes, 0.75, 0.33, 0.9, $duration, true);
+        
+        echo "Video end: $endTimestamp\n";
 
         if ($endTimestamp - $startTimestamp < 15) {
             throw new Exception("Remaining video is too short!");
@@ -136,4 +107,45 @@ class VideoAdFinder {
         ];
     }
 
+    /**
+     * Detects the transition from ads to non-ads using a weighted moving average.
+     *
+     * @param array $classes The associative array of frame classifications with timestamps as keys and boolean values.
+     * @param float $initialValue The initial value for the weighted moving average.
+     * @param float $stopThreshold The threshold below which to stop.
+     * @param float $weightPrev The weight of the previous value in the moving average.
+     * @param bool $reverse If true, processes the frames in reverse.
+     * @return float The timestamp of the detected transition.
+     */
+    private static function detectTransition(array $classes, float $initialValue, float $stopThreshold, float $weightPrev, float $startTimestamp, bool $reverse = false): float {
+        $weightCur = 1 - $weightPrev;
+        $value = $initialValue;
+        $prevAd = true;
+        $transitionTimestamp = $startTimestamp;
+
+        foreach ($reverse ? array_reverse($classes, true) : $classes as $frame => $isAd) {
+            echo "Frame at $frame is " . ($isAd ? "ad" : "not ad") . " (MA: $value)\n";
+
+            if ($reverse) {
+                if ($isAd) {
+                    $transitionTimestamp = $frame;
+                }
+            }
+            else {
+                if ($prevAd && !$isAd) {
+                    $transitionTimestamp = $frame;
+                }
+            }
+
+            $value = ($value * $weightPrev) + ($isAd ? $weightCur : 0);
+
+            if ($value < $stopThreshold && !$isAd) {
+                break;
+            }
+
+            $prevAd = $isAd;
+        }
+
+        return $transitionTimestamp;
+    }
 }
