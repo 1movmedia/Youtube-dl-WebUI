@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
  
- COPY --chown=www-data:www-data www/composer.json www/composer.lock /var/www/html/youtube-dl/
+COPY --chown=www-data:www-data www/composer.json www/composer.lock /var/www/html/youtube-dl/
 
 USER www-data
 
