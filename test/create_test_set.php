@@ -66,7 +66,7 @@ function get_video_set(int $set_size = 10, string $order = 'ORDER BY RANDOM() DE
     
         $test_videos[] = $entry;
     
-        if (count($test_videos) == 10) {
+        if (count($test_videos) == $set_size) {
             break;
         }
     }
