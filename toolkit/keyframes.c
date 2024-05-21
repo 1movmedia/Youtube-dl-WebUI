@@ -229,7 +229,8 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
     jpeg_ctx->width = width;
     jpeg_ctx->time_base = (AVRational){1, 1}; // Set to 1/1 for simplicity
 
-    if (avcodec_open2(jpeg_ctx, jpeg_codec, NULL) < 0) {
+    ret = avcodec_open2(jpeg_ctx, jpeg_codec, NULL);
+    if (ret < 0) {
         fatal("Could not open codec", ret);
     }
 
