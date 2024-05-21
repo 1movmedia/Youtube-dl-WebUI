@@ -157,6 +157,8 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
         json_file = fopen(json_filename, "w");
         if (!json_file) {
             fatal("Could not open index.json for writing", AVERROR(errno));
+            av_frame_free(&frame);
+            return;
         }
         fprintf(json_file, "{\n");
     }
