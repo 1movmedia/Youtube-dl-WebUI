@@ -14,7 +14,7 @@ if ($urls === false) {
 
 $test_videos = [];
 
-$mp4_path = __DIR__ . '/../tmp/mp4-cache';
+$mp4_path = __DIR__ . '/../tmp/cache/mp4';
 
 if (!is_dir($mp4_path)) {
     mkdir($mp4_path, 0777, true);
@@ -38,7 +38,15 @@ while($row = $urls->fetchArray(SQLITE3_ASSOC)) {
     $entry['filename'] = $mp4_path . "/$entry[video_id].mp4";
 
     if (!file_exists($entry['filename'])) {
-        system('yt-dlp -o ' . escapeshellarg($entry['filename']) . ' ' . escapeshellarg($row['url'])) || die("Can't download video\n");
+        $result = null;
+
+        system('yt-dlp -o ' . escapeshellarg($entry['filename']) . ' ' . escapeshellarg($row['url']), $result) || die("Can't download video\n");
+
+        if ($result != 0) {
+            error_log("Download failed");
+
+            continue;
+        }
     }
 
     $test_videos[] = $entry;
