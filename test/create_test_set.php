@@ -1,6 +1,6 @@
 <?php
 
-function get_video_set(int $set_size = 10, string $order = 'ORDER BY RANDOM() DESC'): void {
+function get_video_set(int $set_size = 10, string $order = 'ORDER BY RANDOM() DESC', bool $cut_start = false): array {
     $db_file = __DIR__ .  '/db.sqlite3';
     
     $db = new SQLite3($db_file, SQLITE3_OPEN_READONLY);
@@ -23,8 +23,13 @@ function get_video_set(int $set_size = 10, string $order = 'ORDER BY RANDOM() DE
     
     while($row = $urls->fetchArray(SQLITE3_ASSOC)) {
         $entry = json_decode($row['details_json'], true);
+
+        if ($cut_start) {
+            $entry['cutEnd'] = 0;
+            $entry['cutTo'] = $entry['duration'];
+        }
     
-        if (!($entry['cutFrom'] && $entry['cutEnd'])) {
+        if (!($entry['cutFrom'] || $entry['cutEnd'])) {
             continue;
         }
     
@@ -38,8 +43,19 @@ function get_video_set(int $set_size = 10, string $order = 'ORDER BY RANDOM() DE
     
         if (!file_exists($entry['filename'])) {
             $result = null;
-    
-            system('yt-dlp -o ' . escapeshellarg($entry['filename']) . ' ' . escapeshellarg($row['url']), $result) || die("Can't download video\n");
+
+            $opts = '';
+
+            if ($entry['cutEnd'] == 0) {
+                $cut_to = max($entry['cutFrom'], 180);
+                if ($cut_to < $entry['duration']) {
+                    $opts .= '--postprocessor-args ' . escapeshellarg("-t ");
+                }
+            }
+
+            $command = 'yt-dlp -o ' . escapeshellarg($entry['filename']) . ' ' . $opts . ' ' . escapeshellarg($row['url']);
+
+            system($command, $result) || die("Can't download video\n");
     
             if ($result != 0) {
                 error_log("Download failed");
@@ -54,6 +70,8 @@ function get_video_set(int $set_size = 10, string $order = 'ORDER BY RANDOM() DE
             break;
         }
     }
+
+    return $test_videos;
 }
 
 function write_test_set(): void {
