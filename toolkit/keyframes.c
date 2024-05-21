@@ -18,9 +18,6 @@ void cleanup(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx);
 
 void print_usage(const char *prog_name) {
     fprintf(stderr, "Usage: %s -f <video file> [-s start position] [-e end position] [-l limit] [-d output directory] [-j (create jpegs)] [-i (create index json)]\n", prog_name);
-    av_frame_free(&yuv_frame);
-    av_packet_free(&packet);
-    avcodec_free_context(&jpeg_ctx);
 }
 int main(int argc, char **argv) {
     const char *filename = NULL;
@@ -108,7 +105,8 @@ void process_frame(AVCodecContext *video_dec_ctx, AVFrame *frame, int *frame_cou
 }
 
 void open_input_file(const char *filename, AVFormatContext **fmt_ctx) {
-    if (avformat_open_input(fmt_ctx, filename, NULL, NULL) < 0) {
+    int ret;
+    if ((ret = avformat_open_input(fmt_ctx, filename, NULL, NULL)) < 0) {
         fatal("Could not open source file", ret);
     }
 
@@ -158,7 +156,7 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
         snprintf(json_filename, sizeof(json_filename), "%s/index.json", output_dir);
         json_file = fopen(json_filename, "w");
         if (!json_file) {
-            fatal("Could not open index.json for writing");
+            fatal("Could not open index.json for writing", AVERROR(errno));
         }
         fprintf(json_file, "{\n");
     }
