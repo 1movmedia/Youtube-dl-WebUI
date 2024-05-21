@@ -1,11 +1,11 @@
 CFLAGS = -Wall -g
 LDLIBS = -lavformat -lavcodec -lavutil
 
-TARGET = keyframes
+TARGETS = keyframes
 
 .PHONY: all clean
 
-all: $(TARGET)
+all: $(TARGETS)
 
 clean:
-	$(RM) $(TARGET)
+	$(RM) $(TARGETS)
