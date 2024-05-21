@@ -2,6 +2,7 @@
 #include <libavcodec/avcodec.h>
 #include <libavutil/imgutils.h>
 #include <libavutil/opt.h>
+#include <libavutil/error.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
@@ -15,7 +16,12 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
 void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, const char *output_dir);
 void cleanup(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx);
 
-// Main Function
+void print_usage(const char *prog_name) {
+    fprintf(stderr, "Usage: %s -f <video file> [-s start position] [-e end position] [-l limit] [-d output directory] [-j (create jpegs)] [-i (create index json)]\n", prog_name);
+    av_frame_free(&yuv_frame);
+    av_packet_free(&packet);
+    avcodec_free_context(&jpeg_ctx);
+}
 int main(int argc, char **argv) {
     const char *filename = NULL;
     double start_position = 0;
@@ -50,13 +56,13 @@ int main(int argc, char **argv) {
                 create_index = 1;
                 break;
             default:
-                fprintf(stderr, "Usage: %s -f <video file> [-s start position] [-e end position] [-l limit] [-d output directory] [-j (create jpegs)] [-i (create index json)]\n", argv[0]);
+                print_usage(argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
 
     if (!filename) {
-        fprintf(stderr, "Usage: %s -f <video file> [-s start position] [-e end position] [-l limit] [-d output directory] [-j (create jpegs)] [-i (create index json)]\n", argv[0]);
+        print_usage(argv[0]);
         exit(EXIT_FAILURE);
     }
 
@@ -76,8 +82,10 @@ int main(int argc, char **argv) {
 }
 
 // Function Implementations
-void fatal(const char *message) {
-    fprintf(stderr, "%s\n", message);
+void fatal(const char *message, int errnum) {
+    char errbuf[128];
+    av_strerror(errnum, errbuf, sizeof(errbuf));
+    fprintf(stderr, "%s: %s\n", message, errbuf);
     exit(EXIT_FAILURE);
 }
 
@@ -101,11 +109,11 @@ void process_frame(AVCodecContext *video_dec_ctx, AVFrame *frame, int *frame_cou
 
 void open_input_file(const char *filename, AVFormatContext **fmt_ctx) {
     if (avformat_open_input(fmt_ctx, filename, NULL, NULL) < 0) {
-        fatal("Could not open source file");
+        fatal("Could not open source file", ret);
     }
 
     if (avformat_find_stream_info(*fmt_ctx, NULL) < 0) {
-        fatal("Could not find stream information");
+        fatal("Could not find stream information", ret);
     }
 }
 
@@ -113,23 +121,23 @@ void find_video_stream(AVFormatContext *fmt_ctx, int *video_stream_idx, AVCodecC
     const AVCodec *dec = NULL;
     int ret = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, &dec, 0);
     if (ret < 0) {
-        fatal("Could not find video stream in input file");
+        fatal("Could not find video stream in input file", ret);
     }
     *video_stream_idx = ret;
     *video_stream = fmt_ctx->streams[*video_stream_idx];
 
     *video_dec_ctx = avcodec_alloc_context3(dec);
     if (!*video_dec_ctx) {
-        fatal("Failed to allocate the video codec context");
+        fatal("Failed to allocate the video codec context", AVERROR(ENOMEM));
     }
 
     ret = avcodec_parameters_to_context(*video_dec_ctx, (*video_stream)->codecpar);
     if (ret < 0) {
-        fatal("Failed to copy codec parameters to context");
+        fatal("Failed to copy codec parameters to context", ret);
     }
 
     if (avcodec_open2(*video_dec_ctx, dec, NULL) < 0) {
-        fatal("Failed to open codec for stream");
+        fatal("Failed to open codec for stream", ret);
     }
 }
 
@@ -137,7 +145,7 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
     AVPacket packet;
     AVFrame *frame = av_frame_alloc();
     if (!frame) {
-        fatal("Could not allocate frame");
+        fatal("Could not allocate frame", AVERROR(ENOMEM));
     }
 
     int frame_count = 0;
@@ -169,7 +177,7 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
             if (packet_dts_time >= start_position) {
                 ret = avcodec_send_packet(video_dec_ctx, &packet);
                 if (ret < 0) {
-                    fprintf(stderr, "Error sending packet for decoding: %s\n", av_err2str(ret));
+                    fatal("Error sending packet for decoding", ret);
                     av_packet_unref(&packet);
                     continue;
                 }
@@ -184,7 +192,7 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
                 }
 
                 if (ret != AVERROR(EAGAIN) && ret != AVERROR_EOF) {
-                    fprintf(stderr, "Error during decoding: %s\n", av_err2str(ret));
+                    fatal("Error during decoding", ret);
                     av_packet_unref(&packet);
                     exit(EXIT_FAILURE);
                 }
@@ -210,27 +218,27 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
 
     jpeg_codec = avcodec_find_encoder(AV_CODEC_ID_MJPEG);
     if (!jpeg_codec) {
-        fatal("Codec not found");
+        fatal("Codec not found", AVERROR_ENCODER_NOT_FOUND);
     }
 
     jpeg_ctx = avcodec_alloc_context3(jpeg_codec);
     if (!jpeg_ctx) {
-        fatal("Could not allocate video codec context");
+        fatal("Could not allocate video codec context", AVERROR(ENOMEM));
     }
 
     jpeg_ctx->pix_fmt = AV_PIX_FMT_YUVJ420P;
     jpeg_ctx->height = height;
     jpeg_ctx->width = width;
-    jpeg_ctx->time_base = (AVRational){1, 25};
+    jpeg_ctx->time_base = (AVRational){1, 1}; // Set to 1/1 for simplicity
 
     if (avcodec_open2(jpeg_ctx, jpeg_codec, NULL) < 0) {
-        fatal("Could not open codec");
+        fatal("Could not open codec", ret);
     }
 
     // Convert frame to YUVJ420P format
     AVFrame *yuv_frame = av_frame_alloc();
     if (!yuv_frame) {
-        fatal("Could not allocate YUV frame");
+        fatal("Could not allocate YUV frame", AVERROR(ENOMEM));
     }
 
     yuv_frame->format = AV_PIX_FMT_YUVJ420P;
@@ -238,12 +246,12 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
     yuv_frame->height = height;
     ret = av_frame_get_buffer(yuv_frame, 32);
     if (ret < 0) {
-        fatal("Could not allocate YUV frame buffer");
+        fatal("Could not allocate YUV frame buffer", ret);
     }
 
     ret = av_frame_make_writable(yuv_frame);
     if (ret < 0) {
-        fatal("Could not make YUV frame writable");
+        fatal("Could not make YUV frame writable", ret);
     }
 
     av_image_copy(yuv_frame->data, yuv_frame->linesize, (const uint8_t **)(frame->data), frame->linesize, (enum AVPixelFormat)frame->format, width, height);
@@ -251,17 +259,17 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
     // Allocate packet
     packet = av_packet_alloc();
     if (!packet) {
-        fatal("Could not allocate packet");
+        fatal("Could not allocate packet", AVERROR(ENOMEM));
     }
 
     ret = avcodec_send_frame(jpeg_ctx, yuv_frame);
     if (ret < 0) {
-        fatal("Error sending a frame for encoding");
+        fatal("Error sending a frame for encoding", ret);
     }
 
     ret = avcodec_receive_packet(jpeg_ctx, packet);
     if (ret < 0) {
-        fatal("Error during encoding");
+        fatal("Error during encoding", ret);
     }
 
     char filename[1024];
@@ -269,7 +277,7 @@ void save_frame_as_jpeg(AVFrame *frame, int width, int height, int frame_index, 
 
     FILE *jpeg_file = fopen(filename, "wb");
     if (!jpeg_file) {
-        fatal("Could not open jpeg file for writing");
+        fatal("Could not open jpeg file for writing", AVERROR(errno));
     }
     fwrite(packet->data, 1, packet->size, jpeg_file);
     fclose(jpeg_file);
