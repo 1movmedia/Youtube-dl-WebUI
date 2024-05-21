@@ -20,20 +20,17 @@ function testClassifyFrames() {
             continue;
         }
 
-        $classes = [
-            "".($video_info['cutFrom'] / 2) => true,
-            "".($video_info['cutFrom'] * 2) => false,
-        ];
+        $classifiedFrames = VideoAdFinder::classifyFrames($video_info['filename'], 0, $video_info['cutFrom'] * 2 + 5);
 
-        $classifiedFrames = VideoAdFinder::classifyFrames($video_info['filename'], array_keys($classes));
+        assert(!empty($classifiedFrames));
+        assert(count($classifiedFrames) > $video_info['cutFrom'] / 7);
 
         // Validate outputs
-        foreach ($classes as $timestamp => $class) {
-            assert(isset($classifiedFrames[$timestamp]), "Error: No classification output for timestamp $timestamp");
-            assert(is_bool($classifiedFrames[$timestamp]), "Error: Expected boolean value for timestamp $timestamp, got " . gettype($classifiedFrames[$timestamp]));
+        foreach ($classifiedFrames as $timestamp => $class) {
+            $ad_time = $timestamp < $video_info['cutFrom'] || $timestamp > $video_info['cutTo'];
 
             $total_classifications++;
-            if ($classifiedFrames[$timestamp] !== $class) {
+            if ($class !== $ad_time) {
                 $bad_classifications++;
             }
         }

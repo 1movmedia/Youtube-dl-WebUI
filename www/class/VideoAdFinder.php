@@ -6,12 +6,38 @@ class VideoAdFinder {
      * Classify frames using an image classifier and return an associative array with timestamps as keys and boolean values indicating that the frame is a part of an ad.
      *
      * @param string $filename The path to the MP4 file.
-     * @param array $timestamps An array of timestamps in seconds to classify frames.
+     * @param float $start The start time for frame extraction.
+     * @param float $end The end time for frame extraction.
      * @return array Returns an associative array with timestamps as keys and boolean values indicating that the frame is a part of an ad.
      */
-    static function classifyFrames(string $filename, array $timestamps): array {
-        // Extract frames
-        $files = VideoUtil::extractFrames($filename, $timestamps);
+    static function classifyFrames(string $filename, float $start, float $end): array {
+        $keyframesBinary = '/home/m/.local/bin/keyframes';  // Path to the keyframes binary
+        $tempDir = sys_get_temp_dir();
+
+        // Generate command to extract keyframes
+        $command = sprintf('%s -f %s -s %.3f -e %.3f -d %s -j -i',
+            escapeshellcmd($keyframesBinary),
+            escapeshellarg($filename),
+            $start,
+            $end,
+            escapeshellarg($tempDir)
+        );
+
+        // Execute the command
+        exec($command, $output, $returnVar);
+
+        if ($returnVar !== 0) {
+            throw new Exception("Failed to extract keyframes using command: $command");
+        }
+
+        // Read the index file
+        $indexFile = $tempDir . '/index.json';
+        if (!file_exists($indexFile)) {
+            throw new Exception("Index file not found: $indexFile");
+        }
+
+        $indexContent = file_get_contents($indexFile);
+        $files = json_decode($indexContent, true);
 
         // Load configuration
         $config = require __DIR__ . '/../config/config.php';
@@ -21,11 +47,14 @@ class VideoAdFinder {
 
         // Remove temporary files
         array_map('unlink', $files);
+        unlink($indexFile);
 
         $result = [];
 
-        foreach($response as $file_info) {
-            $result[substr($file_info['parameter_name'], 4)] = $file_info['prediction'] !== 'ok';
+        foreach ($response as $file_info) {
+            // Extract timestamp from the filename
+            $timestamp = floatval(substr($file_info['parameter_name'], 4));
+            $result["$timestamp"] = $file_info['prediction'] !== 'ok';
         }
 
         echo "Classification API response: " . json_encode($result) . "\n";
@@ -36,7 +65,8 @@ class VideoAdFinder {
     /**
      * Finds when the actual video starts and ends by checking starting and ending frames for ads.
      * 
-     * @param $filename MP4 filename
+     * @param string $filename MP4 filename
+     * @param float $duration The duration of the video in seconds (optional)
      * @return array Returns an associative array with keys "begin" and "end" and timestamps for values.
      */
     static function identifyAds(string $filename, float $duration = -1): array {
@@ -55,32 +85,28 @@ class VideoAdFinder {
         $endTimestamp = $duration;
         $middle = round($duration / 2, 1);
 
-        $start_frames = VideoUtil::keyframes($filename, 0, min(60, $middle));
-        $start_classes = self::classifyFrames($filename, $start_frames);
+        $start_classes = self::classifyFrames($filename, 0, min(60, $middle));
 
-        foreach($start_classes as $frame => $is_ad) {
+        foreach ($start_classes as $frame => $is_ad) {
             echo "Frame at $frame is " . ($is_ad ? "ad" : "not ad") . "\n";
 
             $startTimestamp = $frame;
 
             if (!$is_ad) {
                 echo "Video start: $startTimestamp\n";
-
                 break;
             }
         }
 
-        $end_frames = VideoUtil::keyframes($filename, max($duration - 60, $middle), $duration);
-        $end_classes = self::classifyFrames($filename, $end_frames);
+        $end_classes = self::classifyFrames($filename, max($duration - 60, $middle), $duration);
 
-        foreach(array_reverse($end_classes, true) as $frame => $is_ad) {
+        foreach (array_reverse($end_classes, true) as $frame => $is_ad) {
             echo "Frame at $frame is " . ($is_ad ? "ad" : "not ad") . "\n";
 
             $endTimestamp = $frame;
 
             if (!$is_ad) {
                 echo "Video end: $endTimestamp\n";
-
                 break;
             }
         }
