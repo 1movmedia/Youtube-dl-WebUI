@@ -177,9 +177,8 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
             if (packet_dts_time >= start_position) {
                 ret = avcodec_send_packet(video_dec_ctx, &packet);
                 if (ret < 0) {
-                    fatal("Error sending packet for decoding", ret);
                     av_packet_unref(&packet);
-                    continue;
+                    fatal("Error sending packet for decoding", ret);
                 }
 
                 while ((ret = avcodec_receive_frame(video_dec_ctx, frame)) >= 0) {
@@ -192,9 +191,8 @@ void process_keyframes(AVFormatContext *fmt_ctx, AVCodecContext *video_dec_ctx, 
                 }
 
                 if (ret != AVERROR(EAGAIN) && ret != AVERROR_EOF) {
-                    fatal("Error during decoding", ret);
                     av_packet_unref(&packet);
-                    exit(EXIT_FAILURE);
+                    fatal("Error during decoding", ret);
                 }
             }
         }
