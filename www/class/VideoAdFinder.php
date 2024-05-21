@@ -10,9 +10,24 @@ class VideoAdFinder {
      * @param float $end The end time for frame extraction.
      * @return array Returns an associative array with timestamps as keys and boolean values indicating that the frame is a part of an ad.
      */
-    static function classifyFrames(string $filename, float $start, float $end): array {
+    static function classifyFrames(string $filename, float $start, float $end, ?string $cache = null): array {
         $keyframesBinary = `which keyframes`;  // Path to the keyframes binary
-        $tempDir = sys_get_temp_dir();
+        if ($cache === null) {
+            $tempDir = sys_get_temp_dir();
+        }
+        else {
+            $tempDir = "$cache/frames/$start-$end";
+
+            if (!is_dir($tempDir)) {
+                mkdir($tempDir, 0777, true);
+            }
+        }
+
+        $indexFile = $tempDir . '/index.json';
+
+        if ($cache !== null && file_exists($indexFile)) {
+            return json_decode(file_get_contents($indexFile), true);
+        }
 
         // Generate command to extract keyframes
         $command = sprintf('%s -f %s -s %.3f -e %.3f -d %s -j -i',
@@ -31,7 +46,6 @@ class VideoAdFinder {
         }
 
         // Read the index file
-        $indexFile = $tempDir . '/index.json';
         if (!file_exists($indexFile)) {
             throw new Exception("Index file not found: $indexFile");
         }
@@ -45,9 +59,11 @@ class VideoAdFinder {
         // Classify frames using image classifier
         $response = ImageClassifier::classifyFiles($files, $config['classifier_api']);
 
-        // Remove temporary files
-        array_map('unlink', $files);
-        unlink($indexFile);
+        if ($cache === null) {
+            // Remove temporary files
+            array_map('unlink', $files);
+            unlink($indexFile);
+        }
 
         $result = [];
 
@@ -69,7 +85,7 @@ class VideoAdFinder {
      * @param float $duration The duration of the video in seconds (optional)
      * @return array Returns an associative array with keys "begin" and "end" and timestamps for values.
      */
-    static function identifyAds(string $filename, float $duration = -1): array {
+    static function identifyAds(string $filename, float $duration = -1, ?string $cache = null): array {
         if ($duration < 0) {
             // Get video duration
             $duration = VideoUtil::getVideoDuration($filename);
@@ -86,13 +102,13 @@ class VideoAdFinder {
         $middle = round($duration / 2, 1);
 
         // Determine start timestamp
-        $start_classes = self::classifyFrames($filename, 0, min(60, $middle));
+        $start_classes = self::classifyFrames($filename, 0, min(90, $middle), $cache);
         $startTimestamp = self::detectTransition($start_classes, 0.75, 0.33, 0.9, 0);
         
         echo "Video start: $startTimestamp\n";
 
         // Determine end timestamp
-        $end_classes = self::classifyFrames($filename, max($duration - 60, $middle), $duration);
+        $end_classes = self::classifyFrames($filename, max($duration - 90, $middle), $duration, $cache);
         $endTimestamp = self::detectTransition($end_classes, 0.75, 0.33, 0.9, $duration, true);
         
         echo "Video end: $endTimestamp\n";
