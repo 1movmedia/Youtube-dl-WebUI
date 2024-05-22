@@ -71,7 +71,7 @@
         {
             "label": "Sync to demo server",
             "type": "shell",
-            "command": "rsync -avz --delete --inplace --exclude tmp . m@n.uo1.net:/home/m/ytdl",
+            "command": "rsync -avz --delete --inplace --exclude tmp --exclude training_set . m@n.uo1.net:/home/m/ytdl",
             "problemMatcher": [],
             "promptOnClose": false,
         }
