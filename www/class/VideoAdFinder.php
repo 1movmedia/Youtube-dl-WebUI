@@ -13,7 +13,10 @@ class VideoAdFinder {
     static function classifyFrames(string $filename, float $start, float $end, ?string $cache = null, $detailed = false): array {
         $keyframesBinary = trim(`which keyframes`);  // Path to the keyframes binary
         if ($cache === null) {
-            $tempDir = sys_get_temp_dir();
+            $fn_info = pathinfo($filename);
+
+            $tempDir = "$fn_info[dirname]/$fn_info[filename].keyframes";
+            mkdir($tempDir);
             $cacheFile = null;
         }
         else {
@@ -68,6 +71,7 @@ class VideoAdFinder {
             // Remove temporary files
             array_map('unlink', $files);
             unlink($indexFile);
+            rmdir($tempDir);
         }
 
         $result = [];
