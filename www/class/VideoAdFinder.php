@@ -11,7 +11,7 @@ class VideoAdFinder {
      * @return array Returns an associative array with timestamps as keys and boolean values indicating that the frame is a part of an ad.
      */
     static function classifyFrames(string $filename, float $start, float $end, ?string $cache = null, $detailed = false): array {
-        $keyframesBinary = `which keyframes`;  // Path to the keyframes binary
+        $keyframesBinary = trim(`which keyframes`);  // Path to the keyframes binary
         if ($cache === null) {
             $tempDir = sys_get_temp_dir();
             $cacheFile = null;
