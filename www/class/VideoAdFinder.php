@@ -10,10 +10,11 @@ class VideoAdFinder {
      * @param float $end The end time for frame extraction.
      * @return array Returns an associative array with timestamps as keys and boolean values indicating that the frame is a part of an ad.
      */
-    static function classifyFrames(string $filename, float $start, float $end, ?string $cache = null): array {
+    static function classifyFrames(string $filename, float $start, float $end, ?string $cache = null, $detailed = false): array {
         $keyframesBinary = `which keyframes`;  // Path to the keyframes binary
         if ($cache === null) {
             $tempDir = sys_get_temp_dir();
+            $cacheFile = null;
         }
         else {
             $tempDir = "$cache/frames/$start-$end";
@@ -21,12 +22,14 @@ class VideoAdFinder {
             if (!is_dir($tempDir)) {
                 mkdir($tempDir, 0777, true);
             }
+
+            $cacheFile = $tempDir . '/classes' . ($detailed ? '-detailed' : '') . '.json';
         }
 
         $indexFile = $tempDir . '/index.json';
 
-        if ($cache !== null && file_exists($indexFile)) {
-            return json_decode(file_get_contents($indexFile), true);
+        if ($cache !== null && file_exists($cacheFile)) {
+            return json_decode(file_get_contents($cacheFile), true);
         }
 
         // Generate command to extract keyframes
@@ -70,7 +73,21 @@ class VideoAdFinder {
         foreach ($response as $file_info) {
             // Extract timestamp from the filename
             $timestamp = floatval(substr($file_info['parameter_name'], 4));
-            $result["$timestamp"] = $file_info['prediction'] !== 'ok';
+            if ($detailed) {
+                $result["$timestamp"] = [
+                    'is_ad' => $file_info['prediction'] !== 'ok',
+                    'filename' => $file_info['filename'],
+                    'timestamp' => $timestamp,
+                    'file_info' => $file_info,
+                ];
+            }
+            else {
+                $result["$timestamp"] = $file_info['prediction'] !== 'ok';
+            }
+        }
+
+        if ($cacheFile !== null) {
+            file_put_contents($cacheFile, json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
         }
 
         echo "Classification API response: " . json_encode($result) . "\n";
