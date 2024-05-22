@@ -12,3 +12,4 @@ test/db.sqlite3
 test/test_data.json
 taining_set.tar.gz
 taining_set
+test/train_videos.json
