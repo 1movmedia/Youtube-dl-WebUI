@@ -30,13 +30,8 @@ if (!file_exists($cmd['download_file'])) {
 if (isset($cmd['convert_cmd'])) {
     assert(strpos($cmd['convert_cmd'], '/remove_ads.php') !== false);
 
-    $argv = [
-        __DIR__ . '/../www/util/remove_ads.php',
-        $cmd['download_file'],
-        $cmd['output_file']
-    ];
+    $input_filename = $cmd['download_file'];
+    $output_filename = $cmd['output_file'];
 
-    var_dump($argv);
-
-    require $argv[0];
+    require __DIR__ . '/../www/util/remove_ads.php';
 }

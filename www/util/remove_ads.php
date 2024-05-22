@@ -1,7 +1,9 @@
 <?php
 
-$input_filename = $argv[1] ?? die("Argument #1 missing");
-$output_filename = $argv[2] ?? die("Argument #2 missing");
+if (empty($input_filename) || empty($output_filename)) {
+    $input_filename = $argv[1] ?? die("Argument #1 missing");
+    $output_filename = $argv[2] ?? die("Argument #2 missing");
+}
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
