@@ -12,9 +12,15 @@ class Downloader
 	private $log_file = '/dev/null';
 	private $vformat = false;
 
+	static function ytdlp_path(): string {
+		return `which yt-dlp`;
+	}
+
 	public function __construct($video_info)
 	{
 		$this->config = require dirname(__DIR__).'/config/config.php';
+		$this->config['bin'] = self::ytdlp_path();
+
 		$fh = new FileHandler();
 		$this->download_path = $fh->get_downloads_folder();
 		
@@ -125,6 +131,8 @@ class Downloader
 		if(count($output) > 0)
 		{
 			$config = require dirname(__DIR__).'/config/config.php';
+			$config['bin'] = self::ytdlp_path();
+
 			$markers = [ $config["bin"], "sh -c ( $config[bin]" ];
 
 			foreach($output as $line)

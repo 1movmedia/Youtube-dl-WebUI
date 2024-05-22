@@ -321,6 +321,8 @@ class FileHandler
 
 	public function info($url)
 	{
+		$this->config['bin'] = Downloader::ytdlp_path();
+
 		$cmd = $this->config["bin"]." -J ";
 
 		$cmd .= " ".escapeshellarg($url);

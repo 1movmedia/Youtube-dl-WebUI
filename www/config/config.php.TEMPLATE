@@ -4,7 +4,6 @@
 //No "/" at the end of outputFolder or logfolder
 
 return array(
-	"bin" => "/usr/local/bin/yt-dlp",
 	"security" => true,
 	"users" => array(
 		// to generate password "root" use can use command `echo -en root | md5sum`
