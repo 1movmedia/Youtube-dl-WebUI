@@ -13,7 +13,7 @@ class Downloader
 	private $vformat = false;
 
 	static function ytdlp_path(): string {
-		return `which yt-dlp`;
+		return trim(`which yt-dlp`);
 	}
 
 	public function __construct($video_info)
@@ -361,9 +361,9 @@ class Downloader
 		}
 	}
 
-	private function download_prepare($index = true)
+	function download_prepare($index = true, $array = false)
 	{
-		$fh = new FileHandler($this->config['db']);
+		$fh = new FileHandler($index ? $this->config['db'] : null);
 
 		$cmd = $this->config["bin"];
 		$cmd .= " --ignore-error";
@@ -392,7 +392,8 @@ class Downloader
 		$to = $this->video_info['cutTo'] ?? 0;
 
 		$convert_cmd = '';
-		$download_file = $this->download_path."/".$this->id . '.%(ext)s';
+		$output_file = $this->download_path."/".$this->id . '.%(ext)s';
+		$download_file = $output_file;
 
 		if ($from != 0 || $from_end != 0) {
 			// TODO : Revert to use `--download-sections` yt-dlp argument when yt-dlp will fix partial download issue
@@ -421,6 +422,8 @@ class Downloader
 
 		$cmd .= " ".escapeshellarg($this->url);
 
+		$dl_cmd = $cmd;
+
 		if ($convert_cmd != '') {
 			$cmd = "( $cmd && $convert_cmd )";
 		}
@@ -436,6 +439,17 @@ class Downloader
 		$cmd .= " 2>&1";
 
 		$cmd .= " & echo $!";
+
+		if ($array) {
+			return [
+				'dl_cmd' => $dl_cmd,
+				'output_file' => $output_file,
+				'download_file' => $download_file,
+				'convert_cmd' => $convert_cmd,
+				'log' => $this->log_file,
+				'cmd' => $cmd,
+			];
+		}
 
 		return $cmd;
 	}
