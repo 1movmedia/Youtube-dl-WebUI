@@ -41,6 +41,8 @@ class VideoAdFinder {
             escapeshellarg($tempDir)
         );
 
+        echo "Frame extraction command: $command\n";
+
         // Execute the command
         exec($command, $output, $returnVar);
 
