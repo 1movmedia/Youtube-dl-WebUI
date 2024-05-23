@@ -10,3 +10,5 @@ tmp
 .keep
 data/db.sqlite3
 www/vendor
+training_set
+test
