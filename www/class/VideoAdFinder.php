@@ -165,15 +165,8 @@ class VideoAdFinder {
         foreach ($reverse ? array_reverse($classes, true) : $classes as $frame => $isAd) {
             echo "Frame at $frame is " . ($isAd ? "ad" : "not ad") . " (MA: $value)\n";
 
-            if ($reverse) {
-                if ($isAd) {
-                    $transitionTimestamp = $frame;
-                }
-            }
-            else {
-                if ($prevAd && !$isAd) {
-                    $transitionTimestamp = $frame;
-                }
+            if ($prevAd && !$isAd) {
+                $transitionTimestamp = $frame;
             }
 
             $value = ($value * $weightPrev) + ($isAd ? $weightCur : 0);
