@@ -35,7 +35,7 @@
         {
             "label": "Start shell in Docker container",
             "type": "shell",
-            "command": "docker compose -f docker-compose.debug.yml exec -it /bin/bash -c 'su -s /bin/bash www-data'",
+            "command": "docker compose -f docker-compose.debug.yml exec -it ytdlwui /bin/bash -c 'su -s /bin/bash www-data'",
             "problemMatcher": [],
             "promptOnClose": false,
         },
