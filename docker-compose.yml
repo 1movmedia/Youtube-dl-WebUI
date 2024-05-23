@@ -1,0 +1,17 @@
+services:
+  ytdlwui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ytdlwui
+    ports:
+      - "8963:80"
+    volumes:
+      - ./data:/var/www/html/youtube-dl/data
+      - ./downloads:/var/www/html/youtube-dl/downloads
+      - ./logs:/var/www/html/youtube-dl/logs
+      - sessions:/var/lib/php/sessions
+    restart: unless-stopped
+
+volumes:
+  sessions:
