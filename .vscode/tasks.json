@@ -71,7 +71,7 @@
         {
             "label": "Sync to demo server",
             "type": "shell",
-            "command": "rsync -avz --delete --inplace --exclude .git --exclude tmp --exclude training_set . m@n.uo1.net:/home/m/ytdl",
+            "command": "git archive --format=tar master | ssh -C m@n.uo1.net 'mkdir -p /home/m/ytdl && cd /home/m/ytdl && tar -xvf -'",
             "problemMatcher": [],
             "promptOnClose": false,
         }
