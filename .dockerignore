@@ -9,3 +9,4 @@ www/config/config.php
 tmp
 .keep
 data/db.sqlite3
+www/vendor
