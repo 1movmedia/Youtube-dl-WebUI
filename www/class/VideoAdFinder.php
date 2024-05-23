@@ -133,10 +133,6 @@ class VideoAdFinder {
         // Determine end timestamp
         $end_classes = self::classifyFrames($filename, max($duration - 90, $middle), $duration, $cache);
         $endTimestamp = self::detectTransition($end_classes, 0.75, 0.33, 0.9, $duration, true);
-
-        if ($endTimestamp == $duration) {
-            $endTimestamp--;
-        }
         
         echo "Video end: $endTimestamp\n";
 
