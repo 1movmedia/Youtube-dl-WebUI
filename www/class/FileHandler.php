@@ -3,7 +3,7 @@
 class FileHandler
 {
 	private $config = [];
-	private $re_partial = '/(?:\.part(?:-Frag\d+)?|\.ytdl|\.uncut\.mp4)$/m';
+	private $re_partial = '/(?:\.part(?:-Frag\d+)?|\.ytdl|\.uncut\.mp4|\.keyframes)$/m';
     private $db;
 
 	public function __construct($filename = null)
