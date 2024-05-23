@@ -41,7 +41,7 @@ RUN PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install yt-dlp
 
 COPY --chown=www-data:www-data www /var/www/html/youtube-dl
 
-COPY --from=builder /var/www/html/youtube-dl/vendor /var/www/html/youtube-dl/
+COPY --from=builder /var/www/html/youtube-dl/vendor/ /var/www/html/youtube-dl/vendor
 
 COPY --from=builder /opt/toolkit/keyframes /usr/local/bin/
 
