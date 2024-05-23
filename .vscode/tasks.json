@@ -64,6 +64,7 @@
         {
             "label": "Download test video to /tmp/test_video.mp4 if missing",
             "type": "shell",
+            
             "command": "test -e /tmp/test_video.mp4 || yt-dlp -o /tmp/test_video.mp4 'https://rt.pornhub.com/view_video.php?viewkey=ph634c78ed6c98f'",
             "problemMatcher": [],
             "promptOnClose": false,
@@ -71,7 +72,7 @@
         {
             "label": "Sync to demo server",
             "type": "shell",
-            "command": "git archive --format=tar master | ssh -C m@n.uo1.net 'mkdir -p /home/m/ytdl && cd /home/m/ytdl && tar -xvf -'",
+            "command": "git archive --format=tar master | ssh m@n.uo1.net 'mkdir -p ytdl && tar -xvf - -C ytdl'",
             "problemMatcher": [],
             "promptOnClose": false,
         }
