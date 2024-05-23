@@ -4,6 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: ytdlwui
+    privileged: true
     ports:
       - "8963:80"
     volumes:
