@@ -125,14 +125,14 @@ class VideoAdFinder {
         $middle = round($duration / 2, 1);
 
         // Determine start timestamp
-        $start_classes = self::classifyFrames($filename, 0, min(90, $middle), $cache);
-        $startTimestamp = self::detectTransition($start_classes, 0.75, 0.33, 0.9, 0);
+        $start_classes = self::classifyFrames($filename, 0, min(120, $middle), $cache);
+        $startTimestamp = self::detectTransition($start_classes, 0.75, 0.3, 0.95, 0);
         
         echo "Video start: $startTimestamp\n";
 
         // Determine end timestamp
-        $end_classes = self::classifyFrames($filename, max($duration - 90, $middle), $duration, $cache);
-        $endTimestamp = self::detectTransition($end_classes, 0.75, 0.33, 0.9, $duration, true);
+        $end_classes = self::classifyFrames($filename, max($duration - 120, $middle), $duration, $cache);
+        $endTimestamp = self::detectTransition($end_classes, 0.75, 0.3, 0.95, $duration, true);
         
         echo "Video end: $endTimestamp\n";
 
