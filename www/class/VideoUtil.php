@@ -213,6 +213,8 @@ class VideoUtil {
 
         $cmd = self::ffmpeg_path() . ' ' . implode(' ', $args);
 
+        echo "Cutting command: $cmd\n";
+
         exec($cmd, $output, $return_var);
         if ($return_var !== 0) {
             throw new Exception("ffmpeg failed with status $return_var: " . implode("\n", $output));
