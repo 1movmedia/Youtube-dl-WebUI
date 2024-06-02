@@ -197,6 +197,8 @@ class VideoUtil {
             "-y"
         ];
 
+        $args[] = "-i " . escapeshellarg($input_filename);
+
         if (!empty($video_constraints['begin'])) {
             $ss = $video_constraints['begin'];
             $args[] = "-ss $ss";
@@ -207,7 +209,7 @@ class VideoUtil {
             $args[] = "-to $to";
         }
 
-        $args[] = "-i " . escapeshellarg($input_filename) . " -avoid_negative_ts make_zero -map 0:0 -c:0 copy -map 0:1 -c:1 copy -map_metadata 0 -movflags +faststart -default_mode infer_no_subs -ignore_unknown -f mp4 " . escapeshellarg($output_filename);
+        $args[] = "-avoid_negative_ts make_zero -map 0:0 -c:0 copy -map 0:1 -c:1 copy -map_metadata 0 -movflags +faststart -default_mode infer_no_subs -ignore_unknown -f mp4 " . escapeshellarg($output_filename);
 
         $cmd = self::ffmpeg_path() . ' ' . implode(' ', $args);
 
