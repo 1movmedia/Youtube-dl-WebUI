@@ -200,7 +200,7 @@ class VideoUtil {
         $args[] = "-i " . escapeshellarg($input_filename);
 
         if (!empty($video_constraints['begin'])) {
-            $ss = $video_constraints['begin'];
+            $ss = $video_constraints['begin'] - 0.01;
             $args[] = "-ss $ss";
         }
 
