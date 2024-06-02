@@ -21,6 +21,10 @@ if ($video_constraints['begin'] == 0 && $video_constraints['end'] === $video_dur
     exit(0);
 }
 
+if ($video_constraints['begin'] > 0.15) {
+    $video_constraints['begin'] -= 0.15; # Workaround for start freezing
+}
+
 echo "Ads found. Cut constraints: " . json_encode($video_constraints) . "\n";
 
 VideoUtil::cutVideo($input_filename, $video_constraints, $output_filename);
