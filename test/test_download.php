@@ -7,8 +7,8 @@ if (!empty($_SERVER['SERVER_NAME'])) {
 require __DIR__ . '/../www/vendor/autoload.php';
 
 $video_info = [
-    'id' => 'ph6156c96c3f9fc',
-    'url' => 'https://www.pornhub.com/view_video.php?viewkey=ph6156c96c3f9fc',
+    'id' => '6654da73d67ad',
+    'url' => 'https://www.pornhub.com/view_video.php?viewkey=6654da73d67ad',
     'cutFrom' => 0,
     'cutEnd' => 0,
     // 'cutTo' => ?, // not necessary?
