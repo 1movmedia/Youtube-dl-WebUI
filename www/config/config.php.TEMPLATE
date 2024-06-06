@@ -16,5 +16,5 @@ return array(
 	"max_dl" => 6,
 	"session_lifetime" => 86400,
 	"targets" => [ "site1", "site2", "site3" ],
-	"classifier_api" => "http://185.130.227.237:7000",
+	"classifier_api" => "http://classifier_api:7000",
 );
