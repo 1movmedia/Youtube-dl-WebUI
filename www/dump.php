@@ -69,6 +69,10 @@ foreach($fh->listFiles() as $file) {
         $categories = array_map(function($c) { return $c['category']; }, $v['categories']);
         $pornstars = array_map(function($c) { return $c['pornstar_name']; }, $v['pornstars']);
 
+        array_map('sanitize_unicode', $tags);
+        array_map('sanitize_unicode', $categories);
+        array_map('sanitize_unicode', $pornstars);
+
         $pornstars_str = implode(',', $pornstars);
 
         $row = [
@@ -79,7 +83,7 @@ foreach($fh->listFiles() as $file) {
             //  3. сколько обрезать в конце
             round(@$v['cutEnd'] ?? 0),
             //  4. название ролика
-            $v['title'],
+            sanitize_unicode($v['title']),
             //  6. категории
             implode(',', $categories),
             //  7. теги
@@ -87,9 +91,9 @@ foreach($fh->listFiles() as $file) {
             //  8. модели
             $pornstars_str,
             //  9. владелец контента
-            strtolower($pornstars_str) === strtolower($v['userTitle']) ? '' : $v['userTitle'],
+            strtolower($pornstars_str) === strtolower($v['userTitle']) ? '' : sanitize_unicode($v['userTitle']),
             // 10. пользователь инициировавший скачивание
-            $data['username'] ?? '',
+            sanitize_unicode($data['username'] ?? ''),
         ];
 
         fputcsv($out, $row, "\t");
@@ -101,3 +105,10 @@ foreach($fh->listFiles() as $file) {
 }
 
 fclose($out);
+
+function sanitize_unicode($str) {
+    $str = preg_replace('/[^\x21-\x7E]+/u', ' ', $str);
+    $str = trim($str);
+    
+    return $str;
+}
