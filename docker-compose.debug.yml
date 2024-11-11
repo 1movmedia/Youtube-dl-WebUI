@@ -13,5 +13,4 @@ services:
       - ./tmp/data:/var/www/html/youtube-dl/data
       - ./tmp/downloads:/var/www/html/youtube-dl/downloads
       - ./tmp/logs:/var/www/html/youtube-dl/logs
-      - ./tmp/sessions:/var/lib/php/sessions
     restart: unless-stopped
