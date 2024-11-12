@@ -47,7 +47,20 @@ async function download(video, onsuccess) {
 
     log(match);
 
-    let pornstars = Array.from(document.querySelectorAll('a[data-mxptype="Pornstar"][data-mxptext]')).map(a => ({'pornstar_name': a.dataset.mxptext}));
+    let videoData = dataLayer.filter(e => !!e.videodata)[0].videodata;
+
+    if (!videoData) {
+        throw new Error('Video data not found');
+    }
+
+    if (!(videoData.categories_in_video && videoData.pornstars_in_video)) {
+        throw new Error('Video data incomplete');
+    }
+
+    let title = document.querySelector('meta[property="og:title"]').content;
+    let tags = Array.from(document.querySelectorAll('.tagsWrapper a[data-label="Tag"]')).map(a => ({'tag_name': a.innerText}));
+    let pornstars = videoData.pornstars_in_video.split(',').map(c => ({ pornstar_name: c }));
+    let categories = videoData.categories_in_video.split(',').map(c => ({ category: c }));
 
     // Add model unless it's listed already
     if (video.isModelUser && !pornstars.some(e => e.pornstar_name === video.userTitle)) {
@@ -55,13 +68,13 @@ async function download(video, onsuccess) {
     }
 
     videoInfo = {
-        "id": "ph-" + video_id,
-        "video_id": video_id,
-        "title": document.querySelector('meta[property="og:title"]').content,
+        id: "ph-" + video_id,
+        video_id,
+        title,
        
-        "tags": Array.from(document.querySelectorAll('.tagsWrapper a[data-label="Tag"]')).map(a => ({'tag_name': a.innerText})),
-        "pornstars": pornstars,
-        "categories": dataLayer.filter(e => !!e.videodata)[0].videodata.categories_in_video.split(',').map(c => ({ category: c })),
+        tags,
+        pornstars,
+        categories,
     };
 
     // Copy fields not available via API
