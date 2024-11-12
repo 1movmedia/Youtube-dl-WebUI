@@ -14,3 +14,5 @@ taining_set.tar.gz
 taining_set
 test/train_videos.json
 data/db.sqlite3
+.aider*
+.env
