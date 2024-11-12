@@ -91,7 +91,7 @@ foreach($fh->listFiles() as $file) {
             //  8. models
             $pornstars_str,
             //  9. content owner (channels only)
-            $v['userType'] === 'channel' ? sanitize_unicode($v['userTitle']) : '',
+            $v['userType'] === 'channel' || $v['userType'] === 'Content Partner' ? sanitize_unicode($v['userTitle']) : '',
             // 10. user who initiated download
             sanitize_unicode($data['username'] ?? ''),
         ];

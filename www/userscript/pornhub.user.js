@@ -57,13 +57,15 @@ async function download(video, onsuccess) {
         throw new Error('Video data incomplete');
     }
 
+    let isModelUser = video.isModelUser || videoData.video_uploader === "Amateur Model" || videoData.video_uploader === "Professional Model";
+
     let title = document.querySelector('meta[property="og:title"]').content;
     let tags = Array.from(document.querySelectorAll('.tagsWrapper a[data-label="Tag"]')).map(a => ({'tag_name': a.innerText}));
     let pornstars = videoData.pornstars_in_video.split(',').map(c => ({ pornstar_name: c }));
     let categories = videoData.categories_in_video.split(',').map(c => ({ category: c }));
 
     // Add model unless it's listed already
-    if (video.isModelUser && !pornstars.some(e => e.pornstar_name === video.userTitle)) {
+    if (isModelUser && !pornstars.some(e => e.pornstar_name === video.userTitle)) {
         pornstars.push({'pornstar_name': video.userTitle});
     }
 
@@ -75,10 +77,14 @@ async function download(video, onsuccess) {
         tags,
         pornstars,
         categories,
+
+        url: video_url,
+        userTitle: videoData.video_uploader_name,
+        userType: videoData.video_uploader,
     };
 
     // Copy fields not available via API
-    [ "url", "userTitle", "userType", "userUrl", "cutFrom", "cutTo", "duration", "cutEnd", "target" ].forEach(key => videoInfo[key] = video[key]);
+    [ "userUrl", "cutFrom", "cutTo", "duration", "cutEnd", "target" ].forEach(key => videoInfo[key] = video[key]);
 
     log('videoInfo:', videoInfo);
 
@@ -150,8 +156,6 @@ if (location.search.startsWith('?viewkey=')) {
         let video = {
             vkey: viewKey,
             url: 'https://www.pornhub.com/view_video.php?viewkey=' + viewKey,
-            userType: usernameWrap.dataset.type,
-            userTitle: userLink.innerText,
             userUrl: userLink.href,
             isModelUser: userLink.pathname.startsWith('/model/'),
         };
