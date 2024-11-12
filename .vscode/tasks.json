@@ -15,7 +15,6 @@
             "type": "shell",
             "command": "docker compose -f docker-compose.debug.yml up -d --build",
             "problemMatcher": [],
-            "dependsOn": [ "Stop Docker container and remove it" ],
             "promptOnClose": false,
         },
         {
