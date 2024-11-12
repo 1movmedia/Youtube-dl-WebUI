@@ -4,6 +4,13 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Download data from remote",
+            "type": "shell",
+            "command": "rsync --progress -a ${input:remote_ssh_user_path}/data tmp/",
+            "problemMatcher": [],
+            "promptOnClose": false,
+        },
+        {
             "label": "Build Docker image",
             "type": "shell",
             "command": "docker compose -f docker-compose.debug.yml build",
@@ -74,6 +81,14 @@
             "command": "git archive --format=tar master | ssh m@n.uo1.net 'mkdir -p ytdl && tar -xvf - -C ytdl'",
             "problemMatcher": [],
             "promptOnClose": false,
+        }
+    ],
+    "inputs": [
+        {
+            "id": "remote_ssh_user_path",
+            "type": "promptString",
+            "description": "Remote SSH user path",
+            "default": "admin@remote:/home/admin/services/Youtube-dl-WebUI"
         }
     ]
 }
