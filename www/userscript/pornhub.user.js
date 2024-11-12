@@ -99,10 +99,6 @@ async function download(video, onsuccess) {
         errors.push('Video URL is missing');
     }
 
-    if (videoInfo.pornstars.length === 0) {
-        errors.push('Pornstars are missing');
-    }
-
     if (videoInfo.categories.length === 0) {
         errors.push('Categories are missing');
     }
