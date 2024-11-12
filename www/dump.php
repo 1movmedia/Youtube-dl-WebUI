@@ -107,7 +107,7 @@ foreach($fh->listFiles() as $file) {
 fclose($out);
 
 function sanitize_unicode($str) {
-    $str = preg_replace('/[^\x21-\x7E]+/u', ' ', $str);
+    $str = preg_replace('/[^\x20-\x7E]/u', '', $str);
     $str = trim($str);
     
     return $str;
