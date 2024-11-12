@@ -76,23 +76,23 @@ foreach($fh->listFiles() as $file) {
         $pornstars_str = implode(',', $pornstars);
 
         $row = [
-            //  1. mp4 ссылка для скачивания
+            //  1. mp4 download link
             $uri,
-            //  2. сколько обрезать сначала
+            //  2. how much to trim from start
             round(@$v['cutFrom'] ?? 0),
-            //  3. сколько обрезать в конце
+            //  3. how much to trim from end
             round(@$v['cutEnd'] ?? 0),
-            //  4. название ролика
+            //  4. video title
             sanitize_unicode($v['title']),
-            //  6. категории
+            //  6. categories
             implode(',', $categories),
-            //  7. теги
+            //  7. tags
             implode(',', $tags),
-            //  8. модели
+            //  8. models
             $pornstars_str,
-            //  9. владелец контента (только каналы)
+            //  9. content owner (channels only)
             $v['userType'] === 'channel' ? sanitize_unicode($v['userTitle']) : '',
-            // 10. пользователь инициировавший скачивание
+            // 10. user who initiated download
             sanitize_unicode($data['username'] ?? ''),
         ];
 
