@@ -66,6 +66,30 @@ async function download(video, onsuccess) {
 
     log('videoInfo:', videoInfo);
 
+    // Validate fields
+    let errors = [];
+
+    if (!videoInfo.title) {
+        errors.push('Title is missing');
+    }
+
+    if (!videoInfo.url) {
+        errors.push('Video URL is missing');
+    }
+
+    if (videoInfo.pornstars.length === 0) {
+        errors.push('Pornstars are missing');
+    }
+
+    if (videoInfo.categories.length === 0) {
+        errors.push('Categories are missing');
+    }
+
+    if (errors.length > 0) {
+        alert(errors.join('\n'));
+        throw new Error(errors.join('\n'));
+    }
+
     // Submit download request
 
     GM.xmlHttpRequest({
