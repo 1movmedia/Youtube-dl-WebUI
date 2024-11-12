@@ -65,8 +65,8 @@ async function download(video, onsuccess) {
     let categories = videoData.categories_in_video === 'No' ? [] : videoData.categories_in_video.split(',').map(c => ({ category: c }));
 
     // Add model unless it's listed already
-    if (isModelUser && !pornstars.some(e => e.pornstar_name === video.userTitle)) {
-        pornstars.push({'pornstar_name': video.userTitle});
+    if (isModelUser && !pornstars.some(e => e.pornstar_name === videoData.video_uploader_name)) {
+        pornstars.push({'pornstar_name': videoData.video_uploader_name});
     }
 
     videoInfo = {
