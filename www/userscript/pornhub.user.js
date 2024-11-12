@@ -61,8 +61,8 @@ async function download(video, onsuccess) {
 
     let title = document.querySelector('meta[property="og:title"]').content;
     let tags = Array.from(document.querySelectorAll('.tagsWrapper a[data-label="Tag"]')).map(a => ({'tag_name': a.innerText}));
-    let pornstars = videoData.pornstars_in_video.split(',').map(c => ({ pornstar_name: c }));
-    let categories = videoData.categories_in_video.split(',').map(c => ({ category: c }));
+    let pornstars = videoData.pornstars_in_video === 'No' ? [] : videoData.pornstars_in_video.split(',').map(c => ({ pornstar_name: c }));
+    let categories = videoData.categories_in_video === 'No' ? [] : videoData.categories_in_video.split(',').map(c => ({ category: c }));
 
     // Add model unless it's listed already
     if (isModelUser && !pornstars.some(e => e.pornstar_name === video.userTitle)) {
