@@ -47,19 +47,22 @@ async function download(video, onsuccess) {
 
     log(match);
 
+    let pornstars = Array.from(document.querySelectorAll('a[data-mxptype="Pornstar"][data-mxptext]')).map(a => ({'pornstar_name': a.dataset.mxptext}));
+
+    // Add model unless it's listed already
+    if (video.isModelUser && !pornstars.some(e => e.pornstar_name === video.userTitle)) {
+        pornstars.push({'pornstar_name': video.userTitle});
+    }
+
     videoInfo = {
         "id": "ph-" + video_id,
         "video_id": video_id,
         "title": document.querySelector('meta[property="og:title"]').content,
        
         "tags": Array.from(document.querySelectorAll('.tagsWrapper a[data-label="Tag"]')).map(a => ({'tag_name': a.innerText})),
-        "pornstars": Array.from(document.querySelectorAll('a[data-mxptype="Pornstar"][data-mxptext]')).map(a => ({'pornstar_name': a.dataset.mxptext})),
+        "pornstars": pornstars,
         "categories": dataLayer.filter(e => !!e.videodata)[0].videodata.categories_in_video.split(',').map(c => ({ category: c })),
     };
-
-    if (videoInfo.pornstars.length === 0 && (/\/model\/[^/]+$/.test(video.userUrl))) {
-        videoInfo.pornstars = [{'pornstar_name': video.userTitle}];
-    }
 
     // Copy fields not available via API
     [ "url", "userTitle", "userType", "userUrl", "cutFrom", "cutTo", "duration", "cutEnd", "target" ].forEach(key => videoInfo[key] = video[key]);
@@ -137,6 +140,7 @@ if (location.search.startsWith('?viewkey=')) {
             userType: usernameWrap.dataset.type,
             userTitle: userLink.innerText,
             userUrl: userLink.href,
+            isModelUser: userLink.pathname.startsWith('/model/'),
         };
 
         log("Video:", video);
