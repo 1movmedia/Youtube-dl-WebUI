@@ -69,9 +69,9 @@ foreach($fh->listFiles() as $file) {
         $categories = array_map(function($c) { return $c['category']; }, $v['categories']);
         $pornstars = array_map(function($c) { return $c['pornstar_name']; }, $v['pornstars']);
 
-        array_map('sanitize_unicode', $tags);
-        array_map('sanitize_unicode', $categories);
-        array_map('sanitize_unicode', $pornstars);
+        $tags = array_map('sanitize_unicode', $tags);
+        $categories = array_map('sanitize_unicode', $categories);
+        $pornstars = array_map('sanitize_unicode', $pornstars);
 
         $pornstars_str = implode(',', $pornstars);
 
@@ -90,8 +90,8 @@ foreach($fh->listFiles() as $file) {
             implode(',', $tags),
             //  8. модели
             $pornstars_str,
-            //  9. владелец контента
-            strtolower($pornstars_str) === strtolower($v['userTitle']) ? '' : sanitize_unicode($v['userTitle']),
+            //  9. владелец контента (только каналы)
+            $v['userType'] === 'channel' ? sanitize_unicode($v['userTitle']) : '',
             // 10. пользователь инициировавший скачивание
             sanitize_unicode($data['username'] ?? ''),
         ];
