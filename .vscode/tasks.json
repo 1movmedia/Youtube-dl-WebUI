@@ -25,9 +25,9 @@
             "promptOnClose": false,
         },
         {
-            "label": "Stop Docker container and remove it",
+            "label": "Stop Docker container and remove image and volumes",
             "type": "shell",
-            "command": "docker compose -f docker-compose.debug.yml down",
+            "command": "docker compose -f docker-compose.debug.yml down -v --rmi all --remove-orphans -t 1",
             "problemMatcher": [],
             "promptOnClose": false,
         },
