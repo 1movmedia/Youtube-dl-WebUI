@@ -4,9 +4,16 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Update demo server",
+            "type": "shell",
+            "command": "git archive --format=tar master | ssh ${input:remote_ssh} 'mkdir -p ${input:remote_path} && tar -xvf - -C ${input:remote_path} && cd ${input:remote_path} && docker compose up -d'",
+            "problemMatcher": [],
+            "promptOnClose": false
+        },
+        {
             "label": "Download data from remote",
             "type": "shell",
-            "command": "rsync --progress -a ${input:remote_ssh_user_path}/data tmp/",
+            "command": "rsync --progress -a ${input:remote_ssh}:${input:remote_path}/data tmp/",
             "problemMatcher": [],
             "promptOnClose": false
         },
@@ -84,10 +91,16 @@
     ],
     "inputs": [
         {
-            "id": "remote_ssh_user_path",
+            "id": "remote_ssh",
             "type": "promptString",
-            "description": "Remote SSH user path",
-            "default": "admin@remote:/home/admin/services/Youtube-dl-WebUI"
+            "description": "Remote SSH",
+            "default": "admin@remote"
+        },
+        {
+            "id": "remote_path",
+            "type": "promptString",
+            "description": "Remote path",
+            "default": "/home/admin/services/Youtube-dl-WebUI"
         }
     ]
 }
