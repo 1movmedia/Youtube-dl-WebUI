@@ -8,56 +8,56 @@
             "type": "shell",
             "command": "rsync --progress -a ${input:remote_ssh_user_path}/data tmp/",
             "problemMatcher": [],
-            "promptOnClose": false,
+            "promptOnClose": false
         },
         {
             "label": "Build Docker image",
             "type": "shell",
             "command": "docker compose -f docker-compose.debug.yml build",
             "problemMatcher": [],
-            "promptOnClose": false,
+            "promptOnClose": false
         },
         {
             "label": "Launch Docker container",
             "type": "shell",
             "command": "docker compose -f docker-compose.debug.yml up -d --build",
             "problemMatcher": [],
-            "promptOnClose": false,
+            "promptOnClose": false
         },
         {
             "label": "View Docker container logs",
             "type": "shell",
             "command": "docker compose -f docker-compose.debug.yml logs -f",
             "problemMatcher": [],
-            "promptOnClose": false,
+            "promptOnClose": false
         },
         {
             "label": "Stop Docker container and remove image and volumes",
             "type": "shell",
             "command": "docker compose -f docker-compose.debug.yml down -v --rmi all --remove-orphans -t 1",
             "problemMatcher": [],
-            "promptOnClose": false,
+            "promptOnClose": false
         },
         {
             "label": "Start shell in Docker container",
             "type": "shell",
             "command": "docker compose -f docker-compose.debug.yml exec -it ytdlwui /bin/bash -l",
             "problemMatcher": [],
-            "promptOnClose": false,
+            "promptOnClose": false
         },
         {
             "label": "Install Pornhub userscript",
             "type": "shell",
             "command": "x-www-browser http://localhost:8963/pornhub.user.js",
             "problemMatcher": [],
-            "promptOnClose": false,
+            "promptOnClose": false
         },
         {
             "label": "Install ViolentMonkey into default browser",
             "type": "shell",
             "command": "x-www-browser --new-window https://chromewebstore.google.com/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag",
             "problemMatcher": [],
-            "promptOnClose": false,
+            "promptOnClose": false
         },
         {
             "label": "Open everything in default browser",
@@ -70,17 +70,16 @@
         {
             "label": "Download test video to /tmp/test_video.mp4 if missing",
             "type": "shell",
-            
             "command": "test -e /tmp/test_video.mp4 || yt-dlp -o /tmp/test_video.mp4 'https://rt.pornhub.com/view_video.php?viewkey=ph634c78ed6c98f'",
             "problemMatcher": [],
-            "promptOnClose": false,
+            "promptOnClose": false
         },
         {
             "label": "Sync to demo server",
             "type": "shell",
             "command": "git archive --format=tar master | ssh m@n.uo1.net 'mkdir -p ytdl && tar -xvf - -C ytdl'",
             "problemMatcher": [],
-            "promptOnClose": false,
+            "promptOnClose": false
         }
     ],
     "inputs": [
