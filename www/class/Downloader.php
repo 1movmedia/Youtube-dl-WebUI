@@ -18,7 +18,9 @@ class Downloader
 
 	static function get_config(): array {
 		$config = require dirname(__DIR__).'/config/config.php';
-		$config['bin'] = self::ytdlp_path();
+		if (empty($config['bin'])) {
+			$config['bin'] = self::ytdlp_path();
+		}
 
 		return $config;
 	}
