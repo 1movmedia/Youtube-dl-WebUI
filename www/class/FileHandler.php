@@ -13,7 +13,8 @@ class FileHandler
 			$this->db = null;
 		}
 		else {
-			$this->db = new SQLite3($filename);
+			$this->db = new SQLite3($filename, SQLITE3_OPEN_READWRITE);
+			$this->db->busyTimeout(10000);
 		}
 	}
 
