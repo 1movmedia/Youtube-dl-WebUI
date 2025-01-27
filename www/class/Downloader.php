@@ -16,10 +16,16 @@ class Downloader
 		return trim(`which yt-dlp`);
 	}
 
+	static function get_config(): array {
+		$config = require dirname(__DIR__).'/config/config.php';
+		$config['bin'] = self::ytdlp_path();
+
+		return $config;
+	}
+
 	public function __construct($video_info)
 	{
-		$this->config = require dirname(__DIR__).'/config/config.php';
-		$this->config['bin'] = self::ytdlp_path();
+		$this->config = self::get_config();
 
 		$fh = new FileHandler();
 		$this->download_path = $fh->get_downloads_folder();
@@ -106,7 +112,7 @@ class Downloader
 
 	public static function max_background_jobs()
 	{
-		$config = require dirname(__DIR__).'/config/config.php';
+		$config = self::get_config();
 		return $config["max_dl"];
 	}
 
@@ -130,8 +136,7 @@ class Downloader
 
 		if(count($output) > 0)
 		{
-			$config = require dirname(__DIR__).'/config/config.php';
-			$config['bin'] = self::ytdlp_path();
+			$config = self::get_config();
 
 			$markers = [ $config["bin"], "sh -c ( $config[bin]" ];
 
@@ -287,7 +292,7 @@ class Downloader
 
 	public static function get_youtubedl_version()
 	{
-		$config = require dirname(__DIR__).'/config/config.php';
+		$config = self::get_config();
 		$soutput = shell_exec($config["bin"]." --version");
 		return trim($soutput);
 	}
