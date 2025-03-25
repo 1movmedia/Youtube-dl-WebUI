@@ -443,7 +443,7 @@ class FileHandler
 	}
 
 	public function getRow($column, $value, $target = null) {
-			$query = "SELECT * FROM urls WHERE $column = :value";
+		$query = "SELECT * FROM urls WHERE $column = :value";
 
         if ($target) {
             $query .= " AND target = :target";
@@ -456,17 +456,18 @@ class FileHandler
             $stmt->bindValue(':target', $target, SQLITE3_TEXT);
         }
 
-        $result = $stmt->execute();
+		$result = $stmt->execute();
 
-        $row = $result->fetchArray(SQLITE3_ASSOC);
-        if ($row) {
-            $row['details_json'] = json_decode($row['details_json'], true);
-            
-            return $row;
-        } else {
-            return null;
-        }
-    }
+		$row = $result->fetchArray(SQLITE3_ASSOC);
+		if ($row) {
+			$row['details_json'] = json_decode($row['details_json'], true);
+		}
+
+		$result->finalize(); // Finalize the result to free memory
+		$stmt->close(); // Close the statement to free memory
+
+		return $row ?: null;
+	}
 }
 
 ?>
