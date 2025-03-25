@@ -1,5 +1,8 @@
 <?php
 
+// Increase memory limit to 512MB
+ini_set('memory_limit', '512M');
+
 require_once 'vendor/autoload.php';
 
 $config = require __DIR__.'/config/config.php';
