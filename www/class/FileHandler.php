@@ -26,8 +26,6 @@ class FileHandler
 
 	public function listFiles()
 	{
-		$files = [];
-
 		if(!$this->outuput_folder_exists())
 			return;
 
@@ -56,11 +54,8 @@ class FileHandler
 				$content['id'] = $content['name'];
 			}
 
-			$files[$content['id']] = $content;
-			
+			yield $content['id'] => $content;
 		}
-
-		return $files;
 	}
 
 	public function listParts()
@@ -343,14 +338,13 @@ class FileHandler
 		$info = json_decode($soutput, true);
 
 		if ($this->db) {
-			$files = $this->listFiles();
+			$files = iterator_to_array($this->listFiles());
 
 			$info['db_info'] = $this->getByUrl($url);
 			$info['file'] = $files[$info['db_info']['id']];
 		}
 
 		return $info;
-
 	}
 
 	private static function is_python_installed()

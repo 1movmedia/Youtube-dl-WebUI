@@ -18,7 +18,7 @@
 		exit;
 	}
 
-	$files = $file->listFiles();
+	$files = iterator_to_array($file->listFiles());
 	$parts = $file->listParts();
 	$deferred = $file->list_deferred();
 

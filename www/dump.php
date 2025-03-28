@@ -17,7 +17,7 @@ if ('y' == @$_REQUEST['as_json']) {
     }
     elseif ($dataset === 'files') {
         header('Content-Type: application/json');
-        echo json_encode($fh->listFiles(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        echo json_encode(iterator_to_array($fh->listFiles()), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
     elseif ($dataset === 'ids') {
         header('Content-Type: application/json');
@@ -35,9 +35,14 @@ if ('y' == @$_REQUEST['as_json']) {
 $target = $_REQUEST['target'] ?? null;
 $mark_exported = @$_REQUEST['mark_exported'] === 'y';
 $remove_marked = @$_REQUEST['remove_marked'] === 'y';
+$limit = (int) @$_REQUEST['limit'] ?? PHP_INT_MAX;
 
 //header('Content-Type: text/tab-separated-values');
 header('Content-Type: text/plain');
+
+if ($limit <= 0) {
+    exit(0);
+}
 
 $dl_uri_prefix = (@$_SERVER['HTTPS'] !== 'off' ? 'http' : 'https') . "://" . $_SERVER['HTTP_HOST'] . preg_replace('/[^\\/]+$/', '', $_SERVER['REQUEST_URI']) . $config['outputFolder'] . '/';
 
@@ -45,6 +50,10 @@ $out = fopen('php://output', 'w');
 
 foreach($fh->listFiles() as $file) {
     if (!empty($file['info'])) {
+        if ($limit <= 0) {
+            break;
+        }
+
         $video_id = $file['id'];
         
         $data = $file['info'];
@@ -104,6 +113,8 @@ foreach($fh->listFiles() as $file) {
         if ($mark_exported) {
             $fh->updateLastExport($video_id);
         }
+
+        $limit--;
     }
 }
 
