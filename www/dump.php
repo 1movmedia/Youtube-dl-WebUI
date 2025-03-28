@@ -38,6 +38,12 @@ $target = $_REQUEST['target'] ?? null;
 $mark_exported = @$_REQUEST['mark_exported'] === 'y';
 $remove_marked = @$_REQUEST['remove_marked'] === 'y';
 $limit = !isset($_REQUEST['limit']) ? PHP_INT_MAX : (int) @$_REQUEST['limit'] ?? PHP_INT_MAX;
+$filter = !isset($_REQUEST['filter']) ? null : $_REQUEST['filter'];
+
+if ($filter !== null && $filter !== 'unmarked') {
+    header('HTTP/1.0 404 Invalid filter');
+    die('Bad filter. Only "unmarked" is supported.');
+}
 
 //header('Content-Type: text/tab-separated-values');
 header('Content-Type: text/plain');
@@ -69,6 +75,12 @@ foreach($fh->listFiles() as $file) {
         if ($remove_marked && !!$data['last_export']) {
             $filename = __DIR__ . '/' . $config['outputFolder'] . '/' . $file['name'];
             @unlink($filename);
+        }
+
+        if ($filter === 'unmarked') {
+            if (!empty($data['last_export'])) {
+                continue;
+            }
         }
 
         if ($limit <= 0) {
