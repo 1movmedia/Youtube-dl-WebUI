@@ -42,7 +42,7 @@ $limit = (int) @$_REQUEST['limit'] ?? PHP_INT_MAX;
 //header('Content-Type: text/tab-separated-values');
 header('Content-Type: text/plain');
 
-if ($limit <= 0) {
+if ($limit <= 0 && !$remove_marked) {
     exit(0);
 }
 
