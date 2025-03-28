@@ -50,10 +50,6 @@ $out = fopen('php://output', 'w');
 
 foreach($fh->listFiles() as $file) {
     if (!empty($file['info'])) {
-        if ($limit <= 0) {
-            break;
-        }
-
         $video_id = $file['id'];
         
         $data = $file['info'];
@@ -71,6 +67,14 @@ foreach($fh->listFiles() as $file) {
         if ($remove_marked && !!$data['last_export']) {
             $filename = __DIR__ . '/' . $config['outputFolder'] . '/' . $file['name'];
             @unlink($filename);
+        }
+
+        if ($limit <= 0) {
+            if ($remove_marked) {
+                continue;
+            }
+
+            break;
         }
 
         $uri = $dl_uri_prefix . $file['name'];
