@@ -37,7 +37,7 @@ if ('y' == @$_REQUEST['as_json']) {
 $target = $_REQUEST['target'] ?? null;
 $mark_exported = @$_REQUEST['mark_exported'] === 'y';
 $remove_marked = @$_REQUEST['remove_marked'] === 'y';
-$limit = (int) @$_REQUEST['limit'] ?? PHP_INT_MAX;
+$limit = !isset($_REQUEST['limit']) ? PHP_INT_MAX : (int) @$_REQUEST['limit'] ?? PHP_INT_MAX;
 
 //header('Content-Type: text/tab-separated-values');
 header('Content-Type: text/plain');
