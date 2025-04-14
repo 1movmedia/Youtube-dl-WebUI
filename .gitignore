@@ -16,4 +16,3 @@ test/train_videos.json
 data/db.sqlite3
 .aider*
 .env
-logs/*.txt
