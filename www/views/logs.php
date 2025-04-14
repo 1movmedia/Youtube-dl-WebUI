@@ -18,10 +18,17 @@
 
 				foreach ($files as $f) {
 					echo "<tr>";
+
+					$lastline = $f["lastline"];
+					if (strlen($lastline) > 1500) {
+						$lastline = substr($lastline, 0, 1500) . "...";
+					}
+					$lastline = htmlspecialchars($lastline);
+
 					if ($file->get_relative_log_folder()) {
-						echo "<td><div><a href=\"" . rawurlencode($file->get_relative_log_folder()) . '/' . rawurlencode($f["name"]) . "\" target=\"_blank\">" . $f["name"] . "</a></div><div>" . $f["lastline"] . "</div></td>";
+						echo "<td class=\"log-last-line\"><div><a href=\"" . rawurlencode($file->get_relative_log_folder()) . '/' . rawurlencode($f["name"]) . "\" target=\"_blank\">" . $f["name"] . "</a></div><div>" . $lastline . "</div></td>";
 					} else {
-						echo "<td><div>" . $f["name"] . "</div><div>" . $f["lastline"] . "</div></td>";
+						echo "<td class=\"log-last-line\"><div>" . $f["name"] . "</div><div>" . $lastline . "</div></td>";
 					}
 					echo "<td>" . ($f["ended"] ? '&#10003;' : '') . "</td>";
 					echo "<td>" . ($f["100"] ? '&#10003;' : '') . "</td>";

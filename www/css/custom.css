@@ -6,3 +6,8 @@
   height: 40px;
   background-color: #f5f5f5;
 }
+.log-last-line {
+  max-width: 25vw;
+  overflow: auto;
+  word-wrap: break-word;
+}
