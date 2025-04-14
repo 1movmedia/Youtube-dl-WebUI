@@ -1,11 +1,10 @@
 <div class="container my-4">
 	<?php
-		if($loginError !== "")
-		{
-	?>
-	<div class="alert alert-danger" role="alert"><?php echo $loginError; ?></div>
-	<?php
-		}
+	if ($loginError !== "") {
+		?>
+		<div class="alert alert-danger" role="alert"><?php echo $loginError; ?></div>
+		<?php
+	}
 	?>
 	<form class="form-horizontal" action="login.php" method="POST" data-bitwarden-watching="1">
 		<div class="row my-3 justify-content-md-center">
