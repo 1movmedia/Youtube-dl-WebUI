@@ -201,6 +201,33 @@ class FileHandler
 		return $buffer;
 	}
 
+	private function isRestartable($file, $content): bool {
+		if (substr($file, -9) === '.deferred') {
+			return false;
+		}
+
+		if ('Finished cutting' !== $content["lastline"]) {
+			return false;
+		}
+
+		$id = null;
+
+		if (preg_match('/20\d{2}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}_\d+-(.+)\.txt$/', $file, $match)) {
+			$id = $match[1];
+		}
+
+		if ($id === null) {
+			return false;
+		}
+
+		if (file_exists($this->get_downloads_folder().'/'.$id.'.mp4')) {
+			return false;
+		}
+
+		// ERROR: [PornHub] 6707f28b1f8e1: Unable to download webpage: HTTP Error 403: Forbidden (caused by <HTTPError 403: Forbidden>)
+		return true;
+	}
+
 	public function listLogs()
 	{
 		$files = [];
@@ -223,6 +250,8 @@ class FileHandler
 
 			try {
 				$content["lastline"] = self::readLastLine($file);
+
+				$content["100"] = ($content["lastline"] === 'Finished cutting');
 			} catch (Exception $e) {
 				$content["lastline"] = '';
 			}	
@@ -236,6 +265,7 @@ class FileHandler
 				$content["ended"] = False;
 			}
 
+			$content['restartable'] = $this->isRestartable($file, $content);
 
 			$files[] = $content;
 		}

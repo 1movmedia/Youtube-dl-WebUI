@@ -10,7 +10,7 @@
 					<th>Ended?</th>
 					<th>Ok?</th>
 					<th>Size</th>
-					<th>Delete link</th>
+					<th>Actions</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -33,18 +33,22 @@
 					echo "<td>" . ($f["ended"] ? '&#10003;' : '') . "</td>";
 					echo "<td>" . ($f["100"] ? '&#10003;' : '') . "</td>";
 					echo "<td>" . $f["size"] . "</td>";
-					echo "<td><a href=\"./logs.php?delete=" . sha1($f["name"]) . "\" class=\"btn btn-danger btn-sm\">Delete</a></td>";
+					echo "<td>";
+					echo "<a href=\"./logs.php?delete=" . sha1($f["name"]) . "\" class=\"btn btn-danger btn-sm\">Delete</a>";
+					if (isset($f["restartable"]) && $f["restartable"] === true) {
+						echo " <a href=\"./download.php?restart_log=" . rawurlencode($file->get_relative_log_folder() . '/' . $f["name"]) . "\" class=\"btn btn-success btn-sm\">Restart</a>";
+					}
+					echo "</td>";
 					echo "</tr>";
 				}
 				?>
 			</tbody>
 		</table>
-		<br />
-		<br />
 		<?php
 	} else {
-		echo "<br><div class=\"alert alert-warning\" role=\"alert\">No logs!</div>";
+		?>
+		<div class="alert alert-warning">No logs found.</div>
+		<?php
 	}
 	?>
-	<br />
 </div>
