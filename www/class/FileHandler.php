@@ -137,6 +137,70 @@ class FileHandler
 		return $files;
 	}
 
+	/**
+	 * Read the last line of a file efficiently reading from the end of the file
+	 * and moving backwards until a newline is found.
+	 * 
+	 * @param string $file
+	 * @return string
+	 */
+	private static function readLastLine($file) {
+		// Validate file readability.
+		if (!is_readable($file)) {
+			throw new Exception("File is not readable: $file");
+		}
+		
+		$fp = fopen($file, 'r');
+		if (!$fp) {
+			throw new Exception("Unable to open file: $file");
+		}
+		
+		$fileSize = filesize($file);
+		if ($fileSize === 0) { // Handle empty file.
+			fclose($fp);
+			return '';
+		}
+		
+		$chunkSize = 4096;  // Align with filesystem 4k blocks.
+		$buffer = '';
+		
+		// Determine any unaligned remainder at the end.
+		$remainder = $fileSize % $chunkSize;
+		if ($remainder > 0) {
+			$start = $fileSize - $remainder;
+			fseek($fp, $start);
+			$buffer = fread($fp, $remainder);
+			$pos = $start;
+		} else {
+			$pos = $fileSize;
+		}
+		
+		// Remove trailing newlines from the current buffer.
+		$buffer = rtrim($buffer, "\r\n");
+		
+		// Read backward in 4k blocks until a newline is found in the buffer.
+		while ($pos > 0 && strpos($buffer, "\n") === false) {
+			$start = max(0, $pos - $chunkSize);
+			fseek($fp, $start);
+			$chunk = fread($fp, $pos - $start);
+			$buffer = $chunk . $buffer;
+			$pos = $start;
+		}
+		
+		fclose($fp);
+		
+		// Ensure any trailing newline remnants are trimmed.
+		$buffer = rtrim($buffer, "\r\n");
+		
+		// If a newline exists, return the text after the last newline,
+		// otherwise, return the entire buffer.
+		$lastNewlinePos = strrpos($buffer, "\n");
+		if ($lastNewlinePos !== false) {
+			return substr($buffer, $lastNewlinePos + 1);
+		}
+		return $buffer;
+	}
+
 	public function listLogs()
 	{
 		$files = [];
@@ -158,27 +222,7 @@ class FileHandler
 			$content["100"] = False;
 
 			try {
-				$lines = explode("\r", file_get_contents($file));
-
-				$first_line = 0;
-
-				for($line = 0; $line < count($lines); $line++)
-				{
-					if (preg_match('/\(frag \d+\/\d+\)$/', rtrim($lines[$line])) === 1) {
-						$first_line = $line;
-						$content["100"] = False;
-					}
-
-					if (strpos($lines[$line], ' 100% of ') > 0) {
-						$content["100"] = True;
-					}
-				}
-
-				if ($first_line !== 0) {
-					$lines = array_slice($lines, $first_line);
-				}
-
-				$content["lastline"] = array_slice($lines, -1)[0];
+				$content["lastline"] = self::readLastLine($file);
 			} catch (Exception $e) {
 				$content["lastline"] = '';
 			}	
