@@ -206,7 +206,7 @@ class FileHandler
 			return false;
 		}
 
-		if ('Finished cutting' !== $content["lastline"]) {
+		if ('Finished cutting' === $content["lastline"]) {
 			return false;
 		}
 
@@ -224,7 +224,6 @@ class FileHandler
 			return false;
 		}
 
-		// ERROR: [PornHub] 6707f28b1f8e1: Unable to download webpage: HTTP Error 403: Forbidden (caused by <HTTPError 403: Forbidden>)
 		return true;
 	}
 
