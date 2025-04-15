@@ -265,7 +265,7 @@ class FileHandler
 				$content["ended"] = False;
 			}
 
-			$content['restartable'] = $this->isRestartable($file, $content);
+			$content['restartable'] = !$content["100"] && $this->isRestartable($file, $content);
 
 			$files[] = $content;
 		}
