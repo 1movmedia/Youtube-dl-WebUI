@@ -15,16 +15,20 @@
 		exit;
 	}
 
-	$files = $file->listLogs();
+	$filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
+	if (!in_array($filter, ['all', 'ok', 'not-ok'])) {
+		$filter = 'all';
+	}
+
+	$files = $file->listLogs($filter);
 	$deferred = $file->list_deferred();
 
 	if($session->is_logged_in() && isset($_GET["delete"]))
 	{
 		$file->deleteLog($_GET["delete"]);
-		header("Location: logs.php");
+		header("Location: logs.php?filter=" . urlencode($filter));
+		exit;
 	}
-
-	$deferred = $file->list_deferred();
 
 	require 'views/layout.php';
 	require 'views/logs.php';

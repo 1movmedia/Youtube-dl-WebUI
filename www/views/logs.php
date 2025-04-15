@@ -2,7 +2,14 @@
 	<?php
 	if (!empty($files)) {
 		?>
-		<h1>List of logs:</h1>
+		<div class="d-flex justify-content-between align-items-center mb-3">
+			<h1>List of logs:</h1>
+			<div class="btn-group" role="group" aria-label="Filter logs">
+				<a href="?filter=all" class="btn btn-outline-primary <?php echo $filter === 'all' ? 'active' : ''; ?>">All</a>
+				<a href="?filter=ok" class="btn btn-outline-primary <?php echo $filter === 'ok' ? 'active' : ''; ?>">OK</a>
+				<a href="?filter=not-ok" class="btn btn-outline-primary <?php echo $filter === 'not-ok' ? 'active' : ''; ?>">Not OK</a>
+			</div>
+		</div>
 		<table class="table table-striped table-hover ">
 			<thead>
 				<tr>
@@ -34,7 +41,7 @@
 					echo "<td>" . ($f["100"] ? '&#10003;' : '') . "</td>";
 					echo "<td>" . $f["size"] . "</td>";
 					echo "<td>";
-					echo "<a href=\"./logs.php?delete=" . sha1($f["name"]) . "\" class=\"btn btn-danger btn-sm\">Delete</a>";
+					echo "<a href=\"./logs.php?delete=" . sha1($f["name"]) . "&filter=" . urlencode($filter) . "\" class=\"btn btn-danger btn-sm\">Delete</a>";
 					if (isset($f["restartable"]) && $f["restartable"] === true) {
 						echo " <a href=\"./download.php?restart_log=" . rawurlencode($file->get_relative_log_folder() . '/' . $f["name"]) . "\" class=\"btn btn-success btn-sm\">Restart</a>";
 					}

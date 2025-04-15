@@ -227,7 +227,7 @@ class FileHandler
 		return true;
 	}
 
-	public function listLogs()
+	public function listLogs($filter = 'all')
 	{
 		$files = [];
 		
@@ -249,7 +249,6 @@ class FileHandler
 
 			try {
 				$content["lastline"] = self::readLastLine($file);
-
 				$content["100"] = ($content["lastline"] === 'Finished cutting');
 			} catch (Exception $e) {
 				$content["lastline"] = '';
@@ -265,6 +264,13 @@ class FileHandler
 			}
 
 			$content['restartable'] = !$content["100"] && $this->isRestartable($file, $content);
+
+			// Apply filter
+			if ($filter === 'ok' && !$content["100"]) {
+				continue;
+			} elseif ($filter === 'not-ok' && $content["100"]) {
+				continue;
+			}
 
 			$files[] = $content;
 		}
