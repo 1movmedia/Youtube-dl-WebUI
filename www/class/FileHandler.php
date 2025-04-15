@@ -278,6 +278,33 @@ class FileHandler
 		return $files;
 	}
 
+	public function hasRestartableTasks($files = null) {
+		if ($files === null) {
+			$files = $this->listLogs();
+		}
+		
+		foreach ($files as $f) {
+			if (isset($f["restartable"]) && $f["restartable"] === true) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+    public function getRestartableLogs($files = null) {
+        if ($files === null) {
+            $files = $this->listLogs();
+        }
+        
+        $restartable = [];
+        foreach ($files as $f) {
+            if (isset($f["restartable"]) && $f["restartable"] === true) {
+                $restartable[] = $f["name"];
+            }
+        }
+        return $restartable;
+    }
+
 	public function delete($id)
 	{
 		$folder = $this->get_downloads_folder().'/';

@@ -32,6 +32,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+	$filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
+	
+	if (isset($_GET['restart_all'])) {
+		$fileHandler = new FileHandler();
+		$files = $fileHandler->listLogs($filter);
+		$restartable = $fileHandler->getRestartableLogs($files);
+		
+		foreach ($restartable as $logFile) {
+			$logPath = $fileHandler->get_relative_log_folder() . '/' . $logFile;
+			if (!rename($logPath, $logPath . '.deferred')) {
+				header('HTTP/1.0 500 Internal Server Error');
+				header('Content-Type: text/plain');
+				die('Internal Server Error: ' . $logPath . ': ' . error_get_last()['message']);
+			}
+		}
+
+		header('Location: ./logs.php?filter=' . urlencode($filter));
+		exit;
+	}
+
 	if (isset($_GET['restart_log'])) {
 		// Append filename to path
 		$filename = __DIR__ . '/' . $_GET['restart_log'];

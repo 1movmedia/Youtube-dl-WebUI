@@ -3,7 +3,12 @@
 	if (!empty($files)) {
 		?>
 		<div class="d-flex justify-content-between align-items-center mb-3">
-			<h1>List of logs:</h1>
+			<div class="d-flex gap-3 align-items-center">
+				<h1>List of logs:</h1>
+				<?php if ($file->hasRestartableTasks($files)): ?>
+				<a href="./download.php?restart_all=1&filter=<?php echo urlencode($filter); ?>" class="btn btn-success">Restart All</a>
+				<?php endif; ?>
+			</div>
 			<div class="btn-group" role="group" aria-label="Filter logs">
 				<a href="?filter=all" class="btn btn-outline-primary <?php echo $filter === 'all' ? 'active' : ''; ?>">All</a>
 				<a href="?filter=ok" class="btn btn-outline-primary <?php echo $filter === 'ok' ? 'active' : ''; ?>">OK</a>
