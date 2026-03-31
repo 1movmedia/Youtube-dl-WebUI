@@ -10,6 +10,13 @@
 		"ghcr.io/devcontainers/features/php:1": {},
 		"ghcr.io/devcontainers/features/python:1": {},
 		"ghcr.io/devcontainer-community/devcontainer-features/collection-c-cpp:1": {}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"yy0931.vscode-sqlite3-editor"
+			]
+		}
 	}
 
 	// "forwardPorts": [],
